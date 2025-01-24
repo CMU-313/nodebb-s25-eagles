@@ -16,7 +16,7 @@ define('admin/appearance/themes', ['bootbox', 'translator', 'alerts'], function 
 				if (config['theme:id'] === themeId) {
 					return;
 				}
-				console.log('amyma2');
+				console.log('amyma');
 				setTheme(themeType, themeId, cssSrc, alerts);
 			}
 		});

@@ -2,7 +2,6 @@
 
 define('admin/appearance/themes', ['bootbox', 'translator', 'alerts'], function (bootbox, translator, alerts) {
 	const Themes = {};
-
 	Themes.init = function () {
 		$('#installed_themes').on('click', function (e) {
 			const target = $(e.target);
@@ -17,6 +16,7 @@ define('admin/appearance/themes', ['bootbox', 'translator', 'alerts'], function 
 				if (config['theme:id'] === themeId) {
 					return;
 				}
+				console.log('amyma2');
 				setTheme(themeType, themeId, cssSrc, alerts);
 			}
 		});
@@ -67,7 +67,7 @@ define('admin/appearance/themes', ['bootbox', 'translator', 'alerts'], function 
 			}
 		});
 	};
-	// helper functions generated with gpt 
+	// helper functions generated with gpt
 	// made revisions such as defining theme
 	// fixing tabs
 	// changing varnames

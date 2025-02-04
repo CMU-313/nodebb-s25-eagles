@@ -18,5 +18,5 @@ define('admin/dashboard/searches', ['alerts', 'bootbox'], (alerts, bootbox) => {
 				}
 			});
 		});
-	}
+	};
 });

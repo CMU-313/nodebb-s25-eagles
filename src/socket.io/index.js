@@ -156,6 +156,7 @@ function deserializePayload(payload) {
 }
 
 async function onMessage(socket, payload) {
+	console.log("fishfish");
 	const { event, params, callback } = payload;
 	try {
 		if (!event) {

@@ -16,6 +16,10 @@
 	&.offline {
 		background-color: $gray-600;
 	}
+
+	&.anonymous {
+		background-color: black;
+	}
 }
 
 @include media-breakpoint-up(sm) {

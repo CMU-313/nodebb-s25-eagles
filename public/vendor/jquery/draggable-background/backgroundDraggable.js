@@ -8,7 +8,7 @@
  * Licensed under the MIT license:
  *   http://www.opensource.org/licenses/mit-license.php
  */
-;(function($) {
+(function($) {
   var $window = $(window);
 
   // Helper function to guarantee a value between low and hi unless bool is false

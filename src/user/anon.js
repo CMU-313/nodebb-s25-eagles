@@ -35,7 +35,6 @@ module.exports = function (User) {
       console.error("Error creating anonymous account:", error);
       throw error; // Or handle as needed
     }
-  }
+  };
   // function that creates group dedicated to just anonymous accounts
-  
-}
+};

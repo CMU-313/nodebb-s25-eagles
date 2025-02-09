@@ -27,6 +27,11 @@
 				</div>
 
 				<div class="form-check form-switch mb-3">
+					<input class="form-check-input" type="checkbox" id="enableAnonymousPosting" data-field="enableAnonymousPosting" checked />
+					<label class="form-check-label" for="enableAnonymousPosting">[[admin/settings/post:enable-anonymous-posting]]</label>
+				</div>
+
+				<div class="form-check form-switch mb-3">
 					<input class="form-check-input" type="checkbox" id="enablePostHistory" data-field="enablePostHistory" checked />
 					<label class="form-check-label" for="enablePostHistory">[[admin/settings/post:enable-post-history]]</label>
 				</div>

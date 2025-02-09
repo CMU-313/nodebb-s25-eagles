@@ -3,15 +3,15 @@
 // random number generating function for creating anon uid
 // sourced from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
 function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min; 
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 module.exports = function (User) {
   // function that creates secondary anonymous account
   User.anonCreate = async function (data) {
-    const tempUser = data.username.concat(getRandomInt(100000,999999));
+    const tempUser = data.username.concat(getRandomInt(100000, 999999));
     const anonAcc = {         // anon account template
       uid: 0,
       username: tempUser,

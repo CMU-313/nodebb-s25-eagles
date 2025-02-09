@@ -335,7 +335,6 @@ function setupGraphs(callback) {
 		});
 
 		updateTrafficGraph();
-		
 		function updateLabel(translated) {
 			('[data-action="updateGraph"][data-units="custom"]').text(translated);
 		}

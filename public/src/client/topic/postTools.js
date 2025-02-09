@@ -108,7 +108,7 @@ define('forum/topic/postTools', [
 		});
 
 		postContainer.on('click', '[component="post/pin"]', function () {
-			onPinClicked($(this), tid);
+			onPinClicked($(this));
 		});
 
 		postContainer.on('click', '[component="post/reply"]', function () {
@@ -331,30 +331,12 @@ define('forum/topic/postTools', [
 		});
 	}
 
-	async function onPinClicked(button, tid) {
-		const selectedNode = await getSelectedNode();
-
-		showStaleWarning(async function () {
-			const username = await getUserSlug(button);
-			const toPid = getData(button, 'data-pid');
-
-			function quote(text) {
-				hooks.fire('action:composer.addQuote', {
-					tid: tid,
-					pid: toPid,
-					username: username,
-					title: ajaxify.data.titleRaw,
-					text: text,
-				});
-			}
-
-			if (selectedNode.text && toPid && toPid === selectedNode.pid) {
-				return quote(selectedNode.text);
-			}
-
-			const { content } = await api.get(`/posts/${toPid}/raw`);
-			quote(content);
-		});
+	async function onPinClicked(button) {
+		const pid = getData(button, 'data-pid');
+		const container = document.querySelector('[component="topic"]');
+		const currentPost = container.querySelector(`[data-pid='${pid}']`);		
+		const firstPost = container.firstChild;
+		container.insertBefore(currentPost, firstPost);
 	}
 
 	async function getSelectedNode() {

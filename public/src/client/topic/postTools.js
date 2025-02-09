@@ -334,7 +334,7 @@ define('forum/topic/postTools', [
 	async function onPinClicked(button) {
 		const pid = getData(button, 'data-pid');
 		const container = document.querySelector('[component="topic"]');
-		const currentPost = container.querySelector(`[data-pid='${pid}']`);		
+		const currentPost = container.querySelector(`[data-pid='${pid}']`);
 		const firstPost = container.firstChild;
 		container.insertBefore(currentPost, firstPost);
 	}

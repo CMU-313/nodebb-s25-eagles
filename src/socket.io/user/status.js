@@ -2,6 +2,7 @@
 
 const user = require('../../user');
 const websockets = require('../index');
+const meta = require('../../meta');
 
 module.exports = function (SocketUser) {
 	SocketUser.checkStatus = async function (socket, uid) {
@@ -17,7 +18,10 @@ module.exports = function (SocketUser) {
 			throw new Error('[[error:invalid-uid]]');
 		}
 
-		const allowedStatus = ['online', 'offline', 'dnd', 'away', 'anonymous'];
+		let allowedStatus = ['online', 'offline', 'dnd', 'away', 'anonymous'];
+		if (!meta.config.enableAnonymousPosting) {
+			allowedStatus = ['online', 'offline', 'dnd', 'away'];
+		}
 		if (!allowedStatus.includes(status)) {
 			throw new Error('[[error:invalid-user-status]]');
 		}

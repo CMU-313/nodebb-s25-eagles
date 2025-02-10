@@ -15,6 +15,7 @@
     "newbiePostEditDuration": 3600,
     "postDeleteDuration": 0,
     "enablePostHistory": 1,
+	"enableAnonymousPosting": 1,
     "topicBacklinks": 1,
     "postCacheSize": 20971520,
     "disableChat": 0,

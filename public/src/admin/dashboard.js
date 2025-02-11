@@ -333,13 +333,10 @@ function setupGraphs(callback) {
 			},
 			options: doughnutOpts,
 		});
-
 		updateTrafficGraph();
-
 		function updateLabel(translated) {
 			('[data-action="updateGraph"][data-units="custom"]').text(translated);
 		}
-
 		$('[data-action="updateGraph"]:not([data-units="custom"])').on('click', function () {
 			let until = new Date();
 			const amount = $(this).attr('data-amount');

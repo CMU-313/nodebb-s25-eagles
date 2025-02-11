@@ -351,6 +351,7 @@ module.exports = function (middleware) {
 		hookReturn.templateData.useCustomJS = meta.config.useCustomJS;
 		hookReturn.templateData.customJS = hookReturn.templateData.useCustomJS ? meta.config.customJS : '';
 		hookReturn.templateData.isSpider = req.uid === -1;
+		hookReturn.templateData.enableAnonymousPosting = meta.config.enableAnonymousPosting;
 
 		return await req.app.renderAsync('footer', hookReturn.templateData);
 	}

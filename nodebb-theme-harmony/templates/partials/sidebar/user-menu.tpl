@@ -39,6 +39,7 @@
 			<i class="fa-solid fa-check text-secondary flex-shrink-0"></i>
 		</a>
 	</li>
+	{{{ if enableAnonymousPosting }}}
 	<li>
 		<a href="#" class="dropdown-item rounded-1 user-status d-flex align-items-center gap-2 {{{ if user.anonymous }}}selected{{{ end }}}" data-status="anonymous" role="menuitem">
 			<span component="user/status" class="flex-shrink-0 border border-white border-2 rounded-circle status anonymous"></span>
@@ -46,6 +47,7 @@
 			<i class="fa-solid fa-check text-secondary flex-shrink-0"></i>
 		</a>
 	</li>
+	{{{ end }}}
 	<li role="presentation" class="dropdown-divider"></li>
 	<li>
 		<a class="dropdown-item rounded-1 d-flex align-items-center gap-2" href="{relative_path}/user/{user.userslug}/bookmarks" role="menuitem">

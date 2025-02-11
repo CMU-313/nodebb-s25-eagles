@@ -1,5 +1,3 @@
-
-
 'use strict';
 
 
@@ -123,7 +121,7 @@ define('forum/topic/postTools', [
 		});
 
 		$('.topic').on('click', '[component="topic/reply-as-topic"]', function () {
-			translator.translate([`topic:link-back, ${ajaxify.data.titleRaw}, ${config.relative_path}/topic/${ajaxify.data.slug}`], function (body) {
+			translator.translate(`[[topic:link-back, ${ajaxify.data.titleRaw}, ${config.relative_path}/topic/${ajaxify.data.slug}]]`, function (body) {
 				hooks.fire('action:composer.topic.new', {
 					cid: ajaxify.data.cid,
 					body: body,
@@ -423,7 +421,7 @@ define('forum/topic/postTools', [
 	}
 
 	async function postAction(action, pid) {
-		({ action } = await hooks.fire(`post.${action}`, { action, pid }));
+		({ action } = await hooks.fire(`static:post.${action}`, { action, pid }));
 		if (!action) {
 			return;
 		}
@@ -477,7 +475,7 @@ define('forum/topic/postTools', [
 					label: '[[topic:stale.create]]',
 					className: 'btn-primary',
 					callback: function () {
-						translator.translate([`topic:link-back, ${ajaxify.data.title}, ${config.relative_path}/topic/${ajaxify.data.slug}`], function (body) {
+						translator.translate(`[[topic:link-back, ${ajaxify.data.title}, ${config.relative_path}/topic/${ajaxify.data.slug}]]`, function (body) {
 							hooks.fire('action:composer.topic.new', {
 								cid: ajaxify.data.cid,
 								body: body,

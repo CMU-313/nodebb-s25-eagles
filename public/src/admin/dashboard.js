@@ -335,6 +335,9 @@ function setupGraphs(callback) {
 		});
 
 		updateTrafficGraph();
+		function updateLabel(translated) {
+			('[data-action="updateGraph"][data-units="custom"]').text(translated);
+		}
 
 		$('[data-action="updateGraph"]:not([data-units="custom"])').on('click', function () {
 			let until = new Date();
@@ -346,9 +349,7 @@ function setupGraphs(callback) {
 			updateTrafficGraph($(this).attr('data-units'), until, amount);
 
 			require(['translator'], function (translator) {
-				translator.translate('[[admin/dashboard:page-views-custom]]', function (translated) {
-					$('[data-action="updateGraph"][data-units="custom"]').text(translated);
-				});
+				translator.translate('[[admin/dashboard:page-views-custom]]', updateLabel);
 			});
 		});
 

@@ -22,11 +22,11 @@ module.exports = function (Topics) {
 
 		const tid = await db.incrObjectField('global', 'nextTid');
 
-		const posterInfo = await user.getUsersWithFields([data.uid], ['anonymous'], data.uid);
+		const posterAnonStatus = await user.getUserField(data.uid, 'anonymous');
 		const enableAnonPost = meta.config.enableAnonymousPosting;
 
 		let anonymous = false;
-		if (enableAnonPost && posterInfo[0].anonymous){
+		if (enableAnonPost && posterAnonStatus) {
 			anonymous = true;
 		}
 

@@ -164,6 +164,9 @@ UserObject:
       type: string
       description: An ISO 8601 formatted date string representing the moment a ban will be lifted, or the words "Not Banned"
       example: Not Banned
+    anonymous:
+      type: boolean
+      example: true
   required:
     - uid
     - username
@@ -217,6 +220,10 @@ UserObjectFull:
       type: string
       description: An URL-safe variant of the username (i.e. lower-cased, spaces removed, etc.)
       example: dragon-fruit
+    anonymous:
+      type: string
+      description: A field that shows whether the user is in anonymous mode
+      example: true
     email:
       type: string
       description: Email address associated with the user account
@@ -615,6 +622,9 @@ UserObjectSlim:
       type: string
       description: An ISO 8601 formatted date string representing the moment a ban will be lifted, or the words "Not Banned"
       example: Not Banned
+    anonymous:
+      type: string
+      description: A field that represent whether a user is on anonymous mode
 UserObjectACP:
   type: object
   required:

@@ -32,6 +32,8 @@ get:
                               type: string
                             slug:
                               type: string
+                            anonymous:
+                              type: string
                             teaserPid:
                               type: number
                               nullable: true

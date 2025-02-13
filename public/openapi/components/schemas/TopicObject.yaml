@@ -75,6 +75,8 @@ TopicObject:
               example: "#f44336"
             banned_until_readable:
               type: string
+            anonymous: 
+              type: boolean
           required:
             - uid
             - username
@@ -101,6 +103,9 @@ TopicObject:
             tid:
               type: number
               description: A topic identifier
+            anonymous:
+              type: boolean
+              description: A topic field
             content:
               type: string
             timestampISO:
@@ -122,6 +127,8 @@ TopicObject:
                 picture:
                   nullable: true
                   type: string
+                anonymous:
+                  type: boolean
                 icon:text:
                   type: string
                   description: A single-letter representation of a username. This is used in the
@@ -186,6 +193,8 @@ TopicObject:
           description: "`pinExpiry` rendered as an ISO 8601 format"
         index:
           type: number
+        anonymous:
+          type: boolean
       required:
         - tid
 TopicObjectSlim:

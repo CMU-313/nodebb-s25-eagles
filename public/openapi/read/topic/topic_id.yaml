@@ -35,6 +35,8 @@ get:
                 properties:
                   title:
                     type: string
+                  anonymous:
+                    type: string
                   slug:
                     type: string
                   teaserPid:

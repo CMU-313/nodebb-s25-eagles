@@ -89,7 +89,7 @@ get:
                         banned_until_readable:
                           type: string
                         anonymous:
-                          type: string
+                          type: number
                   userCount:
                     type: number
                   title:

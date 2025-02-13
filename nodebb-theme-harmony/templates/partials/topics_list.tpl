@@ -11,7 +11,7 @@
 		<div class="d-flex p-0 col-12 col-lg-7 gap-2 gap-lg-3 pe-1 align-items-start {{{ if config.theme.mobileTopicTeasers }}}mb-2 mb-lg-0{{{ end }}}">
 			<div class="flex-shrink-0 position-relative">
 				<a class="text-decoration-none" href="{{{ if ./user.userslug }}}{config.relative_path}/user/{./user.userslug}{{{ else }}}#{{{ end }}}">
-					{buildAvatar(./user, "40px", true, "avatar avatar-tooltip")}
+					{buildAvatar(./user, "40px", true, "avatar avatar-tooltip", "", topics.anonymous)}
 				</a>
 				{{{ if showSelect }}}
 				<div class="checkbox position-absolute top-100 start-50 translate-middle-x pt-2 m-0 d-none d-lg-flex" style="max-width:max-content">

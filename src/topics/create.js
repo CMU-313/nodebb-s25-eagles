@@ -22,14 +22,6 @@ module.exports = function (Topics) {
 
 		const tid = await db.incrObjectField('global', 'nextTid');
 
-		const posterAnonStatus = await user.getUserField(data.uid, 'anonymous');
-		const enableAnonPost = meta.config.enableAnonymousPosting;
-
-		let anonymous = false;
-		if (enableAnonPost && posterAnonStatus) {
-			anonymous = true;
-		}
-
 		let topicData = {
 			tid: tid,
 			uid: data.uid,
@@ -41,7 +33,7 @@ module.exports = function (Topics) {
 			lastposttime: 0,
 			postcount: 0,
 			viewcount: 0,
-			anonymous: anonymous,
+			anonymous: data.anonymous,
 		};
 		if (Array.isArray(data.tags) && data.tags.length) {
 			topicData.tags = data.tags.join(',');
@@ -124,6 +116,15 @@ module.exports = function (Topics) {
 		if (!data.fromQueue) {
 			await user.isReadyToPost(uid, data.cid);
 		}
+
+		const posterAnonStatus = await user.getUserField(data.uid, 'anonymous');
+		const enableAnonPost = meta.config.enableAnonymousPosting;
+
+		let anonymous = 0;
+		if (enableAnonPost && posterAnonStatus) {
+			anonymous = 1;
+		}
+		data.anonymous = anonymous;
 
 		const tid = await Topics.create(data);
 

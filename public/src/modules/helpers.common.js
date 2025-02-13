@@ -283,7 +283,7 @@ module.exports = function (utils, Benchpress, relative_path) {
 		return icons;
 	}
 
-	function buildAvatar(userObj, size, rounded, classNames, component) {
+	function buildAvatar(userObj, size, rounded, classNames, component, anonymous) {
 		/**
 		 * userObj requires:
 		 *   - uid, picture, icon:bgColor, icon:text (getUserField w/ "picture" should return all 4), username
@@ -291,18 +291,26 @@ module.exports = function (utils, Benchpress, relative_path) {
 		 * rounded: true or false (optional, default false)
 		 * classNames: additional class names to prepend (optional, default none)
 		 * component: overrides the default component (optional, default none)
+		 * anonymous: special field for anonymous post/topics (optional, default none)
 		 */
 
 		// Try to use root context if passed-in userObj is undefined
 		if (!userObj) {
 			userObj = this;
 		}
+		// Todo: allow admin and poster to see the original even if anonymous post
 		classNames = classNames || '';
-		const attributes = new Map([
+		let attributes = new Map([
 			['title', userObj.username],
 			['data-uid', userObj.uid],
 			['class', `avatar ${classNames}${rounded ? ' avatar-rounded' : ''}`],
 		]);
+		if (anonymous === '1') {
+			attributes = new Map([
+				['title', 'Anonymous Post'],
+				['class', `avatar ${classNames}${rounded ? ' avatar-rounded' : ''}`],
+			]);
+		}
 		const styles = [`--avatar-size: ${size};`];
 		const attr2String = attributes => Array.from(attributes).reduce((output, [prop, value]) => {
 			output += ` ${prop}="${value}"`;
@@ -314,7 +322,11 @@ module.exports = function (utils, Benchpress, relative_path) {
 		if (userObj.picture) {
 			output += `<img${attr2String(attributes)} alt="${userObj.username}" loading="lazy" component="${component || 'avatar/picture'}" src="${userObj.picture}" style="${styles.join(' ')}" onError="this.remove()" itemprop="image" />`;
 		}
-		output += `<span${attr2String(attributes)} component="${component || 'avatar/icon'}" style="${styles.join(' ')} background-color: ${userObj['icon:bgColor']}">${userObj['icon:text']}</span>`;
+		if (anonymous === '1') {
+			output += `<span${attr2String(attributes)} component="${component || 'avatar/icon'}" style="${styles.join(' ')} background-color: black"></span>`;
+		} else {
+			output += `<span${attr2String(attributes)} component="${component || 'avatar/icon'}" style="${styles.join(' ')} background-color: ${userObj['icon:bgColor']}">${userObj['icon:text']}</span>`;
+		}
 		return output;
 	}
 

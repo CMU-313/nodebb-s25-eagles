@@ -33,7 +33,7 @@ get:
                             slug:
                               type: string
                             anonymous:
-                              type: string
+                              type: number
                             teaserPid:
                               type: number
                               nullable: true

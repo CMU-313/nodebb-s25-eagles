@@ -76,7 +76,7 @@ TopicObject:
             banned_until_readable:
               type: string
             anonymous: 
-              type: boolean
+              type: number
           required:
             - uid
             - username
@@ -104,7 +104,7 @@ TopicObject:
               type: number
               description: A topic identifier
             anonymous:
-              type: boolean
+              type: number
               description: A topic field
             content:
               type: string
@@ -128,7 +128,7 @@ TopicObject:
                   nullable: true
                   type: string
                 anonymous:
-                  type: boolean
+                  type: number
                 icon:text:
                   type: string
                   description: A single-letter representation of a username. This is used in the
@@ -194,7 +194,7 @@ TopicObject:
         index:
           type: number
         anonymous:
-          type: boolean
+          type: number
       required:
         - tid
 TopicObjectSlim:

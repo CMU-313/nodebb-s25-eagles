@@ -34,6 +34,8 @@ const topicEvents = require('./topics/events');
 const privileges = require('./privileges');
 const routes = require('./routes');
 const auth = require('./routes/authentication');
+const userIndex = require('./user/index');
+const User = require('./user');
 
 const helpers = require('./helpers');
 
@@ -110,6 +112,11 @@ async function initializeNodeBB() {
 	await flags.init();
 	await analytics.init();
 	await topicEvents.init();
+	const userID = await userIndex.isChatBotAccountExist();
+	if (!userID) {
+		await User.create({ username: 'Romeo SmartBuddy', password: 'Vg7!pL3$xZ1@Qw0' });
+	}
+
 	if (nconf.get('runJobs')) {
 		await require('./widgets').moveMissingAreasToDrafts();
 	}

@@ -30,6 +30,12 @@ module.exports = function (SocketUser) {
 		if (status !== 'offline') {
 			userData.lastonline = Date.now();
 		}
+		if (status === 'anonymous'){
+			userData.anonymous = true;
+		}
+		else {
+			userData.anonymous = false;
+		}
 		await user.setUserFields(socket.uid, userData);
 		if (status !== 'offline') {
 			await user.updateOnlineUsers(socket.uid);

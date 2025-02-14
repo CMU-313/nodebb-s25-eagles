@@ -1,7 +1,10 @@
 {
 	"env": {
-		"mocha": true
+		"mocha": true,
+		"jest": true 
 	},
+	"extends": ["plugin:jest/recommended"],
+  	"plugins": ["jest"],
 	"rules": {
 		"no-unused-vars": "off"
 	}

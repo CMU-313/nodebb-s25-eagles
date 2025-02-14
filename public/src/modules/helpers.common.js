@@ -24,6 +24,7 @@ module.exports = function (utils, Benchpress, relative_path) {
 		renderDigestAvatar,
 		userAgentIcons,
 		buildAvatar,
+		buildHref,
 		increment,
 		generateWroteReplied,
 		generateRepliedTo,
@@ -326,6 +327,26 @@ module.exports = function (utils, Benchpress, relative_path) {
 			output += `<span${attr2String(attributes)} component="${component || 'avatar/icon'}" style="${styles.join(' ')} background-color: black"></span>`;
 		} else {
 			output += `<span${attr2String(attributes)} component="${component || 'avatar/icon'}" style="${styles.join(' ')} background-color: ${userObj['icon:bgColor']}">${userObj['icon:text']}</span>`;
+		}
+		return output;
+	}
+
+	function buildHref(userslug, path, anonymous) {
+		/**
+		 * userslug: URL-safe version of a user's username
+		 * path: path for the possible generated link
+		 * anonymous: special field for anonymous post/topics
+		 */
+
+		// Try to use root context if passed-in userObj is undefined
+		if (!userslug) {
+			userslug = this;
+		}
+		let output = '';
+		if ((userslug !== '') && (anonymous === '0')) {
+			output = output + path + '/user/' + userslug;
+		} else {
+			output = '#';
 		}
 		return output;
 	}

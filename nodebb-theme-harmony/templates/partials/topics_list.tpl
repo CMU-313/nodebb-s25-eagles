@@ -10,7 +10,7 @@
 
 		<div class="d-flex p-0 col-12 col-lg-7 gap-2 gap-lg-3 pe-1 align-items-start {{{ if config.theme.mobileTopicTeasers }}}mb-2 mb-lg-0{{{ end }}}">
 			<div class="flex-shrink-0 position-relative">
-				<a class="text-decoration-none" href="{{{ if ./user.userslug }}}{config.relative_path}/user/{./user.userslug}{{{ else }}}#{{{ end }}}">
+				<a class="text-decoration-none" href="{buildHref(./user.userslug, config.relative_path, topics.anonymous)}">
 					{buildAvatar(./user, "40px", true, "avatar avatar-tooltip", "", topics.anonymous)}
 				</a>
 				{{{ if showSelect }}}

@@ -7,9 +7,12 @@
 {{{ end }}}
 <div class="d-flex align-items-start gap-3">
 	<div class="bg-body d-none d-sm-block rounded-circle" style="outline: 2px solid var(--bs-body-bg);">
-		<a class="d-inline-block position-relative text-decoration-none" href="{{{ if ./user.userslug }}}{config.relative_path}/user/{./user.userslug}{{{ else }}}#{{{ end }}}" aria-label="[[aria:user-avatar-for, {./user.username}]]">
+		<a class="d-inline-block position-relative text-decoration-none" href="{buildHref(./user.userslug, config.relative_path, ./anonymous)}" aria-label="[[aria:user-avatar-for, {buildDisplayName(./user.username, ./anonymous)}]]">
 			{buildAvatar(posts.user, "48px", true, "", "user/picture", posts.anonymous)}
-			{{{ if !posts.anonymous }}}
+			{{{ if (./anonymous != "1") }}}
+				<span component="user/status" class="position-absolute translate-middle-y border border-white border-2 rounded-circle status {posts.user.status}"><span class="visually-hidden">[[global:{posts.user.status}]]</span></span>
+			{{{ end }}}
+			{{{ if !./anonymous }}}
 				<span component="user/status" class="position-absolute translate-middle-y border border-white border-2 rounded-circle status {posts.user.status}"><span class="visually-hidden">[[global:{posts.user.status}]]</span></span>
 			{{{ end }}}
 		</a>
@@ -26,7 +29,7 @@
 				</a>
 			</div>
 
-			<a class="fw-bold text-nowrap" href="{{{ if ./user.userslug }}}{config.relative_path}/user/{./user.userslug}{{{ else }}}#{{{ end }}}" data-username="{posts.user.username}" data-uid="{posts.user.uid}">{posts.user.displayname}</a>
+			<a class="fw-bold text-nowrap" href="{buildHref(./user.userslug, config.relative_path, ./anonymous)}" data-username="{buildDisplayName(posts.user.username, ./anonymous)}" data-uid="{posts.user.uid}">{buildDisplayName(posts.user.username, ./anonymous)}</a>
 
 			{{{ each posts.user.selectedGroups }}}
 			{{{ if posts.user.selectedGroups.slug }}}

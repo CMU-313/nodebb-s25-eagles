@@ -25,6 +25,7 @@ module.exports = function (utils, Benchpress, relative_path) {
 		userAgentIcons,
 		buildAvatar,
 		buildHref,
+		buildDisplayName,
 		increment,
 		generateWroteReplied,
 		generateRepliedTo,
@@ -339,6 +340,9 @@ module.exports = function (utils, Benchpress, relative_path) {
 		 */
 
 		// Try to use root context if passed-in userObj is undefined
+		// console.log("slug", userslug, typeof userslug);
+		// console.log("path", path, typeof path);
+		// console.log("anonymous", anonymous, typeof anonymous);
 		if (!userslug) {
 			userslug = this;
 		}
@@ -347,6 +351,24 @@ module.exports = function (utils, Benchpress, relative_path) {
 			output = output + path + '/user/' + userslug;
 		} else {
 			output = '#';
+		}
+		return output;
+	}
+
+	function buildDisplayName(username, anonymous) {
+		/**
+		 * userslug: URL-safe version of a user's username
+		 * anonymous: special field for anonymous post/topics
+		 */
+
+		if (!username) {
+			username = this;
+		}
+		let output = '';
+		if (anonymous === '0') {
+			output = username;
+		} else {
+			output = 'Some Anonymous Poster';
 		}
 		return output;
 	}

@@ -189,6 +189,15 @@ module.exports = function (Topics) {
 		await guestHandleValid(data);
 		data.content = String(data.content || '').trimEnd();
 
+		const posterAnonStatus = await user.getUserField(uid, 'anonymous');
+		const enableAnonPost = meta.config.enableAnonymousPosting;
+
+		let anonymous = 0;
+		if (enableAnonPost && posterAnonStatus) {
+			anonymous = 1;
+		}
+		data.anonymous = anonymous;
+
 		if (!data.fromQueue && !isAdmin) {
 			await user.isReadyToPost(uid, data.cid);
 			Topics.checkContent(data.content);

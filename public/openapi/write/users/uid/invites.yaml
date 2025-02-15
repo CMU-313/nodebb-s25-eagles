@@ -10,7 +10,7 @@ post:
       type: integer
     required: true
     description: uid of the user sending invitations
-    example: 1
+    example: 2
   requestBody:
     required: true
     content:

@@ -100,7 +100,7 @@ describe('API', async () => {
 				{
 					in: 'path',
 					name: 'uid',
-					example: 1,
+					example: 2,
 				},
 				{
 					in: 'path',
@@ -112,7 +112,7 @@ describe('API', async () => {
 				{
 					in: 'path',
 					name: 'uid',
-					example: 1,
+					example: 2,
 				},
 				{
 					in: 'path',
@@ -409,7 +409,6 @@ describe('API', async () => {
 			let method;
 			const headers = {};
 			const qs = {};
-
 			Object.keys(context).forEach((_method) => {
 				// Only test GET routes in the Read API
 				if (api.info.title === 'NodeBB Read API' && _method !== 'get') {
@@ -430,10 +429,13 @@ describe('API', async () => {
 				it('should have examples when parameters are present', () => {
 					let { parameters } = context[method];
 					let testPath = path;
+					console.log('path',path);
 
 					if (parameters) {
+						console.log('parameters',parameters);
 						// Use mock data if provided
 						parameters = mocks[method][path] || parameters;
+						console.log('after',parameters);
 
 						parameters.forEach((param) => {
 							assert(param.example !== null && param.example !== undefined, `${method.toUpperCase()} ${path} has parameters without examples`);
@@ -453,6 +455,7 @@ describe('API', async () => {
 					}
 
 					url = nconf.get('url') + (prefix || '') + testPath;
+					console.log('testPath',testPath);
 				});
 
 				it('should contain a valid request body (if present) with application/json or multipart/form-data type if POST/PUT/DELETE', () => {
@@ -494,6 +497,8 @@ describe('API', async () => {
 					try {
 						if (type === 'json') {
 							const searchParams = new URLSearchParams(qs);
+							console.log('searchParams',searchParams);
+							console.log('url', url);
 							result = await request[method](`${url}?${searchParams}`, {
 								jar: !unauthenticatedRoutes.includes(path) ? jar : undefined,
 								maxRedirect: 0,
@@ -501,8 +506,10 @@ describe('API', async () => {
 								headers: headers,
 								body: body,
 							});
+							// console.log("result", result);
 						} else if (type === 'form') {
 							result = await helpers.uploadFile(url, pathLib.join(__dirname, './files/test.png'), {}, jar, csrfToken);
+							// console.log("result", result);
 						}
 					} catch (e) {
 						assert(!e, `${method.toUpperCase()} ${path} errored with: ${e.message}`);
@@ -512,6 +519,16 @@ describe('API', async () => {
 				it('response status code should match one of the schema defined responses', () => {
 					// HACK: allow HTTP 418 I am a teapot, for now   👇
 					const { responses } = context[method];
+					// console.log(context);
+					// console.log(method);
+					// console.log(responses);
+					// try {
+					// 	console.log(responses.put.parameters);
+					// } catch (e) {
+					// 	console.log('nope');
+					// }
+					
+					// console.log(result.response.statusCode,'\n');
 					assert(
 						responses.hasOwnProperty('418') ||
 						Object.keys(responses).includes(String(result.response.statusCode)),

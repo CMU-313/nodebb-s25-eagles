@@ -9,7 +9,7 @@ delete:
         type: integer
       required: true
       description: uid of the user whose token you want to delete
-      example: 1
+      example: 2
     - in: path
       name: token
       schema:

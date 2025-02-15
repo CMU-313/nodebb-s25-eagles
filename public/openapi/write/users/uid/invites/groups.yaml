@@ -9,7 +9,7 @@ get:
         type: integer
       required: true
       description: uid of the user to make the query for
-      example: 1
+      example: 2
   responses:
     '200':
       description: A collection of group names returned

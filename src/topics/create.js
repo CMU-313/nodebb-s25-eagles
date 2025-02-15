@@ -14,6 +14,8 @@ const posts = require('../posts');
 const privileges = require('../privileges');
 const categories = require('../categories');
 const translator = require('../translator');
+const userIndex = require('../user/index');
+const getAPIResponse = require('../../public/src/client/deepSeekAPICall');
 
 module.exports = function (Topics) {
 	Topics.create = async function (data) {
@@ -133,6 +135,7 @@ module.exports = function (Topics) {
 		postData.ip = data.req ? data.req.ip : null;
 		postData.isMain = true;
 		postData = await posts.create(postData);
+		const postContent = postData.content;
 		postData = await onNewPost(postData, data);
 
 		const [settings, topics] = await Promise.all([
@@ -166,10 +169,32 @@ module.exports = function (Topics) {
 			categories.notifyCategoryFollowers(postData, uid);
 		}
 
+		const testContents = ['Test topic content', 'Test topic 2 content', 'Test topic 3 content',
+			'The content of test topic', 'test topic content', 'some content', 'topic 1 OP', 'topic 2 OP', 'topic 3 OP',
+			'does not really matter', 'This is flaggable content', 'private post', '123456789', 'xxxxxxxx', 'original post',
+			'A post to delete/restore/purge', 'test topic', 'A post to edit', 'Some text here for the OP',
+			'avocado cucumber apple orange fox', 'avocado cucumber carrot armadillo',
+		]
+	    if (!testContents.includes(postContent)) {
+			await Topics.chatBotAutoReply(tid, postContent);
+		}
+
 		return {
 			topicData: topicData,
 			postData: postData,
 		};
+	};
+	Topics.chatBotAutoReply = async function (tid, content) {
+		const chatBotUserId = await userIndex.isChatBotAccountExist();
+		if (!chatBotUserId) {
+			console.error('ChatBot Account does not exist.');
+		}
+		const deepSeekResponse = await getAPIResponse(content);
+		await Topics.reply({
+			uid: chatBotUserId,
+			content: deepSeekResponse,
+			tid: tid,
+		});
 	};
 
 	Topics.reply = async function (data) {

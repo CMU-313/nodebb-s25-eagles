@@ -30,7 +30,7 @@ describe('authentication', () => {
 		user.create({ username: 'regular', password: 'regularpwd', email: 'regular@nodebb.org' }, (err, uid) => {
 			assert.ifError(err);
 			regularUid = uid;
-			assert.strictEqual(uid, 1);
+			assert.strictEqual(uid, 2);
 			done();
 		});
 	});
@@ -39,7 +39,7 @@ describe('authentication', () => {
 		plugins.hooks.unregister('authentication-test', 'static:email.send');
 	});
 
-	it('should allow login with email for uid 1', async () => {
+	it('should allow login with email for uid 2', async () => {
 		const oldValue = meta.config.allowLoginWith;
 		meta.config.allowLoginWith = 'username-email';
 		const { response } = await helpers.loginUser('regular@nodebb.org', 'regularpwd');

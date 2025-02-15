@@ -113,6 +113,7 @@ async function initializeNodeBB() {
 	await analytics.init();
 	await topicEvents.init();
 	const userID = await userIndex.isChatBotAccountExist();
+	winston.info(userID);
 	if (!userID) {
 		await User.create({ username: 'Romeo SmartBuddy', password: 'Vg7!pL3$xZ1@Qw0' });
 	}

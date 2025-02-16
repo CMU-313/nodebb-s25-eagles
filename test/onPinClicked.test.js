@@ -3,49 +3,53 @@
 const { JSDOM } = require('jsdom');
 const { describe, test, expect, beforeEach } = require('@jest/globals');
 
-// Jest Test Cases
 describe('onPinClicked', () => {
 	let document;
 
-	// Setup a fresh DOM before each test
+	// ✅ Setup a fresh DOM before each test
 	beforeEach(() => {
 		const dom = new JSDOM(`
-			<div component="topic">
-				<div data-pid="1">Post 1</div>
-				<div data-pid="2">Post 2</div>
-				<div data-pid="3">Post 3</div>
-			</div>
+			<!DOCTYPE html>
+			<html>
+			<body>
+				<div component="topic">
+					<div data-pid="1">Post 1</div>
+					<div data-pid="2">Post 2</div>
+					<div data-pid="3">Post 3</div>
+				</div>
+			</body>
+			</html>
 		`);
 		document = dom.window.document;
 	});
 
-	// Function to get data attribute
-	function getDataAttribute(button, attribute) {
+	// ✅ Function to get data attribute
+	function getData(button, attribute) {
 		return button.getAttribute(attribute);
 	}
 
-	// The function we're testing (returns a Promise)
+	// ✅ The function we're testing (ensures proper behavior)
 	async function onPinClicked(button) {
-		const pid = getDataAttribute(button, 'data-pid');
+		const pid = getData(button, 'data-pid');
 		const container = document.querySelector('[component="topic"]');
 		const currentPost = container.querySelector(`[data-pid='${pid}']`);
+		const firstPost = container.firstElementChild; // Ensures firstPost is a valid element
 
-		if (currentPost && currentPost !== container.firstChild) {
-			container.insertBefore(currentPost, container.firstChild);
+		if (currentPost && firstPost && currentPost !== firstPost) {
+			container.insertBefore(currentPost, firstPost);
 		}
 
-		// Ensure async behavior completes correctly.
-		return Promise.resolve();
+		return Promise.resolve(); // Ensures async behavior
 	}
 
-	test('pins the last post to the top', async () => {
+	test('pins the selected post to the top', async () => {
 		const button = document.createElement('button');
 		button.setAttribute('data-pid', '3');
 
 		await onPinClicked(button);
 
 		const container = document.querySelector('[component="topic"]');
-		expect(container.children.length).toBe(3); // Ensures no elements were added/removed.
+		expect(container.children.length).toBe(3); // Ensures no elements were added/removed
 		expect(container.children[0].getAttribute('data-pid')).toBe('3');
 		expect(container.children[1].getAttribute('data-pid')).toBe('1');
 		expect(container.children[2].getAttribute('data-pid')).toBe('2');
@@ -66,7 +70,7 @@ describe('onPinClicked', () => {
 
 	test('handles non-existent post IDs gracefully', async () => {
 		const button = document.createElement('button');
-		button.setAttribute('data-pid', '999'); // Non-existent pid.
+		button.setAttribute('data-pid', '999'); // Non-existent pid
 
 		await onPinClicked(button);
 
@@ -78,7 +82,7 @@ describe('onPinClicked', () => {
 	});
 
 	test('does nothing when no data-pid attribute is provided', async () => {
-		const button = document.createElement('button'); // No `data-pid` set.
+		const button = document.createElement('button'); // No `data-pid` set
 
 		await onPinClicked(button);
 

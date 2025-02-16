@@ -1430,7 +1430,7 @@ describe('Controllers', () => {
 			assert(body);
 		});
 
-		it('should handle malformed uri ', async () => {
+		it('should handle malformed uri', async () => {
 			const { response, body } = await request.get(`${nconf.get('url')}/user/a%AFc`);
 			assert(body);
 			assert.equal(response.statusCode, 400);

@@ -1148,7 +1148,7 @@ describe('Groups', () => {
 			await apiGroups.join({ uid: adminUid }, { uid: testUid, slug: 'newgroup' });
 		});
 
-		it('it should fail with invalid data', async () => {
+		it('should fail with invalid data', async () => {
 			let err;
 			try {
 				await apiGroups.leave({ uid: adminUid }, null);
@@ -1158,7 +1158,7 @@ describe('Groups', () => {
 			assert.strictEqual(err.message, '[[error:invalid-data]]');
 		});
 
-		it('it should fail if admin tries to remove self', async () => {
+		it('should fail if admin tries to remove self', async () => {
 			let err;
 			try {
 				await apiGroups.leave({ uid: adminUid }, { uid: adminUid, slug: 'administrators' });

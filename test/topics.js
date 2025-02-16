@@ -1016,7 +1016,7 @@ describe('Topic\'s', () => {
 			assert.equal(originalBookmark, bookmark);
 		});
 
-		it('should update the user\'s bookmark ', async () => {
+		it('should update the user\'s bookmark', async () => {
 			await topics.createTopicFromPosts(
 				topic.userId,
 				'Fork test, no bookmark update',
@@ -2055,7 +2055,7 @@ describe('Topic\'s', () => {
 			});
 		});
 
-		it('should return empty array ', (done) => {
+		it('should return empty array', (done) => {
 			topics.getTeasersByTids([], 1, (err, teasers) => {
 				assert.ifError(err);
 				assert.equal(0, teasers.length);

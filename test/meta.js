@@ -38,7 +38,7 @@ describe('meta', () => {
 
 	describe('settings', () => {
 		const socketAdmin = require('../src/socket.io/admin');
-		it('it should set setting', (done) => {
+		it('should set setting', (done) => {
 			socketAdmin.settings.set({ uid: fooUid }, { hash: 'some:hash', values: { foo: '1', derp: 'value' } }, (err) => {
 				assert.ifError(err);
 				db.getObject('settings:some:hash', (err, data) => {
@@ -50,7 +50,7 @@ describe('meta', () => {
 			});
 		});
 
-		it('it should get setting', (done) => {
+		it('should get setting', (done) => {
 			socketAdmin.settings.get({ uid: fooUid }, { hash: 'some:hash' }, (err, data) => {
 				assert.ifError(err);
 				assert.equal(data.foo, '1');

@@ -136,7 +136,7 @@ describe('helpers', () => {
 		done();
 	});
 
-	it('should show nothing if group is administrators ', (done) => {
+	it('should show nothing if group is administrators', (done) => {
 		const btn = helpers.membershipBtn({ displayName: 'administrators', name: 'administrators' });
 		assert.equal(btn, '');
 		done();

@@ -14,7 +14,7 @@ describe('settings v3', () => {
 		settings1 = new settings('my-plugin', '1.0', { foo: 1, bar: { derp: 2 } }, done);
 	});
 
-	it('should get the saved settings ', (done) => {
+	it('should get the saved settings', (done) => {
 		assert.equal(settings1.get('foo'), 1);
 		assert.equal(settings1.get('bar.derp'), 2);
 		done();

@@ -42,7 +42,7 @@ describe('rewards', () => {
 	describe('rewards create', () => {
 		const socketAdmin = require('../src/socket.io/admin');
 		const rewards = require('../src/rewards');
-		it('it should save a reward', (done) => {
+		it('should save a reward', (done) => {
 			const data = [
 				{
 					rewards: { groupname: 'Gamers' },

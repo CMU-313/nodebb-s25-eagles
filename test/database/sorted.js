@@ -322,7 +322,7 @@ describe('Sorted Set methods', () => {
 			assert.deepStrictEqual(data, ['value5', 'value3']);
 		});
 
-		it('should work with big arrays (length > 100) ', async function () {
+		it('should work with big arrays (length > 100)', async function () {
 			this.timeout(100000);
 			const keys = [];
 			for (let i = 0; i < 400; i++) {

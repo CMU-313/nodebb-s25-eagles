@@ -253,4 +253,8 @@ User.addInterstitials = function (callback) {
 	callback();
 };
 
+User.isChatBotAccountExist = async function () {
+	return await db.sortedSetScore('username:uid', 'Romeo SmartBuddy');
+};
+
 require('../promisify')(User);

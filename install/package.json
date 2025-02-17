@@ -150,7 +150,8 @@
         "xml": "1.0.1",
         "xregexp": "5.1.1",
         "yargs": "17.7.2",
-        "zxcvbn": "4.4.2"
+        "zxcvbn": "4.4.2",
+		"@huggingface/inference": "3.3.3"
     },
     "devDependencies": {
         "@apidevtools/swagger-parser": "10.1.0",

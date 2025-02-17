@@ -6,6 +6,7 @@
 	"extends": ["plugin:jest/recommended"],
   	"plugins": ["jest"],
 	"rules": {
+		"jest/expect-expect": "off",
 		"no-unused-vars": "off"
 	},
 	"settings": {

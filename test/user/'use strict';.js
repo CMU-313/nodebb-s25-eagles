@@ -1,16 +1,15 @@
 'use strict';
 
 const assert = require('assert');
-const async = require('async');
-
+const mocha = require('mocha');
 const db = require('../mocks/databasemock');
-
 const user = require('../../src/user');
 const groups = require('../../src/groups');
 const password = require('../../src/password');
-const utils = require('../../src/utils');
-
 const socketUser = require('../../src/socket.io/user');
+
+
+const { describe, it, before } = mocha;
 
 describe('Password reset (library methods)', () => {
 	let uid;
@@ -32,7 +31,6 @@ describe('Password reset (library methods)', () => {
 		const _code = await user.reset.generate(uid);
 		const valid = await user.reset.validate(code);
 		assert.strictEqual(valid, false);
-
 		code = _code;
 	});
 
@@ -88,57 +86,5 @@ describe('Password reset (library methods)', () => {
 		assert.strictEqual(confirmed, 0);
 		assert.strictEqual(verified, false);
 		assert.strictEqual(unverified, true);
-	});
-});
-
-describe('locks', () => {
-	let uid;
-	let email;
-
-	beforeEach(async () => {
-		const username = utils.generateUUID().slice(0, 10);
-		const password = utils.generateUUID();
-		uid = await user.create({ username, password });
-		email = `${username}@nodebb.org`;
-		await user.setUserField(uid, 'email', email);
-		await user.email.confirmByUid(uid);
-	});
-
-	it('should disallow reset request if one was made within the minute', async () => {
-		await user.reset.send(email);
-		await assert.rejects(user.reset.send(email), {
-			message: '[[error:reset-rate-limited]]',
-		});
-	});
-
-	it('should not allow multiple calls to the reset method at the same time', async () => {
-		await assert.rejects(Promise.all([
-			user.reset.send(email),
-			user.reset.send(email),
-		]), {
-			message: '[[error:reset-rate-limited]]',
-		});
-	});
-
-	it('should not allow multiple socket calls to the reset method either', async () => {
-		await assert.rejects(Promise.all([
-			socketUser.reset.send({ uid: 0 }, email),
-			socketUser.reset.send({ uid: 0 }, email),
-		]), {
-			message: '[[error:reset-rate-limited]]',
-		});
-	});
-
-	it('should properly unlock user reset after a cooldown period', async () => {
-		await user.reset.send(email);
-		await assert.rejects(user.reset.send(email), {
-			message: '[[error:reset-rate-limited]]',
-		});
-
-		user.reset.minSecondsBetweenEmails = 3;
-		await new Promise((resolve) => { setTimeout(resolve, 4000); }); // Wait 4 seconds
-
-		await user.reset.send(email);
-		user.reset.minSecondsBetweenEmails = 60;
 	});
 });

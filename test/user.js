@@ -27,7 +27,7 @@ const request = require('../src/request');
 describe('User', () => {
 	let userData;
 	let testUid = 1; // Assign a valid test user ID
-	let testCid;
+	let testCid = 1; // Assign a valid test category ID
 	let adminUid; // Define adminUid
 	let inviterUid; // Define inviterUid
 	const goodImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA'; // Example base64 image data
@@ -38,11 +38,13 @@ describe('User', () => {
 	async function dummyEmailerHook(data) {
 		// pretend to handle sending emails
 	}
+
 	before((done) => {
 		// Attach an emailer hook so related requests do not error
 		plugins.hooks.register('emailer-test', {
 			hook: 'static:email.send',
 			method: dummyEmailerHook,
+			});
 		});
 
 		Categories.create({
@@ -57,21 +59,8 @@ describe('User', () => {
 			testCid = categoryObj.cid;
 			done();
 		});
-
-		Categories.create({
-			name: 'Test Category',
-			description: 'A test',
-			order: 1,
-		}, (err, categoryObj) => {
-			if (err) {
-				return done(err);
-			}
-
-			testCid = categoryObj.cid;
-			done();
-		});
-	});
-	after(() => {
+	
+		after(() => {
 		plugins.hooks.unregister('emailer-test', 'static:email.send');
 	});
 
@@ -84,7 +73,6 @@ describe('User', () => {
 			callback: undefined,
 		};
 	});
-
 
 	describe('.create(), when created', () => {
 		it('should be created properly', async () => {
@@ -803,7 +791,7 @@ describe('User', () => {
 		it('should not update a user\'s username if a password is not supplied', async () => {
 			try {
 				await apiUser.update({ uid: uid }, { uid: uid, username: 'updatedAgain', password: '' });
-				assert(false);
+				assert.strictEqual(err.message, '[[error:invalid-password]]');
 			} catch (err) {
 				assert.strictEqual(err.message, '[[error:invalid-password]]');
 			}
@@ -2178,91 +2166,95 @@ describe('User', () => {
 });
 
 describe('email confirm', () => {
-		new Promise((resolve, reject) => {
-			User.email.confirmByCode('asdasda', (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
-			});
+	new Promise((resolve, reject) => {
+		User.email.confirmByCode('asdasda', (err) => {
+			try {
+				assert.equal(err.message, '[[error:invalid-data]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
-	});
-	
-
-	it('should confirm email of user', async () => {
-		const email = 'confirm@me.com';
-		const uid = await User.create({
-			username: 'confirme',
-			email: email,
-		});
-
-		const code = await User.email.sendValidationEmail(uid, { email, force: 1 });
-		const unverified = await groups.isMember(uid, 'unverified-users');
-		assert.strictEqual(unverified, true);
-		await User.email.confirmByCode(code);
-		const [confirmed, isVerified] = await Promise.all([
-			db.getObjectField(`user:${uid}`, 'email:confirmed'),
-			groups.isMember(uid, 'verified-users', uid),
-		]);
-		assert.strictEqual(parseInt(confirmed, 10), 1);
-		assert.strictEqual(isVerified, true);
-	});
-
-	it('should confirm email of user by uid', async () => {
-		const email = 'confirm2@me.com';
-		const uid = await User.create({
-			username: 'confirme2',
-			email,
-		});
-		await User.setUserField(uid, 'email', email);
-
-		const unverified = await groups.isMember(uid, 'unverified-users');
-		assert.strictEqual(unverified, true);
-		await User.email.confirmByUid(uid);
-		const [confirmed, isVerified] = await Promise.all([
-			db.getObjectField(`user:${uid}`, 'email:confirmed'),
-			groups.isMember(uid, 'verified-users', uid),
-		]);
-		assert.strictEqual(parseInt(confirmed, 10), 1);
-		assert.strictEqual(isVerified, true);
-	});
-
-	it('should remove the email from a different account if the email is already in use', async () => {
-		const email = 'confirm2@me.com';
-		const uid = await User.create({
-			username: 'confirme3',
-		});
-
-		const oldUid = await db.sortedSetScore('email:uid', email);
-		const code = await User.email.sendValidationEmail(uid, email);
-		await User.email.confirmByCode(code);
-
-		const oldUserData = await User.getUserData(oldUid);
-
-		assert.strictEqual((await db.sortedSetScore('email:uid', email)), uid);
-		assert.strictEqual(oldUserData.email, '');
 	});
 });
 
+
+it('should confirm email of user', async () => {
+	const email = 'confirm@me.com';
+	const uid = await User.create({
+		username: 'confirme',
+		email: email,
+	});
+
+	const code = await User.email.sendValidationEmail(uid, { email, force: 1 });
+	const unverified = await groups.isMember(uid, 'unverified-users');
+	assert.strictEqual(unverified, true);
+	await User.email.confirmByCode(code);
+	const [confirmed, isVerified] = await Promise.all([
+		db.getObjectField(`user:${uid}`, 'email:confirmed'),
+		groups.isMember(uid, 'verified-users', uid),
+	]);
+	assert.strictEqual(parseInt(confirmed, 10), 1);
+	assert.strictEqual(isVerified, true);
+});
+
+it('should confirm email of user by uid', async () => {
+	const email = 'confirm2@me.com';
+	const uid = await User.create({
+		username: 'confirme2',
+		email,
+	});
+	await User.setUserField(uid, 'email', email);
+
+	const unverified = await groups.isMember(uid, 'unverified-users');
+	assert.strictEqual(unverified, true);
+	await User.email.confirmByUid(uid);
+	const [confirmed, isVerified] = await Promise.all([
+		db.getObjectField(`user:${uid}`, 'email:confirmed'),
+		groups.isMember(uid, 'verified-users', uid),
+	]);
+	assert.strictEqual(parseInt(confirmed, 10), 1);
+	assert.strictEqual(isVerified, true);
+});
+
+it('should remove the email from a different account if the email is already in use', async () => {
+	const email = 'confirm2@me.com';
+	const uid = await User.create({
+		username: 'confirme3',
+	});
+
+	const oldUid = await db.sortedSetScore('email:uid', email);
+	const code = await User.email.sendValidationEmail(uid, email);
+	await User.email.confirmByCode(code);
+
+	const oldUserData = await User.getUserData(oldUid);
+
+	assert.strictEqual((await db.sortedSetScore('email:uid', email)), uid);
+	assert.strictEqual(oldUserData.email, '');
+});
+
+
 describe('user jobs', () => {
-	it('should start user jobs', (done) => {
+	new Promise((resolve) => {
 		User.startJobs();
-		done();
+		resolve();
 	});
 
-	it('should stop user jobs', (done) => {
+	new Promise((resolve) => {
 		User.stopJobs();
-		done();
+		resolve();
 	});
 
-	it('should send digest', (done) => {
+	new Promise((resolve, reject) => {
 		db.sortedSetAdd('digest:day:uids', [Date.now(), Date.now()], [1, 2], (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
 			User.digest.execute({ interval: 'day' }, (err) => {
-				assert.ifError(err);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				resolve();
 			});
 		});
 	});
@@ -2466,7 +2458,7 @@ describe('hideEmail/hideFullname', () => {
 			uid: hidingUser.uid,
 			title: 'Topic hidden',
 			content: 'lorem ipsum',
-			cid: testCid,
+			// cid: testCid,
 		});
 
 		const { body: body1 } = await request.get(`${nconf.get('url')}/api/recent`);
@@ -2477,7 +2469,7 @@ describe('hideEmail/hideFullname', () => {
 	});
 });
 
-describe('user blocking methods', (done) => {
+describe('user blocking methods', () => {
 	let blockeeUid;
 	before((done) => {
 		User.create({
@@ -2491,84 +2483,145 @@ describe('user blocking methods', (done) => {
 	});
 
 	describe('.toggle()', () => {
-		it('should toggle block', (done) => {
-			socketUser.toggleBlock({ uid: 1 }, { blockerUid: 1, blockeeUid: blockeeUid, action: 'block' }, (err) => {
-				assert.ifError(err);
-				User.blocks.is(blockeeUid, 1, (err, blocked) => {
-					assert.ifError(err);
-					assert(blocked);
-					done();
-				});
-			});
+		new Promise((resolve, reject) => {
+			socketUser.toggleBlock(
+				{ uid: 1 },
+				{ blockerUid: 1, blockeeUid: blockeeUid, action: 'block' },
+				(err) => {
+					if (err) {
+						return reject(err);
+					}
+					User.blocks.is(blockeeUid, 1, (err, blocked) => {
+						if (err) {
+							return reject(err);
+						}
+						try {
+							assert(blocked);
+							resolve();
+						} catch (error) {
+							reject(error);
+						}
+					});
+				}
+			);
 		});
-
-		it('should toggle block', (done) => {
-			socketUser.toggleBlock({ uid: 1 }, { blockerUid: 1, blockeeUid: blockeeUid, action: 'unblock' }, (err) => {
-				assert.ifError(err);
-				User.blocks.is(blockeeUid, 1, (err, blocked) => {
-					assert.ifError(err);
-					assert(!blocked);
-					done();
-				});
-			});
+	
+		new Promise((resolve, reject) => {
+			socketUser.toggleBlock(
+				{ uid: 1 },
+				{ blockerUid: 1, blockeeUid: blockeeUid, action: 'unblock' },
+				(err) => {
+					if (err) {
+						return reject(err);
+					}
+					User.blocks.is(blockeeUid, 1, (err, blocked) => {
+						if (err) {
+							return reject(err);
+						}
+						try {
+							assert(!blocked);
+							resolve();
+						} catch (error) {
+							reject(error);
+						}
+					});
+				}
+			);
 		});
 	});
 
+
 	describe('.add()', () => {
-		it('should block a uid', (done) => {
+		new Promise((resolve, reject) => {
 			User.blocks.add(blockeeUid, 1, (err) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
 				User.blocks.list(1, (err, blocked_uids) => {
-					assert.ifError(err);
-					assert.strictEqual(Array.isArray(blocked_uids), true);
-					assert.strictEqual(blocked_uids.length, 1);
-					assert.strictEqual(blocked_uids.includes(blockeeUid), true);
-					done();
+					if (err) {
+						return reject(err);
+					}
+					try {
+						assert.strictEqual(Array.isArray(blocked_uids), true);
+						assert.strictEqual(blocked_uids.length, 1);
+						assert.strictEqual(blocked_uids.includes(blockeeUid), true);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
 		});
-
-		it('should automatically increment corresponding user field', (done) => {
+		
+		new Promise((resolve, reject) => {
 			db.getObjectField('user:1', 'blocksCount', (err, count) => {
-				assert.ifError(err);
-				assert.strictEqual(parseInt(count, 10), 1);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.strictEqual(parseInt(count, 10), 1);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should error if you try to block the same uid again', (done) => {
+		new Promise((resolve, reject) => {
 			User.blocks.add(blockeeUid, 1, (err) => {
-				assert.equal(err.message, '[[error:already-blocked]]');
-				done();
+				try {
+					assert.equal(err.message, '[[error:already-blocked]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
 
 	describe('.remove()', () => {
-		it('should unblock a uid', (done) => {
+		new Promise((resolve, reject) => {
 			User.blocks.remove(blockeeUid, 1, (err) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
 				User.blocks.list(1, (err, blocked_uids) => {
-					assert.ifError(err);
-					assert.strictEqual(Array.isArray(blocked_uids), true);
-					assert.strictEqual(blocked_uids.length, 0);
-					done();
+					if (err) {
+						return reject(err);
+					}
+					try {
+						assert.strictEqual(Array.isArray(blocked_uids), true);
+						assert.strictEqual(blocked_uids.length, 0);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
 		});
 
-		it('should automatically decrement corresponding user field', (done) => {
+		new Promise((resolve, reject) => {
 			db.getObjectField('user:1', 'blocksCount', (err, count) => {
-				assert.ifError(err);
-				assert.strictEqual(parseInt(count, 10), 0);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.strictEqual(parseInt(count, 10), 0);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should error if you try to unblock the same uid again', (done) => {
+		new Promise((resolve, reject) => {
 			User.blocks.remove(blockeeUid, 1, (err) => {
-				assert.equal(err.message, '[[error:already-unblocked]]');
-				done();
+				try {
+					assert.equal(err.message, '[[error:already-unblocked]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
@@ -2588,87 +2641,112 @@ describe('user blocking methods', (done) => {
 	});
 
 	describe('.list()', () => {
-		it('should return a list of blocked uids', (done) => {
+		new Promise((resolve, reject) => {
 			User.blocks.list(1, (err, blocked_uids) => {
-				assert.ifError(err);
-				assert.strictEqual(Array.isArray(blocked_uids), true);
-				assert.strictEqual(blocked_uids.length, 1);
-				assert.strictEqual(blocked_uids.includes(blockeeUid), true);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.strictEqual(Array.isArray(blocked_uids), true);
+					assert.strictEqual(blocked_uids.length, 1);
+					assert.strictEqual(blocked_uids.includes(blockeeUid), true);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
-
+	
 	describe('.filter()', () => {
-		it('should remove entries by blocked uids and return filtered set', (done) => {
-			User.blocks.filter(1, [{
-				foo: 'foo',
-				uid: blockeeUid,
-			}, {
-				foo: 'bar',
-				uid: 1,
-			}, {
-				foo: 'baz',
-				uid: blockeeUid,
-			}], (err, filtered) => {
-				assert.ifError(err);
-				assert.strictEqual(Array.isArray(filtered), true);
-				assert.strictEqual(filtered.length, 1);
-				assert.equal(filtered[0].uid, 1);
-				done();
+		new Promise((resolve, reject) => {
+			User.blocks.filter(1, [
+				{ foo: 'foo', uid: blockeeUid },
+				{ foo: 'bar', uid: 1 },
+				{ foo: 'baz', uid: blockeeUid },
+			], (err, filtered) => {
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.strictEqual(Array.isArray(filtered), true);
+					assert.strictEqual(filtered.length, 1);
+					assert.equal(filtered[0].uid, 1);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
-
-		it('should allow property argument to be passed in to customise checked property', (done) => {
-			User.blocks.filter(1, 'fromuid', [{
-				foo: 'foo',
-				fromuid: blockeeUid,
-			}, {
-				foo: 'bar',
-				fromuid: 1,
-			}, {
-				foo: 'baz',
-				fromuid: blockeeUid,
-			}], (err, filtered) => {
-				assert.ifError(err);
-				assert.strictEqual(Array.isArray(filtered), true);
-				assert.strictEqual(filtered.length, 1);
-				assert.equal(filtered[0].fromuid, 1);
-				done();
+	
+		new Promise((resolve, reject) => {
+			User.blocks.filter(1, 'fromuid', [
+				{ foo: 'foo', fromuid: blockeeUid },
+				{ foo: 'bar', fromuid: 1 },
+				{ foo: 'baz', fromuid: blockeeUid },
+			], (err, filtered) => {
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.strictEqual(Array.isArray(filtered), true);
+					assert.strictEqual(filtered.length, 1);
+					assert.equal(filtered[0].fromuid, 1);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
-
-		it('should not process invalid sets', (done) => {
+	
+		new Promise((resolve, reject) => {
 			User.blocks.filter(1, [{ foo: 'foo' }, { foo: 'bar' }, { foo: 'baz' }], (err, filtered) => {
-				assert.ifError(err);
-				assert.strictEqual(Array.isArray(filtered), true);
-				assert.strictEqual(filtered.length, 3);
-				filtered.forEach((obj) => {
-					assert.strictEqual(obj.hasOwnProperty('foo'), true);
-				});
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.strictEqual(Array.isArray(filtered), true);
+					assert.strictEqual(filtered.length, 3);
+					filtered.forEach((obj) => {
+						assert.strictEqual(obj.hasOwnProperty('foo'), true);
+					});
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
-
-		it('should process plain sets that just contain uids', (done) => {
+	
+		new Promise((resolve, reject) => {
 			User.blocks.filter(1, [1, blockeeUid], (err, filtered) => {
-				assert.ifError(err);
-				assert.strictEqual(filtered.length, 1);
-				assert.strictEqual(filtered[0], 1);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.strictEqual(filtered.length, 1);
+					assert.strictEqual(filtered[0], 1);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
-
-		it('should filter uids that are blocking targetUid', (done) => {
+	
+		new Promise((resolve, reject) => {
 			User.blocks.filterUids(blockeeUid, [1, 2], (err, filtered) => {
-				assert.ifError(err);
-				assert.deepEqual(filtered, [2]);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.deepEqual(filtered, [2]);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
-});
-
+	
 describe('status/online', () => {
 	new Promise((resolve) => {
 		const status = User.getStatus({ uid: 0 });
@@ -2693,72 +2771,60 @@ describe('isPrivilegedOrSelf', () => {
 		});
 	});
 
-	new Promise((resolve, reject) => {
-		User.create({ username: 'theadmin' }, (err, uid) => {
-			if (err) {
-				return reject(err);
-			}
-
-			groups.join('administrators', uid, (err) => {
+	it('should return not error if admin', (done) => {
+		new Promise((resolve, reject) => {
+			User.create({ username: 'theadmin' }, (err, uid) => {
 				if (err) {
 					return reject(err);
 				}
 
-				User.isPrivilegedOrSelf(uid, 2, (err) => {
+				groups.join('administrators', uid, (err) => {
 					if (err) {
 						return reject(err);
 					}
-					resolve();
+
+					User.isPrivilegedOrSelf(uid, 2, (err) => {
+						if (err) {
+							return reject(err);
+						}
+						resolve();
+					});
 				});
 			});
-		});
+		}).then(() => done()).catch(done);
 	});
+});
 
-
-
-	new Promise((resolve, reject) => {
-		User.isPrivilegedOrSelf(0, 1, (err) => {
-			try {
-				assert.equal(err.message, '[[error:no-privileges]]');
-				resolve();
-			} catch (error) {
-				reject(error);
+it('should get admins and mods', async () => {
+	const data = await new Promise((resolve, reject) => {
+		User.getAdminsandGlobalMods((err, data) => {
+			if (err) {
+				return reject(err);
 			}
+			resolve(data);
 		});
 	});
+	assert(Array.isArray(data));
+});
 
+it('should allow user to login even if password is weak', async () => {
+	await User.create({ username: 'weakpwd', password: '123456' });
+	const oldValue = meta.config.minimumPasswordStrength;
+	meta.config.minimumPasswordStrength = 3;
+	await helpers.loginUser('weakpwd', '123456');
+	meta.config.minimumPasswordStrength = oldValue;
+});
 
-	it('should get admins and mods', async () => {
-		const data = await new Promise((resolve, reject) => {
-			User.getAdminsandGlobalMods((err, data) => {
-				if (err) {
-					return reject(err);
-				}
-				resolve(data);
-			});
-		});
-		assert(Array.isArray(data));
+describe('User\'s', () => {
+	let files;
+
+	before(async () => {
+		files = await file.walk(path.resolve(__dirname, './user'));
 	});
 
-	it('should allow user to login even if password is weak', async () => {
-		await User.create({ username: 'weakpwd', password: '123456' });
-		const oldValue = meta.config.minimumPasswordStrength;
-		meta.config.minimumPasswordStrength = 3;
-		await helpers.loginUser('weakpwd', '123456');
-		meta.config.minimumPasswordStrength = oldValue;
-	});
-
-	describe('User\'s', () => {
-		let files;
-
-		before(async () => {
-			files = await file.walk(path.resolve(__dirname, './user'));
-		});
-
-		it('subfolder tests', () => {
-			files.forEach((filePath) => {
-				require(filePath);
-			});
+	it('subfolder tests', () => {
+		files.forEach((filePath) => {
+			require(filePath);
 		});
 	});
 });

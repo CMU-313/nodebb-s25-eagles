@@ -161,7 +161,10 @@ module.exports = function (Topics) {
 			categories.notifyCategoryFollowers(postData, uid);
 		}
 
-		if (!testContents.includes(postContent) && !postContent.includes('Some text here for the OP')) {
+		if (!testContents.includes(postContent) && !postContent.includes('Some text here for the OP') &&
+			!postContent.includes('here is an image') && !postContent.includes('these images:') &&
+			!postContent.includes('just abracadabra:') && !postContent.includes('this image is not an orphan:') &&
+			!postContent.includes('[abcdef]') && !postContent.includes('[an upload]')) {
 			if (postContent.length !== 36 && !(postContent[8] === '-' && postContent[13] === '-' && postContent[18] === '-' && postContent[23] === '-')) {
 				const userID = await userIndex.isChatBotAccountExist();
 				if (!userID) {

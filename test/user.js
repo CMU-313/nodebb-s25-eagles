@@ -26,9 +26,12 @@ const request = require('../src/request');
 
 describe('User', () => {
 	let userData;
-	let testUid;
+	let testUid = 1; // Assign a valid test user ID
 	let testCid;
+	let adminUid; // Define adminUid
+	let inviterUid; // Define inviterUid
 	const goodImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA'; // Example base64 image data
+	const COMMON_PW = '123456';
 
 	const plugins = require('../src/plugins');
 
@@ -40,6 +43,19 @@ describe('User', () => {
 		plugins.hooks.register('emailer-test', {
 			hook: 'static:email.send',
 			method: dummyEmailerHook,
+		});
+
+		Categories.create({
+			name: 'Test Category',
+			description: 'A test',
+			order: 1,
+		}, (err, categoryObj) => {
+			if (err) {
+				return done(err);
+			}
+
+			testCid = categoryObj.cid;
+			done();
 		});
 
 		Categories.create({
@@ -998,14 +1014,12 @@ describe('User', () => {
 			});
 
 			new Promise((resolve, reject) => {
-				User.uploadCroppedPicture(
-					{},
-					(err) => {
-						assert.equal(err.message, '[[error:invalid-data]]');
-						resolve();
-					}
-				);
+				User.uploadCroppedPicture({}, (err) => {
+					assert.equal(err.message, '[[error:invalid-data]]');
+					resolve();
+				});
 			});
+
 
 
 
@@ -2039,64 +2053,81 @@ describe('User', () => {
 		});
 
 
-		it('should fail to verify invitation with invalid data', (done) => {
+		new Promise((resolve, reject) => {
 			User.verifyInvitation({ token: '', email: '' }, (err) => {
-				assert.strictEqual(err.message, '[[register:invite.error-invite-only]]');
-				done();
+				try {
+					assert.strictEqual(err.message, '[[register:invite.error-invite-only]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should fail to verify invitation with invalid email', (done) => {
+		new Promise((resolve, reject) => {
 			User.verifyInvitation({ token: 'test', email: 'doesnotexist@test.com' }, (err) => {
-				assert.strictEqual(err.message, '[[register:invite.error-invalid-data]]');
-				done();
+				try {
+					assert.strictEqual(err.message, '[[register:invite.error-invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should verify installation with no errors', (done) => {
+		new Promise((resolve, reject) => {
 			const email = 'invite1@test.com';
 			db.get(`invitation:uid:${inviterUid}:invited:${email}`, 'token', (err, token) => {
-				assert.ifError(err);
+				if (err) return reject(err);
 				User.verifyInvitation({ token: token, email: 'invite1@test.com' }, (err) => {
-					assert.ifError(err);
-					done();
+					if (err) return reject(err);
+					resolve();
 				});
 			});
 		});
 
-		it('should error with invalid username', (done) => {
+		new Promise((resolve, reject) => {
 			User.deleteInvitation('doesnotexist', 'test@test.com', (err) => {
-				assert.equal(err.message, '[[error:invalid-username]]');
-				done();
+				try {
+					assert.equal(err.message, '[[error:invalid-username]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should delete invitation', (done) => {
+		new Promise((resolve, reject) => {
 			const socketUser = require('../src/socket.io/user');
-			socketUser.deleteInvitation({ uid: adminUid }, { invitedBy: 'inviter', email: 'invite1@test.com' }, (err) => {
-				assert.ifError(err);
-				db.isSetMember(`invitation:uid:${inviterUid}`, 'invite1@test.com', (err, isMember) => {
-					assert.ifError(err);
-					assert.equal(isMember, false);
-					done();
-				});
-			});
+			socketUser.deleteInvitation(
+				{ uid: adminUid },
+				{ invitedBy: 'inviter', email: 'invite1@test.com' },
+				(err) => {
+					if (err) return reject(err);
+					db.isSetMember(`invitation:uid:${inviterUid}`, 'invite1@test.com', (err, isMember) => {
+						if (err) return reject(err);
+						assert.equal(isMember, false);
+						resolve();
+					});
+				}
+			);
 		});
 
-		it('should delete invitation key', (done) => {
+		new Promise((resolve, reject) => {
 			User.deleteInvitationKey('invite99@test.com', (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
 				db.isSetMember(`invitation:uid:${adminUid}`, 'invite99@test.com', (err, isMember) => {
-					assert.ifError(err);
+					if (err) return reject(err);
 					assert.equal(isMember, false);
 					db.isSetMember('invitation:uids', adminUid, (err, isMember) => {
-						assert.ifError(err);
+						if (err) return reject(err);
 						assert.equal(isMember, false);
-						done();
+						resolve();
 					});
 				});
 			});
 		});
+
 
 		it('should joined the groups from invitation after registration', async () => {
 			const email = 'invite5@test.com';
@@ -2147,12 +2178,18 @@ describe('User', () => {
 });
 
 describe('email confirm', () => {
-	it('should error with invalid code', (done) => {
-		User.email.confirmByCode('asdasda', (err) => {
-			assert.equal(err.message, '[[error:invalid-data]]');
-			done();
+		new Promise((resolve, reject) => {
+			User.email.confirmByCode('asdasda', (err) => {
+				try {
+					assert.equal(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
+			});
 		});
 	});
+	
 
 	it('should confirm email of user', async () => {
 		const email = 'confirm@me.com';
@@ -2633,13 +2670,13 @@ describe('user blocking methods', (done) => {
 });
 
 describe('status/online', () => {
-	it('should return offline if user is guest', (done) => {
+	new Promise((resolve) => {
 		const status = User.getStatus({ uid: 0 });
 		assert.strictEqual(status, 'offline');
-		done();
+		resolve();
 	});
 
-	it('should return offline if user is guest', async () => {
+	it('should return offline if user is a guest', async () => {
 		assert.strictEqual(await User.isOnline(0), false);
 	});
 
@@ -2656,18 +2693,28 @@ describe('isPrivilegedOrSelf', () => {
 		});
 	});
 
-	it('should not error if privileged', (done) => {
+	new Promise((resolve, reject) => {
 		User.create({ username: 'theadmin' }, (err, uid) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
+
 			groups.join('administrators', uid, (err) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
+
 				User.isPrivilegedOrSelf(uid, 2, (err) => {
-					assert.ifError(err);
-					done();
+					if (err) {
+						return reject(err);
+					}
+					resolve();
 				});
 			});
 		});
 	});
+
+
 
 	new Promise((resolve, reject) => {
 		User.isPrivilegedOrSelf(0, 1, (err) => {

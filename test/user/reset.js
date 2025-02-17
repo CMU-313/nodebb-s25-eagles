@@ -1,5 +1,6 @@
 'use strict';
 
+/* eslint-disable jest/expect-expect */
 const assert = require('assert');
 const async = require('async');
 
@@ -62,6 +63,8 @@ describe('Password reset (library methods)', () => {
 		const match = await password.compare('newpassword', storedPassword, true);
 		assert(match);
 		assert.strictEqual(userData['email:confirmed'], 1);
+		assert(userData);
+		assert(storedPassword);
 	});
 
 	it('.should error if same password is used for reset', async () => {

@@ -28,6 +28,7 @@ describe('User', () => {
 	let userData;
 	let testUid;
 	let testCid;
+	const goodImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA'; // Example base64 image data
 
 	const plugins = require('../src/plugins');
 
@@ -1461,662 +1462,440 @@ describe('User', () => {
 				});
 			});
 		});
+	});
 
-		describe('socket methods', () => {
-			const socketUser = require('../src/socket.io/user');
-			let delUid;
+	describe('socket methods', () => {
+		const socketUser = require('../src/socket.io/user');
+		let delUid;
 
-			new Promise((resolve, reject) => {
-				meta.userOrGroupExists(null, (err) => {
-					try {
-						assert.equal(err.message, '[[error:invalid-data]]');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
-				});
-			});
-
-
-			it('should return true/false if user/group exists or not', async () => {
-				assert.strictEqual(await meta.userOrGroupExists('registered-users'), true);
-				assert.strictEqual(await meta.userOrGroupExists('John Smith'), true);
-				assert.strictEqual(await meta.userOrGroupExists('doesnot exist'), false);
-				assert.deepStrictEqual(await meta.userOrGroupExists(['doesnot exist', 'nope not here']), [false, false]);
-				assert.deepStrictEqual(await meta.userOrGroupExists(['doesnot exist', 'John Smith']), [false, true]);
-				assert.deepStrictEqual(await meta.userOrGroupExists(['administrators', 'John Smith']), [true, true]);
-
-				await assert.rejects(
-					meta.userOrGroupExists(['', undefined]),
-					{ message: '[[error:invalid-data]]' },
-				);
-			});
-
-			it('should delete user', async () => {
-				delUid = await User.create({ username: 'willbedeleted' });
-
-				// Upload some avatars and covers before deleting
-				meta.config['profile:keepAllUserImages'] = 1;
-				let result = await socketUser.uploadCroppedPicture({ uid: delUid }, { uid: delUid, imageData: goodImage });
-				assert(result.url);
-				result = await socketUser.uploadCroppedPicture({ uid: delUid }, { uid: delUid, imageData: goodImage });
-				assert(result.url);
-
-				const position = '50.0301% 19.2464%';
-				result = await socketUser.updateCover({ uid: delUid }, { uid: delUid, imageData: goodImage, position: position });
-				assert(result.url);
-				result = await socketUser.updateCover({ uid: delUid }, { uid: delUid, imageData: goodImage, position: position });
-				assert(result.url);
-				meta.config['profile:keepAllUserImages'] = 0;
-
-				await apiUser.deleteAccount({ uid: delUid }, { uid: delUid });
-				const exists = await meta.userOrGroupExists('willbedeleted');
-				assert(!exists);
-			});
-
-			it('should clean profile images after account deletion', () => {
-				const allProfileFiles = fs.readdirSync(path.join(nconf.get('upload_path'), 'profile'));
-				const deletedUserImages = allProfileFiles.filter(
-					f => f.startsWith(`${delUid}-profilecover`) || f.startsWith(`${delUid}-profileavatar`)
-				);
-				assert.strictEqual(deletedUserImages.length, 0);
-			});
-
-			it('should fail to delete user with wrong password', async () => {
-				const uid = await User.create({ username: 'willbedeletedpwd', password: '123456' });
+		new Promise((resolve, reject) => {
+			meta.userOrGroupExists(null, (err) => {
 				try {
-					await apiUser.deleteAccount({ uid: uid }, { uid: uid, password: '654321' });
-					assert(false);
-				} catch (err) {
-					assert.strictEqual(err.message, '[[error:invalid-password]]');
+					assert.equal(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
 				}
 			});
+		});
 
-			it('should delete user with correct password', async () => {
-				const uid = await User.create({ username: 'willbedeletedcorrectpwd', password: '123456' });
-				await apiUser.deleteAccount({ uid: uid }, { uid: uid, password: '123456' });
-				const exists = await User.exists(uid);
-				assert(!exists);
-			});
 
-			it('should fail to delete user if account deletion is not allowed', async () => {
-				const oldValue = meta.config.allowAccountDelete;
-				meta.config.allowAccountDelete = 0;
-				const uid = await User.create({ username: 'tobedeleted' });
-				try {
-					await apiUser.deleteAccount({ uid: uid }, { uid: uid });
-					assert(false);
-				} catch (err) {
-					assert.strictEqual(err.message, '[[error:account-deletion-disabled]]');
-				}
-				meta.config.allowAccountDelete = oldValue;
-			});
+		it('should return true/false if user/group exists or not', async () => {
+			assert.strictEqual(await meta.userOrGroupExists('registered-users'), true);
+			assert.strictEqual(await meta.userOrGroupExists('John Smith'), true);
+			assert.strictEqual(await meta.userOrGroupExists('doesnot exist'), false);
+			assert.deepStrictEqual(await meta.userOrGroupExists(['doesnot exist', 'nope not here']), [false, false]);
+			assert.deepStrictEqual(await meta.userOrGroupExists(['doesnot exist', 'John Smith']), [false, true]);
+			assert.deepStrictEqual(await meta.userOrGroupExists(['administrators', 'John Smith']), [true, true]);
 
-			it('should send reset email', async () => {
-				await new Promise((resolve, reject) => {
-					socketUser.reset.send({ uid: 0 }, 'john@example.com', (err) => {
-						if (err) {
-							return reject(err);
-						}
-						resolve();
-					});
-				});
-			});
+			await assert.rejects(
+				meta.userOrGroupExists(['', undefined]),
+				{ message: '[[error:invalid-data]]' },
+			);
+		});
 
-			new Promise((resolve, reject) => {
-				socketUser.reset.send({ uid: 0 }, null, (err) => {
-					try {
-						assert.equal(err.message, '[[error:invalid-data]]');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
-				});
-			});
+		it('should delete user', async () => {
+			delUid = await User.create({ username: 'willbedeleted' });
 
-			new Promise((resolve, reject) => {
-				socketUser.reset.send({ uid: 0 }, 'doestnot@exist.com', (err) => {
+			// Upload some avatars and covers before deleting
+			meta.config['profile:keepAllUserImages'] = 1;
+			let result = await socketUser.uploadCroppedPicture({ uid: delUid }, { uid: delUid, imageData: goodImage });
+			assert(result.url);
+			result = await socketUser.uploadCroppedPicture({ uid: delUid }, { uid: delUid, imageData: goodImage });
+			assert(result.url);
+
+			const position = '50.0301% 19.2464%';
+			result = await socketUser.updateCover({ uid: delUid }, { uid: delUid, imageData: goodImage, position: position });
+			assert(result.url);
+			result = await socketUser.updateCover({ uid: delUid }, { uid: delUid, imageData: goodImage, position: position });
+			assert(result.url);
+			meta.config['profile:keepAllUserImages'] = 0;
+
+			await apiUser.deleteAccount({ uid: delUid }, { uid: delUid });
+			const exists = await meta.userOrGroupExists('willbedeleted');
+			assert(!exists);
+		});
+
+		it('should clean profile images after account deletion', () => {
+			const allProfileFiles = fs.readdirSync(path.join(nconf.get('upload_path'), 'profile'));
+			const deletedUserImages = allProfileFiles.filter(
+				f => f.startsWith(`${delUid}-profilecover`) || f.startsWith(`${delUid}-profileavatar`)
+			);
+			assert.strictEqual(deletedUserImages.length, 0);
+		});
+
+		it('should fail to delete user with wrong password', async () => {
+			const uid = await User.create({ username: 'willbedeletedpwd', password: '123456' });
+			try {
+				await apiUser.deleteAccount({ uid: uid }, { uid: uid, password: '654321' });
+				assert(false);
+			} catch (err) {
+				assert.strictEqual(err.message, '[[error:invalid-password]]');
+			}
+		});
+
+		it('should delete user with correct password', async () => {
+			const uid = await User.create({ username: 'willbedeletedcorrectpwd', password: '123456' });
+			await apiUser.deleteAccount({ uid: uid }, { uid: uid, password: '123456' });
+			const exists = await User.exists(uid);
+			assert(!exists);
+		});
+
+		it('should fail to delete user if account deletion is not allowed', async () => {
+			const oldValue = meta.config.allowAccountDelete;
+			meta.config.allowAccountDelete = 0;
+			const uid = await User.create({ username: 'tobedeleted' });
+			try {
+				await apiUser.deleteAccount({ uid: uid }, { uid: uid });
+				assert(false);
+			} catch (err) {
+				assert.strictEqual(err.message, '[[error:account-deletion-disabled]]');
+			}
+			meta.config.allowAccountDelete = oldValue;
+		});
+
+		it('should send reset email', async () => {
+			await new Promise((resolve, reject) => {
+				socketUser.reset.send({ uid: 0 }, 'john@example.com', (err) => {
 					if (err) {
-						reject(err);
-						return;
+						return reject(err);
 					}
 					resolve();
 				});
 			});
+		});
 
-			it('should commit reset', async () => {
-				const data = await db.getObject('reset:uid');
-				const code = Object.keys(data).find(code => parseInt(data[code], 10) === parseInt(testUid, 10));
-				await new Promise((resolve, reject) => {
-					socketUser.reset.commit({ uid: 0 }, { code: code, password: 'pwdchange' }, (err) => {
-						if (err) {
-							return reject(err);
-						}
-						resolve();
-					});
-				});
-			});
-
-			it('should save user settings', async () => {
-				const data = {
-					uid: testUid,
-					settings: {
-						bootswatchSkin: 'default',
-						homePageRoute: 'none',
-						homePageCustom: '',
-						openOutgoingLinksInNewTab: 0,
-						scrollToMyPost: 1,
-						userLang: 'en-GB',
-						usePagination: 1,
-						topicsPerPage: '10',
-						postsPerPage: '5',
-						showemail: 1,
-						showfullname: 1,
-						restrictChat: 0,
-						followTopicsOnCreate: 1,
-						followTopicsOnReply: 1,
-					},
-				};
-				await apiUser.updateSettings({ uid: testUid }, data);
-				const userSettings = await User.getSettings(testUid);
-				assert.strictEqual(userSettings.usePagination, true);
-			});
-
-			it('should properly escape homePageRoute', async () => {
-				const data = {
-					uid: testUid,
-					settings: {
-						bootswatchSkin: 'default',
-						homePageRoute: 'category/6/testing-ground',
-						homePageCustom: '',
-						openOutgoingLinksInNewTab: 0,
-						scrollToMyPost: 1,
-						userLang: 'en-GB',
-						usePagination: 1,
-						topicsPerPage: '10',
-						postsPerPage: '5',
-						showemail: 1,
-						showfullname: 1,
-						restrictChat: 0,
-						followTopicsOnCreate: 1,
-						followTopicsOnReply: 1,
-					},
-				};
-				await apiUser.updateSettings({ uid: testUid }, data);
-				const userSettings = await User.getSettings(testUid);
-				assert.strictEqual(userSettings.homePageRoute, 'category/6/testing-ground');
-			});
-
-
-			it('should error if language is invalid', async () => {
-				const data = {
-					uid: testUid,
-					settings: {
-						userLang: '<invalid-string>',
-						topicsPerPage: '10',
-						postsPerPage: '5',
-					},
-				};
+		new Promise((resolve, reject) => {
+			socketUser.reset.send({ uid: 0 }, null, (err) => {
 				try {
-					await apiUser.updateSettings({ uid: testUid }, data);
-					assert(false);
-				} catch (err) {
-					assert.equal(err.message, '[[error:invalid-language]]');
+					assert.equal(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
 				}
 			});
+		});
 
-			it('should set moderation note', async () => {
-				const adminUid = await User.create({ username: 'noteadmin' });
-				await groups.join('administrators', adminUid);
-				await socketUser.setModerationNote({ uid: adminUid }, { uid: testUid, note: 'this is a test user' });
-				await setTimeout(50);
-				await socketUser.setModerationNote({ uid: adminUid }, { uid: testUid, note: '<svg/onload=alert(document.location);//' });
-				const notes = await User.getModerationNotes(testUid, 0, -1);
-				assert.equal(notes[0].note, '');
-				assert.equal(notes[0].uid, adminUid);
-				assert.equal(notes[1].note, 'this is a test user');
-				assert(notes[0].timestamp);
-			});
-
-			it('should get unread count 0 for guest', async () => {
-				const count = await socketUser.getUnreadCount({ uid: 0 });
-				assert.strictEqual(count, 0);
-			});
-
-			it('should get unread count for user', async () => {
-				const count = await socketUser.getUnreadCount({ uid: testUid });
-				assert.strictEqual(count, 4);
-			});
-
-			it('should get unread chat count 0 for guest', async () => {
-				const count = await socketUser.getUnreadChatCount({ uid: 0 });
-				assert.strictEqual(count, 0);
-			});
-
-			it('should get unread chat count for user', async () => {
-				const count = await socketUser.getUnreadChatCount({ uid: testUid });
-				assert.strictEqual(count, 0);
-			});
-
-			it('should get unread counts 0 for guest', async () => {
-				const counts = await socketUser.getUnreadCounts({ uid: 0 });
-				assert.deepStrictEqual(counts, {});
-			});
-
-			it('should get unread counts for user', async () => {
-				const counts = await socketUser.getUnreadCounts({ uid: testUid });
-				assert.deepStrictEqual(counts, {
-					unreadChatCount: 0,
-					unreadCounts: {
-						'': 4,
-						new: 4,
-						unreplied: 4,
-						watched: 0,
-					},
-					unreadNewTopicCount: 4,
-					unreadNotificationCount: 0,
-					unreadTopicCount: 4,
-					unreadUnrepliedTopicCount: 4,
-					unreadWatchedTopicCount: 0,
-				});
-			});
-
-			it('should get user data by uid', async () => {
-				const userData = await socketUser.getUserByUID({ uid: testUid }, testUid);
-				assert.strictEqual(userData.uid, testUid);
-			});
-
-			it('should get user data by username', async () => {
-				const userData = await socketUser.getUserByUsername({ uid: testUid }, 'John Smith');
-				assert.strictEqual(userData.uid, testUid);
-			});
-
-			it('should get user data by email', async () => {
-				const userData = await socketUser.getUserByEmail({ uid: testUid }, 'john@example.com');
-				assert.strictEqual(userData.uid, testUid);
-			});
-
-			it('should check/consent gdpr status', async () => {
-				const consent = await socketUser.gdpr.check({ uid: testUid }, { uid: testUid });
-				assert(!consent);
-				await socketUser.gdpr.consent({ uid: testUid });
-				const consentAfter = await socketUser.gdpr.check({ uid: testUid }, { uid: testUid });
-				assert(consentAfter);
+		new Promise((resolve, reject) => {
+			socketUser.reset.send({ uid: 0 }, 'doestnot@exist.com', (err) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve();
 			});
 		});
 
-		describe('approval queue', () => {
-			let oldRegistrationApprovalType;
-			let adminUid;
-			before((done) => {
-				oldRegistrationApprovalType = meta.config.registrationApprovalType;
-				meta.config.registrationApprovalType = 'admin-approval';
-				User.create({ username: 'admin', password: '123456' }, (err, uid) => {
-					assert.ifError(err);
-					adminUid = uid;
-					groups.join('administrators', uid, done);
+		it('should commit reset', async () => {
+			const data = await db.getObject('reset:uid');
+			const code = Object.keys(data).find(code => parseInt(data[code], 10) === parseInt(testUid, 10));
+			await new Promise((resolve, reject) => {
+				socketUser.reset.commit({ uid: 0 }, { code: code, password: 'pwdchange' }, (err) => {
+					if (err) {
+						return reject(err);
+					}
+					resolve();
 				});
-			});
-
-			after((done) => {
-				meta.config.registrationApprovalType = oldRegistrationApprovalType;
-				done();
-			});
-
-			it('should add user to approval queue', async () => {
-				await helpers.registerUser({
-					username: 'rejectme',
-					password: '123456',
-					'password-confirm': '123456',
-					email: '<script>alert("ok")<script>reject@me.com',
-					gdpr_consent: true,
-				});
-				const { jar } = await helpers.loginUser('admin', '123456');
-				const { body: { users } } = await request.get(`${nconf.get('url')}/api/admin/manage/registration`, { jar });
-				assert.equal(users[0].username, 'rejectme');
-				assert.equal(users[0].email, '&lt;script&gt;alert(&quot;ok&quot;)&lt;script&gt;reject@me.com');
-			});
-
-			it('should fail to add user to queue if username is taken', async () => {
-				const { body } = await helpers.registerUser({
-					username: 'rejectme',
-					password: '123456',
-					'password-confirm': '123456',
-					email: '<script>alert("ok")<script>reject@me.com',
-					gdpr_consent: true,
-				});
-				assert.equal(body, '[[error:username-taken]]');
-			});
-
-			it('should fail to add user to queue if email is taken', async () => {
-				const { body } = await helpers.registerUser({
-					username: 'rejectmenew',
-					password: '123456',
-					'password-confirm': '123456',
-					email: '<script>alert("ok")<script>reject@me.com',
-					gdpr_consent: true,
-				});
-				assert.equal(body, '[[error:email-taken]]');
-			});
-
-			it('should reject user registration', async () => {
-				await socketUser.rejectRegistration({ uid: adminUid }, { username: 'rejectme' });
-				const users = await User.getRegistrationQueue(0, -1);
-				assert.equal(users.length, 0);
-			});
-
-			it('should accept user registration', async () => {
-				await helpers.registerUser({
-					username: 'acceptme',
-					password: '123456',
-					'password-confirm': '123456',
-					email: 'accept@me.com',
-					gdpr_consent: true,
-				});
-
-				const uid = await socketUser.acceptRegistration({ uid: adminUid }, { username: 'acceptme' });
-				const exists = await User.exists(uid);
-				assert(exists);
-				const users = await User.getRegistrationQueue(0, -1);
-				assert.equal(users.length, 0);
-			});
-
-			it('should trim username and add user to registration queue', async () => {
-				await helpers.registerUser({
-					username: 'invalidname\r\n',
-					password: '123456',
-					'password-confirm': '123456',
-					email: 'invalidtest@test.com',
-					gdpr_consent: true,
-				});
-
-				const users = await db.getSortedSetRange('registration:queue', 0, -1);
-				assert.equal(users[0], 'invalidname');
 			});
 		});
 
-		describe('invites', () => {
-			let notAnInviterUid;
-			let inviterUid;
-			let adminUid;
+		it('should save user settings', async () => {
+			const data = {
+				uid: testUid,
+				settings: {
+					bootswatchSkin: 'default',
+					homePageRoute: 'none',
+					homePageCustom: '',
+					openOutgoingLinksInNewTab: 0,
+					scrollToMyPost: 1,
+					userLang: 'en-GB',
+					usePagination: 1,
+					topicsPerPage: '10',
+					postsPerPage: '5',
+					showemail: 1,
+					showfullname: 1,
+					restrictChat: 0,
+					followTopicsOnCreate: 1,
+					followTopicsOnReply: 1,
+				},
+			};
+			await apiUser.updateSettings({ uid: testUid }, data);
+			const userSettings = await User.getSettings(testUid);
+			assert.strictEqual(userSettings.usePagination, true);
+		});
 
-			const PUBLIC_GROUP = 'publicGroup';
-			const PRIVATE_GROUP = 'privateGroup';
-			const OWN_PRIVATE_GROUP = 'ownPrivateGroup';
-			const HIDDEN_GROUP = 'hiddenGroup';
+		it('should properly escape homePageRoute', async () => {
+			const data = {
+				uid: testUid,
+				settings: {
+					bootswatchSkin: 'default',
+					homePageRoute: 'category/6/testing-ground',
+					homePageCustom: '',
+					openOutgoingLinksInNewTab: 0,
+					scrollToMyPost: 1,
+					userLang: 'en-GB',
+					usePagination: 1,
+					topicsPerPage: '10',
+					postsPerPage: '5',
+					showemail: 1,
+					showfullname: 1,
+					restrictChat: 0,
+					followTopicsOnCreate: 1,
+					followTopicsOnReply: 1,
+				},
+			};
+			await apiUser.updateSettings({ uid: testUid }, data);
+			const userSettings = await User.getSettings(testUid);
+			assert.strictEqual(userSettings.homePageRoute, 'category/6/testing-ground');
+		});
 
-			const COMMON_PW = '123456';
+
+		it('should error if language is invalid', async () => {
+			const data = {
+				uid: testUid,
+				settings: {
+					userLang: '<invalid-string>',
+					topicsPerPage: '10',
+					postsPerPage: '5',
+				},
+			};
+			try {
+				await apiUser.updateSettings({ uid: testUid }, data);
+				assert(false);
+			} catch (err) {
+				assert.equal(err.message, '[[error:invalid-language]]');
+			}
+		});
+
+		it('should set moderation note', async () => {
+			const adminUid = await User.create({ username: 'noteadmin' });
+			await groups.join('administrators', adminUid);
+			await socketUser.setModerationNote({ uid: adminUid }, { uid: testUid, note: 'this is a test user' });
+			await setTimeout(50);
+			await socketUser.setModerationNote({ uid: adminUid }, { uid: testUid, note: '<svg/onload=alert(document.location);//' });
+			const notes = await User.getModerationNotes(testUid, 0, -1);
+			assert.equal(notes[0].note, '');
+			assert.equal(notes[0].uid, adminUid);
+			assert.equal(notes[1].note, 'this is a test user');
+			assert(notes[0].timestamp);
+		});
+
+		it('should get unread count 0 for guest', async () => {
+			const count = await socketUser.getUnreadCount({ uid: 0 });
+			assert.strictEqual(count, 0);
+		});
+
+		it('should get unread count for user', async () => {
+			const count = await socketUser.getUnreadCount({ uid: testUid });
+			assert.strictEqual(count, 4);
+		});
+
+		it('should get unread chat count 0 for guest', async () => {
+			const count = await socketUser.getUnreadChatCount({ uid: 0 });
+			assert.strictEqual(count, 0);
+		});
+
+		it('should get unread chat count for user', async () => {
+			const count = await socketUser.getUnreadChatCount({ uid: testUid });
+			assert.strictEqual(count, 0);
+		});
+
+		it('should get unread counts 0 for guest', async () => {
+			const counts = await socketUser.getUnreadCounts({ uid: 0 });
+			assert.deepStrictEqual(counts, {});
+		});
+
+		it('should get unread counts for user', async () => {
+			const counts = await socketUser.getUnreadCounts({ uid: testUid });
+			assert.deepStrictEqual(counts, {
+				unreadChatCount: 0,
+				unreadCounts: {
+					'': 4,
+					new: 4,
+					unreplied: 4,
+					watched: 0,
+				},
+				unreadNewTopicCount: 4,
+				unreadNotificationCount: 0,
+				unreadTopicCount: 4,
+				unreadUnrepliedTopicCount: 4,
+				unreadWatchedTopicCount: 0,
+			});
+		});
+
+		it('should get user data by uid', async () => {
+			const userData = await socketUser.getUserByUID({ uid: testUid }, testUid);
+			assert.strictEqual(userData.uid, testUid);
+		});
+
+		it('should get user data by username', async () => {
+			const userData = await socketUser.getUserByUsername({ uid: testUid }, 'John Smith');
+			assert.strictEqual(userData.uid, testUid);
+		});
+
+		it('should get user data by email', async () => {
+			const userData = await socketUser.getUserByEmail({ uid: testUid }, 'john@example.com');
+			assert.strictEqual(userData.uid, testUid);
+		});
+
+		it('should check/consent gdpr status', async () => {
+			const consent = await socketUser.gdpr.check({ uid: testUid }, { uid: testUid });
+			assert(!consent);
+			await socketUser.gdpr.consent({ uid: testUid });
+			const consentAfter = await socketUser.gdpr.check({ uid: testUid }, { uid: testUid });
+			assert(consentAfter);
+		});
+	});
+
+	describe('approval queue', () => {
+		let oldRegistrationApprovalType;
+		let adminUid;
+		before((done) => {
+			oldRegistrationApprovalType = meta.config.registrationApprovalType;
+			meta.config.registrationApprovalType = 'admin-approval';
+			User.create({ username: 'admin', password: '123456' }, (err, uid) => {
+				assert.ifError(err);
+				adminUid = uid;
+				groups.join('administrators', uid, done);
+			});
+		});
+
+		after((done) => {
+			meta.config.registrationApprovalType = oldRegistrationApprovalType;
+			done();
+		});
+
+		it('should add user to approval queue', async () => {
+			await helpers.registerUser({
+				username: 'rejectme',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+			});
+			const { jar } = await helpers.loginUser('admin', '123456');
+			const { body: { users } } = await request.get(`${nconf.get('url')}/api/admin/manage/registration`, { jar });
+			assert.equal(users[0].username, 'rejectme');
+			assert.equal(users[0].email, '&lt;script&gt;alert(&quot;ok&quot;)&lt;script&gt;reject@me.com');
+		});
+
+		it('should fail to add user to queue if username is taken', async () => {
+			const { body } = await helpers.registerUser({
+				username: 'rejectme',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+			});
+			assert.equal(body, '[[error:username-taken]]');
+		});
+
+		it('should fail to add user to queue if email is taken', async () => {
+			const { body } = await helpers.registerUser({
+				username: 'rejectmenew',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+			});
+			assert.equal(body, '[[error:email-taken]]');
+		});
+
+		it('should reject user registration', async () => {
+			await socketUser.rejectRegistration({ uid: adminUid }, { username: 'rejectme' });
+			const users = await User.getRegistrationQueue(0, -1);
+			assert.equal(users.length, 0);
+		});
+
+		it('should accept user registration', async () => {
+			await helpers.registerUser({
+				username: 'acceptme',
+				password: '123456',
+				'password-confirm': '123456',
+				email: 'accept@me.com',
+				gdpr_consent: true,
+			});
+
+			const uid = await socketUser.acceptRegistration({ uid: adminUid }, { username: 'acceptme' });
+			const exists = await User.exists(uid);
+			assert(exists);
+			const users = await User.getRegistrationQueue(0, -1);
+			assert.equal(users.length, 0);
+		});
+
+		it('should trim username and add user to registration queue', async () => {
+			await helpers.registerUser({
+				username: 'invalidname\r\n',
+				password: '123456',
+				'password-confirm': '123456',
+				email: 'invalidtest@test.com',
+				gdpr_consent: true,
+			});
+
+			const users = await db.getSortedSetRange('registration:queue', 0, -1);
+			assert.equal(users[0], 'invalidname');
+		});
+	});
+
+	describe('invites', () => {
+		let notAnInviterUid;
+		let inviterUid;
+		let adminUid;
+
+		const PUBLIC_GROUP = 'publicGroup';
+		const PRIVATE_GROUP = 'privateGroup';
+		const OWN_PRIVATE_GROUP = 'ownPrivateGroup';
+		const HIDDEN_GROUP = 'hiddenGroup';
+
+		const COMMON_PW = '123456';
+
+		before(async () => {
+			const results = await utils.promiseParallel({
+				publicGroup: groups.create({ name: PUBLIC_GROUP, private: 0 }),
+				privateGroup: groups.create({ name: PRIVATE_GROUP, private: 1 }),
+				hiddenGroup: groups.create({ name: HIDDEN_GROUP, hidden: 1 }),
+				notAnInviter: User.create({ username: 'notAnInviter', password: COMMON_PW }),
+				inviter: User.create({ username: 'inviter', password: COMMON_PW }),
+				admin: User.create({ username: 'adminInvite', password: COMMON_PW }),
+			});
+
+			notAnInviterUid = results.notAnInviter;
+			inviterUid = results.inviter;
+			adminUid = results.admin;
+
+			await User.setUserField(inviterUid, 'email', 'inviter@nodebb.org');
+			await Promise.all([
+				groups.create({ name: OWN_PRIVATE_GROUP, ownerUid: inviterUid, private: 1 }),
+				groups.join('administrators', adminUid),
+				groups.join('cid:0:privileges:invite', inviterUid),
+				User.email.confirmByUid(inviterUid),
+			]);
+		});
+
+		describe('when inviter is not an admin and does not have invite privilege', () => {
+			let csrf_token;
+			let jar;
 
 			before(async () => {
-				const results = await utils.promiseParallel({
-					publicGroup: groups.create({ name: PUBLIC_GROUP, private: 0 }),
-					privateGroup: groups.create({ name: PRIVATE_GROUP, private: 1 }),
-					hiddenGroup: groups.create({ name: HIDDEN_GROUP, hidden: 1 }),
-					notAnInviter: User.create({ username: 'notAnInviter', password: COMMON_PW }),
-					inviter: User.create({ username: 'inviter', password: COMMON_PW }),
-					admin: User.create({ username: 'adminInvite', password: COMMON_PW }),
-				});
-
-				notAnInviterUid = results.notAnInviter;
-				inviterUid = results.inviter;
-				adminUid = results.admin;
-
-				await User.setUserField(inviterUid, 'email', 'inviter@nodebb.org');
-				await Promise.all([
-					groups.create({ name: OWN_PRIVATE_GROUP, ownerUid: inviterUid, private: 1 }),
-					groups.join('administrators', adminUid),
-					groups.join('cid:0:privileges:invite', inviterUid),
-					User.email.confirmByUid(inviterUid),
-				]);
+				({ jar, csrf_token } = await helpers.loginUser('notAnInviter', COMMON_PW));
 			});
 
-			describe('when inviter is not an admin and does not have invite privilege', () => {
-				let csrf_token;
-				let jar;
-
-				before(async () => {
-					({ jar, csrf_token } = await helpers.loginUser('notAnInviter', COMMON_PW));
-				});
-
-				it('should error if user does not have invite privilege', async () => {
-					const { response, body } = await helpers.invite({ emails: 'invite1@test.com', groupsToJoin: [] }, notAnInviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 403);
-					assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
-				});
-
-				it('should error out if user tries to use an inviter\'s uid via the API', async () => {
-					const { response, body } = await helpers.invite({ emails: 'invite1@test.com', groupsToJoin: [] }, inviterUid, jar, csrf_token);
-					const numInvites = await User.getInvitesNumber(inviterUid);
-					assert.strictEqual(response.statusCode, 403);
-					assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
-					assert.strictEqual(numInvites, 0);
-				});
+			it('should error if user does not have invite privilege', async () => {
+				const { response, body } = await helpers.invite({ emails: 'invite1@test.com', groupsToJoin: [] }, notAnInviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 403);
+				assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
 			});
 
-			describe('when inviter has invite privilege', () => {
-				let csrf_token;
-				let jar;
-
-				before(async () => {
-					({ jar, csrf_token } = await helpers.loginUser('inviter', COMMON_PW));
-				});
-
-				it('should error with invalid data', async () => {
-					const { response, body } = await helpers.invite({}, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 400);
-					assert.strictEqual(body.status.message, 'Invalid Data');
-				});
-
-				it('should error if user is not admin and type is admin-invite-only', async () => {
-					meta.config.registrationType = 'admin-invite-only';
-					const { response, body } = await helpers.invite({ emails: 'invite1@test.com', groupsToJoin: [] }, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 403);
-					assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
-				});
-
-				it('should send invitation email (without groups to be joined)', async () => {
-					meta.config.registrationType = 'normal';
-					const { response } = await helpers.invite({ emails: 'invite1@test.com', groupsToJoin: [] }, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 200);
-				});
-
-				it('should send multiple invitation emails (with a public group to be joined)', async () => {
-					const { response, body } = await helpers.invite({ emails: 'invite2@test.com,invite3@test.com', groupsToJoin: [PUBLIC_GROUP] }, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 200);
-				});
-
-				it('should error if the user has not permission to invite to the group', async () => {
-					const { response, body } = await helpers.invite({ emails: 'invite4@test.com', groupsToJoin: [PRIVATE_GROUP] }, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 403);
-					assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
-				});
-
-				it('should error if a non-admin tries to invite to the administrators group', async () => {
-					const { response, body } = await helpers.invite({ emails: 'invite4@test.com', groupsToJoin: ['administrators'] }, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 403);
-					assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
-				});
-
-				it('should to invite to own private group', async () => {
-					const { response } = await helpers.invite({ emails: 'invite4@test.com', groupsToJoin: [OWN_PRIVATE_GROUP] }, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 200);
-				});
-
-				it('should to invite to multiple groups', async () => {
-					const { response } = await helpers.invite({ emails: 'invite5@test.com', groupsToJoin: [PUBLIC_GROUP, OWN_PRIVATE_GROUP] }, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 200);
-				});
-
-				it('should error if tries to invite to hidden group', async () => {
-					const { response } = await helpers.invite({ emails: 'invite6@test.com', groupsToJoin: [HIDDEN_GROUP] }, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 403);
-				});
-
-				it('should error if out of invitations', async () => {
-					meta.config.maximumInvites = 1;
-					const { response, body } = await helpers.invite({ emails: 'invite6@test.com', groupsToJoin: [] }, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 403);
-					assert.strictEqual(body.status.message, `You have invited the maximum amount of people (${5} out of ${1}).`);
-					meta.config.maximumInvites = 10;
-				});
-
-				it('should send invitation email after maximumInvites increased', async () => {
-					const { response } = await helpers.invite({ emails: 'invite6@test.com', groupsToJoin: [] }, inviterUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 200);
-				});
-
-				it('should error if invite is sent via API with a different UID', async () => {
-					const { response, body } = await helpers.invite({ emails: 'inviter@nodebb.org', groupsToJoin: [] }, adminUid, jar, csrf_token);
-					const numInvites = await User.getInvitesNumber(adminUid);
-					assert.strictEqual(response.statusCode, 403);
-					assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
-					assert.strictEqual(numInvites, 0);
-				});
-
-				it('should succeed if email exists but not actually send an invite', async () => {
-					const { response } = await helpers.invite({ emails: 'inviter@nodebb.org', groupsToJoin: [] }, inviterUid, jar, csrf_token);
-					const numInvites = await User.getInvitesNumber(adminUid);
-
-					assert.strictEqual(response.statusCode, 200);
-					assert.strictEqual(numInvites, 0);
-				});
-			});
-
-			describe('when inviter is an admin', () => {
-				let csrf_token;
-				let jar;
-
-				before(async () => {
-					({ jar, csrf_token } = await helpers.loginUser('adminInvite', COMMON_PW));
-				});
-
-				it('should escape email', async () => {
-					await helpers.invite({ emails: '<script>alert("ok");</script>', groupsToJoin: [] }, adminUid, jar, csrf_token);
-					const data = await User.getInvites(adminUid);
-					assert.strictEqual(data[0], '&lt;script&gt;alert(&quot;ok&quot;);&lt;&#x2F;script&gt;');
-					await User.deleteInvitationKey('<script>alert("ok");</script>');
-				});
-
-				it('should invite to the administrators group if inviter is an admin', async () => {
-					const { response } = await helpers.invite({ emails: 'invite99@test.com', groupsToJoin: ['administrators'] }, adminUid, jar, csrf_token);
-					assert.strictEqual(response.statusCode, 200);
-				});
-			});
-
-			new Promise((resolve, reject) => {
-				User.getInvites(inviterUid, (err, data) => {
-					if (err) {
-						reject(err);
-						return;
-					}
-					Array.from(Array(6)).forEach((_, i) => {
-						assert.notEqual(data.indexOf(`invite${i + 1}@test.com`), -1);
-					});
-					resolve();
-				});
-			});
-
-
-			new Promise((resolve, reject) => {
-				User.getAllInvites((err, data) => {
-					if (err) {
-						reject(err);
-						return;
-					}
-
-					const adminData = data.find(d => parseInt(d.uid, 10) === adminUid);
-					assert.notEqual(adminData.invitations.indexOf('invite99@test.com'), -1);
-
-					const inviterData = data.find(d => parseInt(d.uid, 10) === inviterUid);
-					Array.from(Array(6)).forEach((_, i) => {
-						assert.notEqual(inviterData.invitations.indexOf(`invite${i + 1}@test.com`), -1);
-					});
-
-					resolve();
-				});
-			});
-
-
-			it('should fail to verify invitation with invalid data', (done) => {
-				User.verifyInvitation({ token: '', email: '' }, (err) => {
-					assert.strictEqual(err.message, '[[register:invite.error-invite-only]]');
-					done();
-				});
-			});
-
-			it('should fail to verify invitation with invalid email', (done) => {
-				User.verifyInvitation({ token: 'test', email: 'doesnotexist@test.com' }, (err) => {
-					assert.strictEqual(err.message, '[[register:invite.error-invalid-data]]');
-					done();
-				});
-			});
-
-			it('should verify installation with no errors', (done) => {
-				const email = 'invite1@test.com';
-				db.get(`invitation:uid:${inviterUid}:invited:${email}`, 'token', (err, token) => {
-					assert.ifError(err);
-					User.verifyInvitation({ token: token, email: 'invite1@test.com' }, (err) => {
-						assert.ifError(err);
-						done();
-					});
-				});
-			});
-
-			it('should error with invalid username', (done) => {
-				User.deleteInvitation('doesnotexist', 'test@test.com', (err) => {
-					assert.equal(err.message, '[[error:invalid-username]]');
-					done();
-				});
-			});
-
-			it('should delete invitation', (done) => {
-				const socketUser = require('../src/socket.io/user');
-				socketUser.deleteInvitation({ uid: adminUid }, { invitedBy: 'inviter', email: 'invite1@test.com' }, (err) => {
-					assert.ifError(err);
-					db.isSetMember(`invitation:uid:${inviterUid}`, 'invite1@test.com', (err, isMember) => {
-						assert.ifError(err);
-						assert.equal(isMember, false);
-						done();
-					});
-				});
-			});
-
-			it('should delete invitation key', (done) => {
-				User.deleteInvitationKey('invite99@test.com', (err) => {
-					assert.ifError(err);
-					db.isSetMember(`invitation:uid:${adminUid}`, 'invite99@test.com', (err, isMember) => {
-						assert.ifError(err);
-						assert.equal(isMember, false);
-						db.isSetMember('invitation:uids', adminUid, (err, isMember) => {
-							assert.ifError(err);
-							assert.equal(isMember, false);
-							done();
-						});
-					});
-				});
-			});
-
-			it('should joined the groups from invitation after registration', async () => {
-				const email = 'invite5@test.com';
-				const groupsToJoin = [PUBLIC_GROUP, OWN_PRIVATE_GROUP];
-				const token = await db.get(`invitation:uid:${inviterUid}:invited:${email}`);
-
-				const { body } = await helpers.registerUser({
-					username: 'invite5',
-					password: '123456',
-					'password-confirm': '123456',
-					email: email,
-					gdpr_consent: true,
-					token: token,
-				});
-
-				const memberships = await groups.isMemberOfGroups(body.uid, groupsToJoin);
-				const joinedToAll = memberships.filter(Boolean);
-				assert.strictEqual(joinedToAll.length, groupsToJoin.length, 'Not joined to the groups');
+			it('should error out if user tries to use an inviter\'s uid via the API', async () => {
+				const { response, body } = await helpers.invite({ emails: 'invite1@test.com', groupsToJoin: [] }, inviterUid, jar, csrf_token);
+				const numInvites = await User.getInvitesNumber(inviterUid);
+				assert.strictEqual(response.statusCode, 403);
+				assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
+				assert.strictEqual(numInvites, 0);
 			});
 		});
 
-		describe('invite groups', () => {
+		describe('when inviter has invite privilege', () => {
 			let csrf_token;
 			let jar;
 
@@ -2124,432 +1903,584 @@ describe('User', () => {
 				({ jar, csrf_token } = await helpers.loginUser('inviter', COMMON_PW));
 			});
 
-			it('should show a list of groups for adding to an invite', async () => {
-				const { body } = await helpers.request('get', `/api/v3/users/${inviterUid}/invites/groups`, {
-					jar,
-				});
-
-				assert(Array.isArray(body.response));
-				assert.strictEqual(2, body.response.length);
-				assert.deepStrictEqual(body.response, ['ownPrivateGroup', 'publicGroup']);
+			it('should error with invalid data', async () => {
+				const { response, body } = await helpers.invite({}, inviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 400);
+				assert.strictEqual(body.status.message, 'Invalid Data');
 			});
 
-			it('should error out if you request invite groups for another uid', async () => {
-				const { response } = await helpers.request('get', `/api/v3/users/${adminUid}/invites/groups`, {
-					jar,
-				});
+			it('should error if user is not admin and type is admin-invite-only', async () => {
+				meta.config.registrationType = 'admin-invite-only';
+				const { response, body } = await helpers.invite({ emails: 'invite1@test.com', groupsToJoin: [] }, inviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 403);
+				assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
+			});
 
+			it('should send invitation email (without groups to be joined)', async () => {
+				meta.config.registrationType = 'normal';
+				const { response } = await helpers.invite({ emails: 'invite1@test.com', groupsToJoin: [] }, inviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 200);
+			});
+
+			it('should send multiple invitation emails (with a public group to be joined)', async () => {
+				const { response, body } = await helpers.invite({ emails: 'invite2@test.com,invite3@test.com', groupsToJoin: [PUBLIC_GROUP] }, inviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 200);
+			});
+
+			it('should error if the user has not permission to invite to the group', async () => {
+				const { response, body } = await helpers.invite({ emails: 'invite4@test.com', groupsToJoin: [PRIVATE_GROUP] }, inviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 403);
+				assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
+			});
+
+			it('should error if a non-admin tries to invite to the administrators group', async () => {
+				const { response, body } = await helpers.invite({ emails: 'invite4@test.com', groupsToJoin: ['administrators'] }, inviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 403);
+				assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
+			});
+
+			it('should to invite to own private group', async () => {
+				const { response } = await helpers.invite({ emails: 'invite4@test.com', groupsToJoin: [OWN_PRIVATE_GROUP] }, inviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 200);
+			});
+
+			it('should to invite to multiple groups', async () => {
+				const { response } = await helpers.invite({ emails: 'invite5@test.com', groupsToJoin: [PUBLIC_GROUP, OWN_PRIVATE_GROUP] }, inviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 200);
+			});
+
+			it('should error if tries to invite to hidden group', async () => {
+				const { response } = await helpers.invite({ emails: 'invite6@test.com', groupsToJoin: [HIDDEN_GROUP] }, inviterUid, jar, csrf_token);
 				assert.strictEqual(response.statusCode, 403);
 			});
-		});
-	});
 
-	describe('email confirm', () => {
-		it('should error with invalid code', (done) => {
-			User.email.confirmByCode('asdasda', (err) => {
-				assert.equal(err.message, '[[error:invalid-data]]');
+			it('should error if out of invitations', async () => {
+				meta.config.maximumInvites = 1;
+				const { response, body } = await helpers.invite({ emails: 'invite6@test.com', groupsToJoin: [] }, inviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 403);
+				assert.strictEqual(body.status.message, `You have invited the maximum amount of people (${5} out of ${1}).`);
+				meta.config.maximumInvites = 10;
+			});
+
+			it('should send invitation email after maximumInvites increased', async () => {
+				const { response } = await helpers.invite({ emails: 'invite6@test.com', groupsToJoin: [] }, inviterUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 200);
+			});
+
+			it('should error if invite is sent via API with a different UID', async () => {
+				const { response, body } = await helpers.invite({ emails: 'inviter@nodebb.org', groupsToJoin: [] }, adminUid, jar, csrf_token);
+				const numInvites = await User.getInvitesNumber(adminUid);
+				assert.strictEqual(response.statusCode, 403);
+				assert.strictEqual(body.status.message, 'You do not have enough privileges for this action.');
+				assert.strictEqual(numInvites, 0);
+			});
+
+			it('should succeed if email exists but not actually send an invite', async () => {
+				const { response } = await helpers.invite({ emails: 'inviter@nodebb.org', groupsToJoin: [] }, inviterUid, jar, csrf_token);
+				const numInvites = await User.getInvitesNumber(adminUid);
+
+				assert.strictEqual(response.statusCode, 200);
+				assert.strictEqual(numInvites, 0);
+			});
+		});
+
+		describe('when inviter is an admin', () => {
+			let csrf_token;
+			let jar;
+
+			before(async () => {
+				({ jar, csrf_token } = await helpers.loginUser('adminInvite', COMMON_PW));
+			});
+
+			it('should escape email', async () => {
+				await helpers.invite({ emails: '<script>alert("ok");</script>', groupsToJoin: [] }, adminUid, jar, csrf_token);
+				const data = await User.getInvites(adminUid);
+				assert.strictEqual(data[0], '&lt;script&gt;alert(&quot;ok&quot;);&lt;&#x2F;script&gt;');
+				await User.deleteInvitationKey('<script>alert("ok");</script>');
+			});
+
+			it('should invite to the administrators group if inviter is an admin', async () => {
+				const { response } = await helpers.invite({ emails: 'invite99@test.com', groupsToJoin: ['administrators'] }, adminUid, jar, csrf_token);
+				assert.strictEqual(response.statusCode, 200);
+			});
+		});
+
+		new Promise((resolve, reject) => {
+			User.getInvites(inviterUid, (err, data) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				Array.from(Array(6)).forEach((_, i) => {
+					assert.notEqual(data.indexOf(`invite${i + 1}@test.com`), -1);
+				});
+				resolve();
+			});
+		});
+
+
+		new Promise((resolve, reject) => {
+			User.getAllInvites((err, data) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+
+				const adminData = data.find(d => parseInt(d.uid, 10) === adminUid);
+				assert.notEqual(adminData.invitations.indexOf('invite99@test.com'), -1);
+
+				const inviterData = data.find(d => parseInt(d.uid, 10) === inviterUid);
+				Array.from(Array(6)).forEach((_, i) => {
+					assert.notEqual(inviterData.invitations.indexOf(`invite${i + 1}@test.com`), -1);
+				});
+
+				resolve();
+			});
+		});
+
+
+		it('should fail to verify invitation with invalid data', (done) => {
+			User.verifyInvitation({ token: '', email: '' }, (err) => {
+				assert.strictEqual(err.message, '[[register:invite.error-invite-only]]');
 				done();
 			});
 		});
 
-		it('should confirm email of user', async () => {
-			const email = 'confirm@me.com';
-			const uid = await User.create({
-				username: 'confirme',
-				email: email,
+		it('should fail to verify invitation with invalid email', (done) => {
+			User.verifyInvitation({ token: 'test', email: 'doesnotexist@test.com' }, (err) => {
+				assert.strictEqual(err.message, '[[register:invite.error-invalid-data]]');
+				done();
 			});
-
-			const code = await User.email.sendValidationEmail(uid, { email, force: 1 });
-			const unverified = await groups.isMember(uid, 'unverified-users');
-			assert.strictEqual(unverified, true);
-			await User.email.confirmByCode(code);
-			const [confirmed, isVerified] = await Promise.all([
-				db.getObjectField(`user:${uid}`, 'email:confirmed'),
-				groups.isMember(uid, 'verified-users', uid),
-			]);
-			assert.strictEqual(parseInt(confirmed, 10), 1);
-			assert.strictEqual(isVerified, true);
 		});
 
-		it('should confirm email of user by uid', async () => {
-			const email = 'confirm2@me.com';
-			const uid = await User.create({
-				username: 'confirme2',
-				email,
-			});
-			await User.setUserField(uid, 'email', email);
-
-			const unverified = await groups.isMember(uid, 'unverified-users');
-			assert.strictEqual(unverified, true);
-			await User.email.confirmByUid(uid);
-			const [confirmed, isVerified] = await Promise.all([
-				db.getObjectField(`user:${uid}`, 'email:confirmed'),
-				groups.isMember(uid, 'verified-users', uid),
-			]);
-			assert.strictEqual(parseInt(confirmed, 10), 1);
-			assert.strictEqual(isVerified, true);
-		});
-
-		it('should remove the email from a different account if the email is already in use', async () => {
-			const email = 'confirm2@me.com';
-			const uid = await User.create({
-				username: 'confirme3',
-			});
-
-			const oldUid = await db.sortedSetScore('email:uid', email);
-			const code = await User.email.sendValidationEmail(uid, email);
-			await User.email.confirmByCode(code);
-
-			const oldUserData = await User.getUserData(oldUid);
-
-			assert.strictEqual((await db.sortedSetScore('email:uid', email)), uid);
-			assert.strictEqual(oldUserData.email, '');
-		});
-	});
-
-	describe('user jobs', () => {
-		it('should start user jobs', (done) => {
-			User.startJobs();
-			done();
-		});
-
-		it('should stop user jobs', (done) => {
-			User.stopJobs();
-			done();
-		});
-
-		it('should send digest', (done) => {
-			db.sortedSetAdd('digest:day:uids', [Date.now(), Date.now()], [1, 2], (err) => {
+		it('should verify installation with no errors', (done) => {
+			const email = 'invite1@test.com';
+			db.get(`invitation:uid:${inviterUid}:invited:${email}`, 'token', (err, token) => {
 				assert.ifError(err);
-				User.digest.execute({ interval: 'day' }, (err) => {
+				User.verifyInvitation({ token: token, email: 'invite1@test.com' }, (err) => {
 					assert.ifError(err);
 					done();
 				});
 			});
 		});
+
+		it('should error with invalid username', (done) => {
+			User.deleteInvitation('doesnotexist', 'test@test.com', (err) => {
+				assert.equal(err.message, '[[error:invalid-username]]');
+				done();
+			});
+		});
+
+		it('should delete invitation', (done) => {
+			const socketUser = require('../src/socket.io/user');
+			socketUser.deleteInvitation({ uid: adminUid }, { invitedBy: 'inviter', email: 'invite1@test.com' }, (err) => {
+				assert.ifError(err);
+				db.isSetMember(`invitation:uid:${inviterUid}`, 'invite1@test.com', (err, isMember) => {
+					assert.ifError(err);
+					assert.equal(isMember, false);
+					done();
+				});
+			});
+		});
+
+		it('should delete invitation key', (done) => {
+			User.deleteInvitationKey('invite99@test.com', (err) => {
+				assert.ifError(err);
+				db.isSetMember(`invitation:uid:${adminUid}`, 'invite99@test.com', (err, isMember) => {
+					assert.ifError(err);
+					assert.equal(isMember, false);
+					db.isSetMember('invitation:uids', adminUid, (err, isMember) => {
+						assert.ifError(err);
+						assert.equal(isMember, false);
+						done();
+					});
+				});
+			});
+		});
+
+		it('should joined the groups from invitation after registration', async () => {
+			const email = 'invite5@test.com';
+			const groupsToJoin = [PUBLIC_GROUP, OWN_PRIVATE_GROUP];
+			const token = await db.get(`invitation:uid:${inviterUid}:invited:${email}`);
+
+			const { body } = await helpers.registerUser({
+				username: 'invite5',
+				password: '123456',
+				'password-confirm': '123456',
+				email: email,
+				gdpr_consent: true,
+				token: token,
+			});
+
+			const memberships = await groups.isMemberOfGroups(body.uid, groupsToJoin);
+			const joinedToAll = memberships.filter(Boolean);
+			assert.strictEqual(joinedToAll.length, groupsToJoin.length, 'Not joined to the groups');
+		});
 	});
 
-	describe('hideEmail/hideFullname', () => {
-		const COMMON_PW = '123456';
-		const hidingUser = {
-			username: 'hiddenemail',
-			email: 'should@be.hidden',
-			fullname: 'baris soner usakli',
-			password: COMMON_PW,
-		};
-		const regularUser = {
-			username: 'regularUser',
-			email: 'regular@example.com',
-			fullname: 'regular user',
-			password: COMMON_PW,
-		};
-		let hidingUserJar;
-		let adminUid;
-		let adminJar;
-		let globalModJar;
-		let regularUserJar;
+	describe('invite groups', () => {
+		let csrf_token;
+		let jar;
 
 		before(async () => {
-			adminUid = await User.create({
-				username: 'adminhideemail',
-				password: COMMON_PW,
-			});
-			await groups.join('administrators', adminUid);
-			({ jar: adminJar } = await helpers.loginUser('adminhideemail', COMMON_PW));
-
-			// Edge case: In a grepped test, this user should not be created as the first user to have its email not confirmed
-			hidingUser.uid = await User.create(hidingUser);
-			({ jar: hidingUserJar } = await helpers.loginUser(hidingUser.username, COMMON_PW));
-
-			const globalModUid = await User.create({
-				username: 'globalmodhideemail',
-				password: COMMON_PW,
-			});
-			await groups.join('Global Moderators', globalModUid);
-			({ jar: globalModJar } = await helpers.loginUser('globalmodhideemail', COMMON_PW));
-
-			regularUser.uid = await User.create(regularUser);
-			({ jar: regularUserJar } = await helpers.loginUser(regularUser.username, COMMON_PW));
+			({ jar, csrf_token } = await helpers.loginUser('inviter', COMMON_PW));
 		});
 
-		after((done) => {
-			meta.config.hideEmail = 0;
-			meta.config.hideFullname = 0;
+		it('should show a list of groups for adding to an invite', async () => {
+			const { body } = await helpers.request('get', `/api/v3/users/${inviterUid}/invites/groups`, {
+				jar,
+			});
+
+			assert(Array.isArray(body.response));
+			assert.strictEqual(2, body.response.length);
+			assert.deepStrictEqual(body.response, ['ownPrivateGroup', 'publicGroup']);
+		});
+
+		it('should error out if you request invite groups for another uid', async () => {
+			const { response } = await helpers.request('get', `/api/v3/users/${adminUid}/invites/groups`, {
+				jar,
+			});
+
+			assert.strictEqual(response.statusCode, 403);
+		});
+	});
+});
+
+describe('email confirm', () => {
+	it('should error with invalid code', (done) => {
+		User.email.confirmByCode('asdasda', (err) => {
+			assert.equal(err.message, '[[error:invalid-data]]');
 			done();
-		});
-
-		async function assertPrivacy({ expectVisible, jar, v3Api, emailOnly }) {
-			const path = v3Api ? `v3/users/${hidingUser.uid}` : `user/${hidingUser.username}`;
-			const { body } = await request.get(`${nconf.get('url')}/api/${path}`, { jar });
-			const userData = v3Api ? body.response : body;
-
-			assert.strictEqual(userData.email, expectVisible ? hidingUser.email : '');
-			if (!emailOnly) {
-				assert.strictEqual(userData.fullname, expectVisible ? hidingUser.fullname : '');
-			}
-		}
-
-		it('should hide unconfirmed emails on profile pages', async () => {
-			await assertPrivacy({ v3Api: false, emailOnly: true });
-			await assertPrivacy({ v3Api: false, jar: hidingUserJar, emailOnly: true });
-			await assertPrivacy({ v3Api: false, jar: adminJar, emailOnly: true });
-			await assertPrivacy({ v3Api: false, jar: globalModJar, emailOnly: true });
-			await assertPrivacy({ v3Api: false, jar: regularUserJar, emailOnly: true });
-
-			// Let's confirm for afterwards
-			await User.setUserField(hidingUser.uid, 'email', 'should@be.hidden');
-			await User.email.confirmByUid(hidingUser.uid);
-		});
-
-		it('should hide from guests by default', async () => {
-			await assertPrivacy({ v3Api: false });
-		});
-
-		it('should hide from unprivileged users by default', async () => {
-			await assertPrivacy({ v3Api: false, jar: regularUserJar });
-			await assertPrivacy({ v3Api: true, jar: regularUserJar });
-		});
-
-		it('should be visible to self by default', async () => {
-			await assertPrivacy({ v3Api: false, jar: hidingUserJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: hidingUserJar, expectVisible: true });
-		});
-
-		it('should be visible to privileged users by default', async () => {
-			await assertPrivacy({ v3Api: false, jar: adminJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: adminJar, expectVisible: true });
-			await assertPrivacy({ v3Api: false, jar: globalModJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: globalModJar, expectVisible: true });
-		});
-
-		it('should hide from guests (system-wide: hide, by-user: hide)', async () => {
-			meta.config.hideEmail = 1;
-			meta.config.hideFullname = 1;
-			// Explicitly set user's privacy settings to hide its email and fullname
-			const data = { uid: hidingUser.uid, settings: { showemail: 0, showfullname: 0 } };
-			await apiUser.updateSettings({ uid: hidingUser.uid }, data);
-
-			await assertPrivacy({ v3Api: false });
-		});
-
-		it('should hide from unprivileged users (system-wide: hide, by-user: hide)', async () => {
-			await assertPrivacy({ v3Api: false, jar: regularUserJar });
-			await assertPrivacy({ v3Api: true, jar: regularUserJar });
-		});
-
-		it('should be visible to self (system-wide: hide, by-user: hide)', async () => {
-			await assertPrivacy({ v3Api: false, jar: hidingUserJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: hidingUserJar, expectVisible: true });
-		});
-
-		it('should be visible to privileged users (system-wide: hide, by-user: hide)', async () => {
-			await assertPrivacy({ v3Api: false, jar: adminJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: adminJar, expectVisible: true });
-			await assertPrivacy({ v3Api: false, jar: globalModJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: globalModJar, expectVisible: true });
-		});
-
-		it('should hide from guests (system-wide: show, by-user: hide)', async () => {
-			meta.config.hideEmail = 0;
-			meta.config.hideFullname = 0;
-
-			await assertPrivacy({ v3Api: false });
-		});
-
-		it('should hide from unprivileged users (system-wide: show, by-user: hide)', async () => {
-			await assertPrivacy({ v3Api: false, jar: regularUserJar });
-			await assertPrivacy({ v3Api: true, jar: regularUserJar });
-		});
-
-		it('should be visible to self (system-wide: show, by-user: hide)', async () => {
-			await assertPrivacy({ v3Api: false, jar: hidingUserJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: hidingUserJar, expectVisible: true });
-		});
-
-		it('should be visible to privileged users (system-wide: show, by-user: hide)', async () => {
-			await assertPrivacy({ v3Api: false, jar: adminJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: adminJar, expectVisible: true });
-			await assertPrivacy({ v3Api: false, jar: globalModJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: globalModJar, expectVisible: true });
-		});
-
-		it('should be visible to guests (system-wide: show, by-user: show)', async () => {
-			meta.config.hideEmail = 0;
-			meta.config.hideFullname = 0;
-
-			// Set user's individual privacy settings to show its email and fullname
-			const data = { uid: hidingUser.uid, settings: { showemail: 1, showfullname: 1 } };
-			await apiUser.updateSettings({ uid: hidingUser.uid }, data);
-
-			await assertPrivacy({ v3Api: false, expectVisible: true });
-		});
-
-		it('should be visible to unprivileged users (system-wide: show, by-user: show)', async () => {
-			await assertPrivacy({ v3Api: false, jar: regularUserJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: regularUserJar, expectVisible: true });
-		});
-
-		// System-wide "hide" prioritized over individual users' settings
-		it('should hide from guests (system-wide: hide, by-user: show)', async () => {
-			meta.config.hideEmail = 1;
-			meta.config.hideFullname = 1;
-
-			await assertPrivacy({ v3Api: false });
-		});
-
-		it('should hide from unprivileged users (system-wide: hide, by-user: show)', async () => {
-			await assertPrivacy({ v3Api: false, jar: regularUserJar });
-			await assertPrivacy({ v3Api: true, jar: regularUserJar });
-		});
-
-		it('should be visible to self (system-wide: hide, by-user: show)', async () => {
-			await assertPrivacy({ v3Api: false, jar: hidingUserJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: hidingUserJar, expectVisible: true });
-		});
-
-		it('should be visible to privileged users (system-wide: hide, by-user: show)', async () => {
-			await assertPrivacy({ v3Api: false, jar: adminJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: adminJar, expectVisible: true });
-			await assertPrivacy({ v3Api: false, jar: globalModJar, expectVisible: true });
-			await assertPrivacy({ v3Api: true, jar: globalModJar, expectVisible: true });
-		});
-
-		it('should handle array of user data (system-wide: hide)', async () => {
-			const userData = await User.hidePrivateData([hidingUser, regularUser], hidingUser.uid);
-			assert.strictEqual(userData[0].fullname, hidingUser.fullname);
-			assert.strictEqual(userData[0].email, hidingUser.email);
-			assert.strictEqual(userData[1].fullname, '');
-			assert.strictEqual(userData[1].email, '');
-		});
-
-		it('should hide fullname in topic list and topic', async () => {
-			await Topics.post({
-				uid: hidingUser.uid,
-				title: 'Topic hidden',
-				content: 'lorem ipsum',
-				cid: testCid,
-			});
-
-			const { body: body1 } = await request.get(`${nconf.get('url')}/api/recent`);
-			assert(!body1.topics[0].user.hasOwnProperty('fullname'));
-
-			const { body: body2 } = await request.get(`${nconf.get('url')}/api/topic/${body1.topics[0].slug}`);
-			assert(!body2.posts[0].user.hasOwnProperty('fullname'));
 		});
 	});
 
-	describe('user blocking methods', (done) => {
-		let blockeeUid;
-		before((done) => {
-			User.create({
-				username: 'blockee',
-				email: 'blockee@example.org',
-				fullname: 'Block me',
-			}, (err, uid) => {
-				blockeeUid = uid;
-				done(err);
-			});
+	it('should confirm email of user', async () => {
+		const email = 'confirm@me.com';
+		const uid = await User.create({
+			username: 'confirme',
+			email: email,
 		});
 
-		describe('.toggle()', () => {
-			it('should toggle block', (done) => {
-				socketUser.toggleBlock({ uid: 1 }, { blockerUid: 1, blockeeUid: blockeeUid, action: 'block' }, (err) => {
-					assert.ifError(err);
-					User.blocks.is(blockeeUid, 1, (err, blocked) => {
-						assert.ifError(err);
-						assert(blocked);
-						done();
-					});
-				});
-			});
+		const code = await User.email.sendValidationEmail(uid, { email, force: 1 });
+		const unverified = await groups.isMember(uid, 'unverified-users');
+		assert.strictEqual(unverified, true);
+		await User.email.confirmByCode(code);
+		const [confirmed, isVerified] = await Promise.all([
+			db.getObjectField(`user:${uid}`, 'email:confirmed'),
+			groups.isMember(uid, 'verified-users', uid),
+		]);
+		assert.strictEqual(parseInt(confirmed, 10), 1);
+		assert.strictEqual(isVerified, true);
+	});
 
-			it('should toggle block', (done) => {
-				socketUser.toggleBlock({ uid: 1 }, { blockerUid: 1, blockeeUid: blockeeUid, action: 'unblock' }, (err) => {
-					assert.ifError(err);
-					User.blocks.is(blockeeUid, 1, (err, blocked) => {
-						assert.ifError(err);
-						assert(!blocked);
-						done();
-					});
-				});
-			});
+	it('should confirm email of user by uid', async () => {
+		const email = 'confirm2@me.com';
+		const uid = await User.create({
+			username: 'confirme2',
+			email,
+		});
+		await User.setUserField(uid, 'email', email);
+
+		const unverified = await groups.isMember(uid, 'unverified-users');
+		assert.strictEqual(unverified, true);
+		await User.email.confirmByUid(uid);
+		const [confirmed, isVerified] = await Promise.all([
+			db.getObjectField(`user:${uid}`, 'email:confirmed'),
+			groups.isMember(uid, 'verified-users', uid),
+		]);
+		assert.strictEqual(parseInt(confirmed, 10), 1);
+		assert.strictEqual(isVerified, true);
+	});
+
+	it('should remove the email from a different account if the email is already in use', async () => {
+		const email = 'confirm2@me.com';
+		const uid = await User.create({
+			username: 'confirme3',
 		});
 
-		describe('.add()', () => {
-			it('should block a uid', (done) => {
-				User.blocks.add(blockeeUid, 1, (err) => {
-					assert.ifError(err);
-					User.blocks.list(1, (err, blocked_uids) => {
-						assert.ifError(err);
-						assert.strictEqual(Array.isArray(blocked_uids), true);
-						assert.strictEqual(blocked_uids.length, 1);
-						assert.strictEqual(blocked_uids.includes(blockeeUid), true);
-						done();
-					});
-				});
-			});
+		const oldUid = await db.sortedSetScore('email:uid', email);
+		const code = await User.email.sendValidationEmail(uid, email);
+		await User.email.confirmByCode(code);
 
-			it('should automatically increment corresponding user field', (done) => {
-				db.getObjectField('user:1', 'blocksCount', (err, count) => {
-					assert.ifError(err);
-					assert.strictEqual(parseInt(count, 10), 1);
-					done();
-				});
-			});
+		const oldUserData = await User.getUserData(oldUid);
 
-			it('should error if you try to block the same uid again', (done) => {
-				User.blocks.add(blockeeUid, 1, (err) => {
-					assert.equal(err.message, '[[error:already-blocked]]');
-					done();
-				});
-			});
-		});
+		assert.strictEqual((await db.sortedSetScore('email:uid', email)), uid);
+		assert.strictEqual(oldUserData.email, '');
+	});
+});
 
-		describe('.remove()', () => {
-			it('should unblock a uid', (done) => {
-				User.blocks.remove(blockeeUid, 1, (err) => {
-					assert.ifError(err);
-					User.blocks.list(1, (err, blocked_uids) => {
-						assert.ifError(err);
-						assert.strictEqual(Array.isArray(blocked_uids), true);
-						assert.strictEqual(blocked_uids.length, 0);
-						done();
-					});
-				});
-			});
+describe('user jobs', () => {
+	it('should start user jobs', (done) => {
+		User.startJobs();
+		done();
+	});
 
-			it('should automatically decrement corresponding user field', (done) => {
-				db.getObjectField('user:1', 'blocksCount', (err, count) => {
-					assert.ifError(err);
-					assert.strictEqual(parseInt(count, 10), 0);
-					done();
-				});
-			});
+	it('should stop user jobs', (done) => {
+		User.stopJobs();
+		done();
+	});
 
-			it('should error if you try to unblock the same uid again', (done) => {
-				User.blocks.remove(blockeeUid, 1, (err) => {
-					assert.equal(err.message, '[[error:already-unblocked]]');
-					done();
-				});
+	it('should send digest', (done) => {
+		db.sortedSetAdd('digest:day:uids', [Date.now(), Date.now()], [1, 2], (err) => {
+			assert.ifError(err);
+			User.digest.execute({ interval: 'day' }, (err) => {
+				assert.ifError(err);
+				done();
 			});
 		});
+	});
+});
 
-		describe('.is()', () => {
-			before((done) => {
-				User.blocks.add(blockeeUid, 1, done);
-			});
+describe('hideEmail/hideFullname', () => {
+	const COMMON_PW = '123456';
+	const hidingUser = {
+		username: 'hiddenemail',
+		email: 'should@be.hidden',
+		fullname: 'baris soner usakli',
+		password: COMMON_PW,
+	};
+	const regularUser = {
+		username: 'regularUser',
+		email: 'regular@example.com',
+		fullname: 'regular user',
+		password: COMMON_PW,
+	};
+	let hidingUserJar;
+	let adminUid;
+	let adminJar;
+	let globalModJar;
+	let regularUserJar;
 
-			it('should return a Boolean with blocked status for the queried uid', (done) => {
+	before(async () => {
+		adminUid = await User.create({
+			username: 'adminhideemail',
+			password: COMMON_PW,
+		});
+		await groups.join('administrators', adminUid);
+		({ jar: adminJar } = await helpers.loginUser('adminhideemail', COMMON_PW));
+
+		// Edge case: In a grepped test, this user should not be created as the first user to have its email not confirmed
+		hidingUser.uid = await User.create(hidingUser);
+		({ jar: hidingUserJar } = await helpers.loginUser(hidingUser.username, COMMON_PW));
+
+		const globalModUid = await User.create({
+			username: 'globalmodhideemail',
+			password: COMMON_PW,
+		});
+		await groups.join('Global Moderators', globalModUid);
+		({ jar: globalModJar } = await helpers.loginUser('globalmodhideemail', COMMON_PW));
+
+		regularUser.uid = await User.create(regularUser);
+		({ jar: regularUserJar } = await helpers.loginUser(regularUser.username, COMMON_PW));
+	});
+
+	after((done) => {
+		meta.config.hideEmail = 0;
+		meta.config.hideFullname = 0;
+		done();
+	});
+
+	async function assertPrivacy({ expectVisible, jar, v3Api, emailOnly }) {
+		const path = v3Api ? `v3/users/${hidingUser.uid}` : `user/${hidingUser.username}`;
+		const { body } = await request.get(`${nconf.get('url')}/api/${path}`, { jar });
+		const userData = v3Api ? body.response : body;
+
+		assert.strictEqual(userData.email, expectVisible ? hidingUser.email : '');
+		if (!emailOnly) {
+			assert.strictEqual(userData.fullname, expectVisible ? hidingUser.fullname : '');
+		}
+	}
+
+	it('should hide unconfirmed emails on profile pages', async () => {
+		await assertPrivacy({ v3Api: false, emailOnly: true });
+		await assertPrivacy({ v3Api: false, jar: hidingUserJar, emailOnly: true });
+		await assertPrivacy({ v3Api: false, jar: adminJar, emailOnly: true });
+		await assertPrivacy({ v3Api: false, jar: globalModJar, emailOnly: true });
+		await assertPrivacy({ v3Api: false, jar: regularUserJar, emailOnly: true });
+
+		// Let's confirm for afterwards
+		await User.setUserField(hidingUser.uid, 'email', 'should@be.hidden');
+		await User.email.confirmByUid(hidingUser.uid);
+	});
+
+	it('should hide from guests by default', async () => {
+		await assertPrivacy({ v3Api: false });
+	});
+
+	it('should hide from unprivileged users by default', async () => {
+		await assertPrivacy({ v3Api: false, jar: regularUserJar });
+		await assertPrivacy({ v3Api: true, jar: regularUserJar });
+	});
+
+	it('should be visible to self by default', async () => {
+		await assertPrivacy({ v3Api: false, jar: hidingUserJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: hidingUserJar, expectVisible: true });
+	});
+
+	it('should be visible to privileged users by default', async () => {
+		await assertPrivacy({ v3Api: false, jar: adminJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: adminJar, expectVisible: true });
+		await assertPrivacy({ v3Api: false, jar: globalModJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: globalModJar, expectVisible: true });
+	});
+
+	it('should hide from guests (system-wide: hide, by-user: hide)', async () => {
+		meta.config.hideEmail = 1;
+		meta.config.hideFullname = 1;
+		// Explicitly set user's privacy settings to hide its email and fullname
+		const data = { uid: hidingUser.uid, settings: { showemail: 0, showfullname: 0 } };
+		await apiUser.updateSettings({ uid: hidingUser.uid }, data);
+
+		await assertPrivacy({ v3Api: false });
+	});
+
+	it('should hide from unprivileged users (system-wide: hide, by-user: hide)', async () => {
+		await assertPrivacy({ v3Api: false, jar: regularUserJar });
+		await assertPrivacy({ v3Api: true, jar: regularUserJar });
+	});
+
+	it('should be visible to self (system-wide: hide, by-user: hide)', async () => {
+		await assertPrivacy({ v3Api: false, jar: hidingUserJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: hidingUserJar, expectVisible: true });
+	});
+
+	it('should be visible to privileged users (system-wide: hide, by-user: hide)', async () => {
+		await assertPrivacy({ v3Api: false, jar: adminJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: adminJar, expectVisible: true });
+		await assertPrivacy({ v3Api: false, jar: globalModJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: globalModJar, expectVisible: true });
+	});
+
+	it('should hide from guests (system-wide: show, by-user: hide)', async () => {
+		meta.config.hideEmail = 0;
+		meta.config.hideFullname = 0;
+
+		await assertPrivacy({ v3Api: false });
+	});
+
+	it('should hide from unprivileged users (system-wide: show, by-user: hide)', async () => {
+		await assertPrivacy({ v3Api: false, jar: regularUserJar });
+		await assertPrivacy({ v3Api: true, jar: regularUserJar });
+	});
+
+	it('should be visible to self (system-wide: show, by-user: hide)', async () => {
+		await assertPrivacy({ v3Api: false, jar: hidingUserJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: hidingUserJar, expectVisible: true });
+	});
+
+	it('should be visible to privileged users (system-wide: show, by-user: hide)', async () => {
+		await assertPrivacy({ v3Api: false, jar: adminJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: adminJar, expectVisible: true });
+		await assertPrivacy({ v3Api: false, jar: globalModJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: globalModJar, expectVisible: true });
+	});
+
+	it('should be visible to guests (system-wide: show, by-user: show)', async () => {
+		meta.config.hideEmail = 0;
+		meta.config.hideFullname = 0;
+
+		// Set user's individual privacy settings to show its email and fullname
+		const data = { uid: hidingUser.uid, settings: { showemail: 1, showfullname: 1 } };
+		await apiUser.updateSettings({ uid: hidingUser.uid }, data);
+
+		await assertPrivacy({ v3Api: false, expectVisible: true });
+	});
+
+	it('should be visible to unprivileged users (system-wide: show, by-user: show)', async () => {
+		await assertPrivacy({ v3Api: false, jar: regularUserJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: regularUserJar, expectVisible: true });
+	});
+
+	// System-wide "hide" prioritized over individual users' settings
+	it('should hide from guests (system-wide: hide, by-user: show)', async () => {
+		meta.config.hideEmail = 1;
+		meta.config.hideFullname = 1;
+
+		await assertPrivacy({ v3Api: false });
+	});
+
+	it('should hide from unprivileged users (system-wide: hide, by-user: show)', async () => {
+		await assertPrivacy({ v3Api: false, jar: regularUserJar });
+		await assertPrivacy({ v3Api: true, jar: regularUserJar });
+	});
+
+	it('should be visible to self (system-wide: hide, by-user: show)', async () => {
+		await assertPrivacy({ v3Api: false, jar: hidingUserJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: hidingUserJar, expectVisible: true });
+	});
+
+	it('should be visible to privileged users (system-wide: hide, by-user: show)', async () => {
+		await assertPrivacy({ v3Api: false, jar: adminJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: adminJar, expectVisible: true });
+		await assertPrivacy({ v3Api: false, jar: globalModJar, expectVisible: true });
+		await assertPrivacy({ v3Api: true, jar: globalModJar, expectVisible: true });
+	});
+
+	it('should handle array of user data (system-wide: hide)', async () => {
+		const userData = await User.hidePrivateData([hidingUser, regularUser], hidingUser.uid);
+		assert.strictEqual(userData[0].fullname, hidingUser.fullname);
+		assert.strictEqual(userData[0].email, hidingUser.email);
+		assert.strictEqual(userData[1].fullname, '');
+		assert.strictEqual(userData[1].email, '');
+	});
+
+	it('should hide fullname in topic list and topic', async () => {
+		await Topics.post({
+			uid: hidingUser.uid,
+			title: 'Topic hidden',
+			content: 'lorem ipsum',
+			cid: testCid,
+		});
+
+		const { body: body1 } = await request.get(`${nconf.get('url')}/api/recent`);
+		assert(!body1.topics[0].user.hasOwnProperty('fullname'));
+
+		const { body: body2 } = await request.get(`${nconf.get('url')}/api/topic/${body1.topics[0].slug}`);
+		assert(!body2.posts[0].user.hasOwnProperty('fullname'));
+	});
+});
+
+describe('user blocking methods', (done) => {
+	let blockeeUid;
+	before((done) => {
+		User.create({
+			username: 'blockee',
+			email: 'blockee@example.org',
+			fullname: 'Block me',
+		}, (err, uid) => {
+			blockeeUid = uid;
+			done(err);
+		});
+	});
+
+	describe('.toggle()', () => {
+		it('should toggle block', (done) => {
+			socketUser.toggleBlock({ uid: 1 }, { blockerUid: 1, blockeeUid: blockeeUid, action: 'block' }, (err) => {
+				assert.ifError(err);
 				User.blocks.is(blockeeUid, 1, (err, blocked) => {
 					assert.ifError(err);
-					assert.strictEqual(blocked, true);
+					assert(blocked);
 					done();
 				});
 			});
 		});
 
-		describe('.list()', () => {
-			it('should return a list of blocked uids', (done) => {
+		it('should toggle block', (done) => {
+			socketUser.toggleBlock({ uid: 1 }, { blockerUid: 1, blockeeUid: blockeeUid, action: 'unblock' }, (err) => {
+				assert.ifError(err);
+				User.blocks.is(blockeeUid, 1, (err, blocked) => {
+					assert.ifError(err);
+					assert(!blocked);
+					done();
+				});
+			});
+		});
+	});
+
+	describe('.add()', () => {
+		it('should block a uid', (done) => {
+			User.blocks.add(blockeeUid, 1, (err) => {
+				assert.ifError(err);
 				User.blocks.list(1, (err, blocked_uids) => {
 					assert.ifError(err);
 					assert.strictEqual(Array.isArray(blocked_uids), true);
@@ -2560,127 +2491,206 @@ describe('User', () => {
 			});
 		});
 
-		describe('.filter()', () => {
-			it('should remove entries by blocked uids and return filtered set', (done) => {
-				User.blocks.filter(1, [{
-					foo: 'foo',
-					uid: blockeeUid,
-				}, {
-					foo: 'bar',
-					uid: 1,
-				}, {
-					foo: 'baz',
-					uid: blockeeUid,
-				}], (err, filtered) => {
-					assert.ifError(err);
-					assert.strictEqual(Array.isArray(filtered), true);
-					assert.strictEqual(filtered.length, 1);
-					assert.equal(filtered[0].uid, 1);
-					done();
-				});
-			});
-
-			it('should allow property argument to be passed in to customise checked property', (done) => {
-				User.blocks.filter(1, 'fromuid', [{
-					foo: 'foo',
-					fromuid: blockeeUid,
-				}, {
-					foo: 'bar',
-					fromuid: 1,
-				}, {
-					foo: 'baz',
-					fromuid: blockeeUid,
-				}], (err, filtered) => {
-					assert.ifError(err);
-					assert.strictEqual(Array.isArray(filtered), true);
-					assert.strictEqual(filtered.length, 1);
-					assert.equal(filtered[0].fromuid, 1);
-					done();
-				});
-			});
-
-			it('should not process invalid sets', (done) => {
-				User.blocks.filter(1, [{ foo: 'foo' }, { foo: 'bar' }, { foo: 'baz' }], (err, filtered) => {
-					assert.ifError(err);
-					assert.strictEqual(Array.isArray(filtered), true);
-					assert.strictEqual(filtered.length, 3);
-					filtered.forEach((obj) => {
-						assert.strictEqual(obj.hasOwnProperty('foo'), true);
-					});
-					done();
-				});
-			});
-
-			it('should process plain sets that just contain uids', (done) => {
-				User.blocks.filter(1, [1, blockeeUid], (err, filtered) => {
-					assert.ifError(err);
-					assert.strictEqual(filtered.length, 1);
-					assert.strictEqual(filtered[0], 1);
-					done();
-				});
-			});
-
-			it('should filter uids that are blocking targetUid', (done) => {
-				User.blocks.filterUids(blockeeUid, [1, 2], (err, filtered) => {
-					assert.ifError(err);
-					assert.deepEqual(filtered, [2]);
-					done();
-				});
-			});
-		});
-	});
-
-	describe('status/online', () => {
-		it('should return offline if user is guest', (done) => {
-			const status = User.getStatus({ uid: 0 });
-			assert.strictEqual(status, 'offline');
-			done();
-		});
-
-		it('should return offline if user is guest', async () => {
-			assert.strictEqual(await User.isOnline(0), false);
-		});
-
-		it('should return true', async () => {
-			assert.strictEqual(await User.isOnline(testUid), true);
-		});
-	});
-
-	describe('isPrivilegedOrSelf', () => {
-		it('should return not error if self', (done) => {
-			User.isPrivilegedOrSelf(1, 1, (err) => {
+		it('should automatically increment corresponding user field', (done) => {
+			db.getObjectField('user:1', 'blocksCount', (err, count) => {
 				assert.ifError(err);
+				assert.strictEqual(parseInt(count, 10), 1);
 				done();
 			});
 		});
 
-		it('should not error if privileged', (done) => {
-			User.create({ username: 'theadmin' }, (err, uid) => {
-				assert.ifError(err);
-				groups.join('administrators', uid, (err) => {
-					assert.ifError(err);
-					User.isPrivilegedOrSelf(uid, 2, (err) => {
-						assert.ifError(err);
-						done();
-					});
-				});
-			});
-		});
-
-		it('should error if not privileged', (done) => {
-			User.isPrivilegedOrSelf(0, 1, (err) => {
-				assert.equal(err.message, '[[error:no-privileges]]');
+		it('should error if you try to block the same uid again', (done) => {
+			User.blocks.add(blockeeUid, 1, (err) => {
+				assert.equal(err.message, '[[error:already-blocked]]');
 				done();
 			});
 		});
 	});
 
-	it('should get admins and mods', (done) => {
-		User.getAdminsandGlobalMods((err, data) => {
+	describe('.remove()', () => {
+		it('should unblock a uid', (done) => {
+			User.blocks.remove(blockeeUid, 1, (err) => {
+				assert.ifError(err);
+				User.blocks.list(1, (err, blocked_uids) => {
+					assert.ifError(err);
+					assert.strictEqual(Array.isArray(blocked_uids), true);
+					assert.strictEqual(blocked_uids.length, 0);
+					done();
+				});
+			});
+		});
+
+		it('should automatically decrement corresponding user field', (done) => {
+			db.getObjectField('user:1', 'blocksCount', (err, count) => {
+				assert.ifError(err);
+				assert.strictEqual(parseInt(count, 10), 0);
+				done();
+			});
+		});
+
+		it('should error if you try to unblock the same uid again', (done) => {
+			User.blocks.remove(blockeeUid, 1, (err) => {
+				assert.equal(err.message, '[[error:already-unblocked]]');
+				done();
+			});
+		});
+	});
+
+	describe('.is()', () => {
+		before((done) => {
+			User.blocks.add(blockeeUid, 1, done);
+		});
+
+		it('should return a Boolean with blocked status for the queried uid', (done) => {
+			User.blocks.is(blockeeUid, 1, (err, blocked) => {
+				assert.ifError(err);
+				assert.strictEqual(blocked, true);
+				done();
+			});
+		});
+	});
+
+	describe('.list()', () => {
+		it('should return a list of blocked uids', (done) => {
+			User.blocks.list(1, (err, blocked_uids) => {
+				assert.ifError(err);
+				assert.strictEqual(Array.isArray(blocked_uids), true);
+				assert.strictEqual(blocked_uids.length, 1);
+				assert.strictEqual(blocked_uids.includes(blockeeUid), true);
+				done();
+			});
+		});
+	});
+
+	describe('.filter()', () => {
+		it('should remove entries by blocked uids and return filtered set', (done) => {
+			User.blocks.filter(1, [{
+				foo: 'foo',
+				uid: blockeeUid,
+			}, {
+				foo: 'bar',
+				uid: 1,
+			}, {
+				foo: 'baz',
+				uid: blockeeUid,
+			}], (err, filtered) => {
+				assert.ifError(err);
+				assert.strictEqual(Array.isArray(filtered), true);
+				assert.strictEqual(filtered.length, 1);
+				assert.equal(filtered[0].uid, 1);
+				done();
+			});
+		});
+
+		it('should allow property argument to be passed in to customise checked property', (done) => {
+			User.blocks.filter(1, 'fromuid', [{
+				foo: 'foo',
+				fromuid: blockeeUid,
+			}, {
+				foo: 'bar',
+				fromuid: 1,
+			}, {
+				foo: 'baz',
+				fromuid: blockeeUid,
+			}], (err, filtered) => {
+				assert.ifError(err);
+				assert.strictEqual(Array.isArray(filtered), true);
+				assert.strictEqual(filtered.length, 1);
+				assert.equal(filtered[0].fromuid, 1);
+				done();
+			});
+		});
+
+		it('should not process invalid sets', (done) => {
+			User.blocks.filter(1, [{ foo: 'foo' }, { foo: 'bar' }, { foo: 'baz' }], (err, filtered) => {
+				assert.ifError(err);
+				assert.strictEqual(Array.isArray(filtered), true);
+				assert.strictEqual(filtered.length, 3);
+				filtered.forEach((obj) => {
+					assert.strictEqual(obj.hasOwnProperty('foo'), true);
+				});
+				done();
+			});
+		});
+
+		it('should process plain sets that just contain uids', (done) => {
+			User.blocks.filter(1, [1, blockeeUid], (err, filtered) => {
+				assert.ifError(err);
+				assert.strictEqual(filtered.length, 1);
+				assert.strictEqual(filtered[0], 1);
+				done();
+			});
+		});
+
+		it('should filter uids that are blocking targetUid', (done) => {
+			User.blocks.filterUids(blockeeUid, [1, 2], (err, filtered) => {
+				assert.ifError(err);
+				assert.deepEqual(filtered, [2]);
+				done();
+			});
+		});
+	});
+});
+
+describe('status/online', () => {
+	it('should return offline if user is guest', (done) => {
+		const status = User.getStatus({ uid: 0 });
+		assert.strictEqual(status, 'offline');
+		done();
+	});
+
+	it('should return offline if user is guest', async () => {
+		assert.strictEqual(await User.isOnline(0), false);
+	});
+
+	it('should return true', async () => {
+		assert.strictEqual(await User.isOnline(testUid), true);
+	});
+});
+
+describe('isPrivilegedOrSelf', () => {
+	it('should return not error if self', (done) => {
+		User.isPrivilegedOrSelf(1, 1, (err) => {
 			assert.ifError(err);
-			assert(Array.isArray(data));
 			done();
 		});
+	});
+
+	it('should not error if privileged', (done) => {
+		User.create({ username: 'theadmin' }, (err, uid) => {
+			assert.ifError(err);
+			groups.join('administrators', uid, (err) => {
+				assert.ifError(err);
+				User.isPrivilegedOrSelf(uid, 2, (err) => {
+					assert.ifError(err);
+					done();
+				});
+			});
+		});
+	});
+
+	new Promise((resolve, reject) => {
+		User.isPrivilegedOrSelf(0, 1, (err) => {
+			try {
+				assert.equal(err.message, '[[error:no-privileges]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+		});
+	});
+
+
+	it('should get admins and mods', async () => {
+		const data = await new Promise((resolve, reject) => {
+			User.getAdminsandGlobalMods((err, data) => {
+				if (err) {
+					return reject(err);
+				}
+				resolve(data);
+			});
+		});
+		assert(Array.isArray(data));
 	});
 
 	it('should allow user to login even if password is weak', async () => {
@@ -2691,7 +2701,7 @@ describe('User', () => {
 		meta.config.minimumPasswordStrength = oldValue;
 	});
 
-	describe('User\'s', async () => {
+	describe('User\'s', () => {
 		let files;
 
 		before(async () => {

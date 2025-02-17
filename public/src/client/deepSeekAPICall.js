@@ -1,6 +1,6 @@
 const { HfInference } = require('@huggingface/inference');
 
-const apiAccessToken = 'API token input here';
+const apiAccessToken = process.env.DEEPSEEK_API_ACCESS_TOKEN;
 const client = new HfInference(apiAccessToken);
 
 const getAPIResponse = async (question) => {

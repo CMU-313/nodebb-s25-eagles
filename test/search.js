@@ -81,33 +81,45 @@ describe('Search', () => {
 		await privileges.global.rescind(['groups:search:content'], 'guests');
 	});
 
-	it('should search for a user', (done) => {
+	new Promise((resolve, reject) => {
 		search.search({
 			query: 'gin',
 			searchIn: 'users',
 		}, (err, data) => {
-			assert.ifError(err);
-			assert(data);
-			assert.equal(data.matchCount, 1);
-			assert.equal(data.users.length, 1);
-			assert.equal(data.users[0].uid, gingerUid);
-			assert.equal(data.users[0].username, 'ginger');
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert(data);
+				assert.equal(data.matchCount, 1);
+				assert.equal(data.users.length, 1);
+				assert.equal(data.users[0].uid, gingerUid);
+				assert.equal(data.users[0].username, 'ginger');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should search for a tag', (done) => {
+	new Promise((resolve, reject) => {
 		search.search({
 			query: 'plug',
 			searchIn: 'tags',
 		}, (err, data) => {
-			assert.ifError(err);
-			assert(data);
-			assert.equal(data.matchCount, 1);
-			assert.equal(data.tags.length, 1);
-			assert.equal(data.tags[0].value, 'plugin');
-			assert.equal(data.tags[0].score, 2);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert(data);
+				assert.equal(data.matchCount, 1);
+				assert.equal(data.tags.length, 1);
+				assert.equal(data.tags[0].value, 'plugin');
+				assert.equal(data.tags[0].score, 2);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
@@ -136,48 +148,70 @@ describe('Search', () => {
 		assert.strictEqual(data.length, 5);
 	});
 
-	it('should fail if searchIn is wrong', (done) => {
+	new Promise((resolve, reject) => {
 		search.search({
 			query: 'plug',
 			searchIn: '',
 		}, (err) => {
-			assert.equal(err.message, '[[error:unknown-search-filter]]');
-			done();
+			if (err) {
+				try {
+					assert.equal(err.message, '[[error:unknown-search-filter]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
+			} else {
+				reject(new Error('Expected an error but got none'));
+			}
 		});
 	});
 
-	it('should search with tags filter', (done) => {
+	new Promise((resolve, reject) => {
 		search.search({
 			query: 'mongodb',
 			searchIn: 'titles',
 			hasTags: ['nodebb', 'javascript'],
 		}, (err, data) => {
-			assert.ifError(err);
-			assert.equal(data.posts[0].tid, topic2Data.tid);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert.equal(data.posts[0].tid, topic2Data.tid);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should not crash if tags is not an array', (done) => {
+	new Promise((resolve, reject) => {
 		search.search({
 			query: 'mongodb',
 			searchIn: 'titles',
 			hasTags: 'nodebb,javascript',
 		}, (err, data) => {
-			assert.ifError(err);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			resolve();
 		});
 	});
 
-	it('should not find anything', (done) => {
+	new Promise((resolve, reject) => {
 		search.search({
 			query: 'xxxxxxxxxxxxxx',
 			searchIn: 'titles',
 		}, (err, data) => {
-			assert.ifError(err);
-			assert(Array.isArray(data.posts));
-			assert(!data.matchCount);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert(Array.isArray(data.posts));
+				assert(!data.matchCount);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 

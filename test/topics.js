@@ -63,17 +63,23 @@ describe('Topic\'s', () => {
 			}
 		});
 
-		it('should create a new topic with proper parameters', (done) => {
+		new Promise((resolve, reject) => {
 			topics.post({
 				uid: topic.userId,
 				title: topic.title,
 				content: topic.content,
 				cid: topic.categoryId,
 			}, (err, result) => {
-				assert.ifError(err);
-				assert(result);
-				topic.tid = result.topicData.tid;
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert(result);
+					topic.tid = result.topicData.tid;
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
@@ -93,39 +99,61 @@ describe('Topic\'s', () => {
 			assert.equal(data.tid, topic.tid);
 		});
 
-		it('should fail to create new topic with invalid user id', (done) => {
+		new Promise((resolve, reject) => {
 			topics.post({ uid: null, title: topic.title, content: topic.content, cid: topic.categoryId }, (err) => {
-				assert.equal(err.message, '[[error:no-privileges]]');
-				done();
+				try {
+					assert.equal(err.message, '[[error:no-privileges]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should fail to create new topic with empty title', (done) => {
+		new Promise((resolve, reject) => {
 			topics.post({ uid: fooUid, title: '', content: topic.content, cid: topic.categoryId }, (err) => {
-				assert.ok(err);
-				done();
+				try {
+					assert.ok(err);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should fail to create new topic with empty content', (done) => {
+		new Promise((resolve, reject) => {
 			topics.post({ uid: fooUid, title: topic.title, content: '', cid: topic.categoryId }, (err) => {
-				assert.ok(err);
-				done();
+				try {
+					assert.ok(err);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should fail to create new topic with non-existant category id', (done) => {
+		new Promise((resolve, reject) => {
 			topics.post({ uid: topic.userId, title: topic.title, content: topic.content, cid: 99 }, (err) => {
-				assert.equal(err.message, '[[error:no-category]]', 'received no error');
-				done();
+				try {
+					assert.equal(err.message, '[[error:no-category]]', 'received no error');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should return false for falsy uid', (done) => {
+		new Promise((resolve, reject) => {
 			topics.isOwner(topic.tid, 0, (err, isOwner) => {
-				assert.ifError(err);
-				assert(!isOwner);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert(!isOwner);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
@@ -259,14 +287,18 @@ describe('Topic\'s', () => {
 			});
 		});
 
-		it('should create a new reply with proper parameters', (done) => {
+		new Promise((resolve, reject) => {
 			topics.reply({ uid: topic.userId, content: 'test post', tid: newTopic.tid }, (err, result) => {
-				assert.equal(err, null, 'was created with error');
-				assert.ok(result);
-
-				done();
+				try {
+					assert.equal(err, null, 'was created with error');
+					assert.ok(result);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
+
 
 		it('should handle direct replies', async () => {
 			const result = await topics.reply({ uid: topic.userId, content: 'test reply', tid: newTopic.tid, toPid: newPost.pid });
@@ -286,31 +318,47 @@ describe('Topic\'s', () => {
 			);
 		});
 
-		it('should fail to create new reply with invalid user id', (done) => {
+		new Promise((resolve, reject) => {
 			topics.reply({ uid: null, content: 'test post', tid: newTopic.tid }, (err) => {
-				assert.strictEqual(err.message, '[[error:no-privileges]]');
-				done();
+				try {
+					assert.strictEqual(err.message, '[[error:no-privileges]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should fail to create new reply with empty content', (done) => {
+		new Promise((resolve, reject) => {
 			topics.reply({ uid: fooUid, content: '', tid: newTopic.tid }, (err) => {
-				assert.strictEqual(err.message, '[[error:content-too-short, 8]]');
-				done();
+				try {
+					assert.strictEqual(err.message, '[[error:content-too-short, 8]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should fail to create new reply with invalid topic id', (done) => {
+		new Promise((resolve, reject) => {
 			topics.reply({ uid: null, content: 'test post', tid: 99 }, (err) => {
-				assert.strictEqual(err.message, '[[error:no-topic]]');
-				done();
+				try {
+					assert.strictEqual(err.message, '[[error:no-topic]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should fail to create new reply with invalid toPid', (done) => {
+		new Promise((resolve, reject) => {
 			topics.reply({ uid: topic.userId, content: 'test post', tid: newTopic.tid, toPid: '"onmouseover=alert(1);//' }, (err) => {
-				assert.strictEqual(err.message, '[[error:invalid-pid]]');
-				done();
+				try {
+					assert.strictEqual(err.message, '[[error:invalid-pid]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
@@ -398,49 +446,65 @@ describe('Topic\'s', () => {
 		});
 
 
-		it('should not receive errors', (done) => {
+		new Promise((resolve, reject) => {
 			topics.getTopicData(newTopic.tid, (err, topicData) => {
-				assert.ifError(err);
-				assert(typeof topicData.tid === 'number');
-				assert(typeof topicData.uid === 'number');
-				assert(typeof topicData.cid === 'number');
-				assert(typeof topicData.mainPid === 'number');
+				try {
+					assert.ifError(err);
+					assert(typeof topicData.tid === 'number');
+					assert(typeof topicData.uid === 'number');
+					assert(typeof topicData.cid === 'number');
+					assert(typeof topicData.mainPid === 'number');
 
-				assert(typeof topicData.timestamp === 'number');
-				assert.strictEqual(topicData.postcount, 1);
-				assert.strictEqual(topicData.viewcount, 0);
-				assert.strictEqual(topicData.upvotes, 0);
-				assert.strictEqual(topicData.downvotes, 0);
-				assert.strictEqual(topicData.votes, 0);
-				assert.strictEqual(topicData.deleted, 0);
-				assert.strictEqual(topicData.locked, 0);
-				assert.strictEqual(topicData.pinned, 0);
-				done();
+					assert(typeof topicData.timestamp === 'number');
+					assert.strictEqual(topicData.postcount, 1);
+					assert.strictEqual(topicData.viewcount, 0);
+					assert.strictEqual(topicData.upvotes, 0);
+					assert.strictEqual(topicData.downvotes, 0);
+					assert.strictEqual(topicData.votes, 0);
+					assert.strictEqual(topicData.deleted, 0);
+					assert.strictEqual(topicData.locked, 0);
+					assert.strictEqual(topicData.pinned, 0);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should get a single field', (done) => {
+		new Promise((resolve, reject) => {
 			topics.getTopicFields(newTopic.tid, ['slug'], (err, data) => {
-				assert.ifError(err);
-				assert(Object.keys(data).length === 1);
-				assert(data.hasOwnProperty('slug'));
-				done();
+				try {
+					assert.ifError(err);
+					assert(Object.keys(data).length === 1);
+					assert(data.hasOwnProperty('slug'));
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should get topic title by pid', (done) => {
+		new Promise((resolve, reject) => {
 			topics.getTitleByPid(newPost.pid, (err, title) => {
-				assert.ifError(err);
-				assert.equal(title, topic.title);
-				done();
+				try {
+					assert.ifError(err);
+					assert.equal(title, topic.title);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should get topic data by pid', (done) => {
+		new Promise((resolve, reject) => {
 			topics.getTopicDataByPid(newPost.pid, (err, data) => {
-				assert.ifError(err);
-				assert.equal(data.tid, newTopic.tid);
-				done();
+				try {
+					assert.ifError(err);
+					assert.equal(data.tid, newTopic.tid);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
@@ -620,20 +684,30 @@ describe('Topic\'s', () => {
 	});
 
 	describe('Title escaping', () => {
-		it('should properly escape topic title', (done) => {
+		new Promise((resolve, reject) => {
 			const title = '"<script>alert(\'ok1\');</script> new topic test';
 			const titleEscaped = validator.escape(title);
+
 			topics.post({ uid: topic.userId, title: title, content: topic.content, cid: topic.categoryId }, (err, result) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
 				topics.getTopicData(result.topicData.tid, (err, topicData) => {
-					assert.ifError(err);
-					assert.strictEqual(topicData.titleRaw, title);
-					assert.strictEqual(topicData.title, titleEscaped);
-					done();
+					if (err) {
+						return reject(err);
+					}
+					try {
+						assert.strictEqual(topicData.titleRaw, title);
+						assert.strictEqual(topicData.title, titleEscaped);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
 		});
 	});
+
 
 	describe('tools/delete/restore/purge', () => {
 		let newTopic;
@@ -1147,7 +1221,7 @@ describe('Topic\'s', () => {
 		});
 
 
-		it('should 404 if tid is not a number', async () => {
+		it('should 404 if tid is_not a number', async () => {
 			const { response } = await request.get(`${nconf.get('url')}/api/topic/pagination/nan`);
 			assert.equal(response.statusCode, 404);
 		});
@@ -1227,7 +1301,7 @@ describe('Topic\'s', () => {
 			});
 		});
 
-		it('should return suggested topics', (done) => {
+		it('should_return suggested topics', (done) => {
 			topics.getSuggestedTopics(tid3, adminUid, 0, 2, (err, topics) => {
 				assert.ifError(err);
 				assert(Array.isArray(topics));
@@ -1266,7 +1340,7 @@ describe('Topic\'s', () => {
 			assert.strictEqual(hasRead, false);
 		});
 
-		it('should fail with invalid data', (done) => {
+		it('should fail with invalid_data', (done) => {
 			socketTopics.markAsRead({ uid: 0 }, null, (err) => {
 				assert.equal(err.message, '[[error:invalid-data]]');
 				done();
@@ -1284,7 +1358,7 @@ describe('Topic\'s', () => {
 			});
 		});
 
-		it('should fail with invalid data', (done) => {
+		it('should_fail with invalid data', (done) => {
 			socketTopics.markTopicNotificationsRead({ uid: 0 }, null, (err) => {
 				assert.equal(err.message, '[[error:invalid-data]]');
 				done();
@@ -1302,7 +1376,7 @@ describe('Topic\'s', () => {
 			assert.strictEqual(count, 0);
 		});
 
-		it('should fail with invalid data', (done) => {
+		it('should_fail with invalid_data', (done) => {
 			socketTopics.markAllRead({ uid: 0 }, null, (err) => {
 				assert.equal(err.message, '[[error:invalid-uid]]');
 				done();
@@ -1337,14 +1411,14 @@ describe('Topic\'s', () => {
 			});
 		});
 
-		it('should fail with invalid data', async () => {
+		it('should fail if invalid data', async () => {
 			await assert.rejects(
 				apiTopics.bump({ uid: adminUid }, { tid: null }),
 				{ message: '[[error:invalid-tid]]' }
 			);
 		});
 
-		it('should fail with invalid data', async () => {
+		it('should fail if data invalid', async () => {
 			await assert.rejects(
 				apiTopics.bump({ uid: 0 }, { tid: [tid] }),
 				{ message: '[[error:no-privileges]]' }
@@ -1452,7 +1526,7 @@ describe('Topic\'s', () => {
 			});
 		});
 
-		it('should return empty array if query is falsy', (done) => {
+		it('should_return empty array if query is falsy', (done) => {
 			socketTopics.searchTags({ uid: adminUid }, { query: '' }, (err, data) => {
 				assert.ifError(err);
 				assert.deepEqual([], data);
@@ -1470,7 +1544,7 @@ describe('Topic\'s', () => {
 			});
 		});
 
-		it('should return empty array if query is falsy', (done) => {
+		it('should return empty array if query is_falsy', (done) => {
 			socketTopics.searchAndLoadTags({ uid: adminUid }, { query: '' }, (err, data) => {
 				assert.ifError(err);
 				assert.equal(data.matchCount, 0);
@@ -2506,7 +2580,7 @@ describe('Topic\'s', () => {
 	});
 });
 
-describe('Topics\'', async () => {
+describe('Topics\'', () => {
 	let files;
 
 	before(async () => {

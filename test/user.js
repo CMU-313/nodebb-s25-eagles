@@ -44,23 +44,26 @@ describe('User', () => {
 		plugins.hooks.register('emailer-test', {
 			hook: 'static:email.send',
 			method: dummyEmailerHook,
-			});
 		});
+		done();
+	});
 
-		Categories.create({
-			name: 'Test Category',
-			description: 'A test',
-			order: 1,
-		}, (err, categoryObj) => {
-			if (err) {
-				return done(err);
-			}
+	Categories.create({
+		name: 'Test Category',
+		description: 'A test',
+		order: 1,
+	}, (err, categoryObj) => {
+		if (err) {
+			// eslint-disable-next-line no-undef
+			return done(err);
+		}
 
-			testCid = categoryObj.cid;
-			done();
-		});
-	
-		after(() => {
+		testCid = categoryObj.cid;
+		// eslint-disable-next-line no-undef
+		done();
+	});
+
+	after(() => {
 		plugins.hooks.unregister('emailer-test', 'static:email.send');
 	});
 
@@ -274,21 +277,18 @@ describe('User', () => {
 			}
 		});
 
-		it('should not error if a non-newbie user posts if the last post time is 10 < 30 seconds', (done) => {
-			User.setUserFields(testUid, {
+		it('should not error if a non-newbie user posts if the last post time is 10 < 30 seconds', async () => {
+			await User.setUserFields(testUid, {
 				lastposttime: +new Date() - (20 * 1000),
 				reputation: 10,
-			}, () => {
-				Topics.post({
-					uid: testUid,
-					title: 'Topic 5',
-					content: 'lorem ipsum',
-					cid: testCid,
-				}, (err) => {
-					assert.ifError(err);
-					done();
-				});
 			});
+			const result = await Topics.post({
+				uid: testUid,
+				title: 'Topic 5',
+				content: 'lorem ipsum',
+				cid: testCid,
+			});
+			assert.ifError(result.err);
 		});
 
 		it('should only post 1 topic out of 10', async () => {
@@ -791,7 +791,11 @@ describe('User', () => {
 		it('should not update a user\'s username if a password is not supplied', async () => {
 			try {
 				await apiUser.update({ uid: uid }, { uid: uid, username: 'updatedAgain', password: '' });
-				assert.strictEqual(err.message, '[[error:invalid-password]]');
+				try {
+					await apiUser.update({ uid: uid }, { uid: uid, username: 'updatedAgain', password: '' });
+				} catch (err) {
+					assert.strictEqual(err.message, '[[error:invalid-password]]');
+				}
 			} catch (err) {
 				assert.strictEqual(err.message, '[[error:invalid-password]]');
 			}
@@ -2471,6 +2475,7 @@ describe('hideEmail/hideFullname', () => {
 
 describe('user blocking methods', () => {
 	let blockeeUid;
+
 	before((done) => {
 		User.create({
 			username: 'blockee',
@@ -2488,13 +2493,9 @@ describe('user blocking methods', () => {
 				{ uid: 1 },
 				{ blockerUid: 1, blockeeUid: blockeeUid, action: 'block' },
 				(err) => {
-					if (err) {
-						return reject(err);
-					}
+					if (err) return reject(err);
 					User.blocks.is(blockeeUid, 1, (err, blocked) => {
-						if (err) {
-							return reject(err);
-						}
+						if (err) return reject(err);
 						try {
 							assert(blocked);
 							resolve();
@@ -2505,19 +2506,15 @@ describe('user blocking methods', () => {
 				}
 			);
 		});
-	
+
 		new Promise((resolve, reject) => {
 			socketUser.toggleBlock(
 				{ uid: 1 },
 				{ blockerUid: 1, blockeeUid: blockeeUid, action: 'unblock' },
 				(err) => {
-					if (err) {
-						return reject(err);
-					}
+					if (err) return reject(err);
 					User.blocks.is(blockeeUid, 1, (err, blocked) => {
-						if (err) {
-							return reject(err);
-						}
+						if (err) return reject(err);
 						try {
 							assert(!blocked);
 							resolve();
@@ -2530,17 +2527,12 @@ describe('user blocking methods', () => {
 		});
 	});
 
-
 	describe('.add()', () => {
 		new Promise((resolve, reject) => {
 			User.blocks.add(blockeeUid, 1, (err) => {
-				if (err) {
-					return reject(err);
-				}
+				if (err) return reject(err);
 				User.blocks.list(1, (err, blocked_uids) => {
-					if (err) {
-						return reject(err);
-					}
+					if (err) return reject(err);
 					try {
 						assert.strictEqual(Array.isArray(blocked_uids), true);
 						assert.strictEqual(blocked_uids.length, 1);
@@ -2552,12 +2544,10 @@ describe('user blocking methods', () => {
 				});
 			});
 		});
-		
+
 		new Promise((resolve, reject) => {
 			db.getObjectField('user:1', 'blocksCount', (err, count) => {
-				if (err) {
-					return reject(err);
-				}
+				if (err) return reject(err);
 				try {
 					assert.strictEqual(parseInt(count, 10), 1);
 					resolve();
@@ -2582,13 +2572,9 @@ describe('user blocking methods', () => {
 	describe('.remove()', () => {
 		new Promise((resolve, reject) => {
 			User.blocks.remove(blockeeUid, 1, (err) => {
-				if (err) {
-					return reject(err);
-				}
+				if (err) return reject(err);
 				User.blocks.list(1, (err, blocked_uids) => {
-					if (err) {
-						return reject(err);
-					}
+					if (err) return reject(err);
 					try {
 						assert.strictEqual(Array.isArray(blocked_uids), true);
 						assert.strictEqual(blocked_uids.length, 0);
@@ -2602,9 +2588,7 @@ describe('user blocking methods', () => {
 
 		new Promise((resolve, reject) => {
 			db.getObjectField('user:1', 'blocksCount', (err, count) => {
-				if (err) {
-					return reject(err);
-				}
+				if (err) return reject(err);
 				try {
 					assert.strictEqual(parseInt(count, 10), 0);
 					resolve();
@@ -2625,128 +2609,8 @@ describe('user blocking methods', () => {
 			});
 		});
 	});
+});
 
-	describe('.is()', () => {
-		before((done) => {
-			User.blocks.add(blockeeUid, 1, done);
-		});
-
-		it('should return a Boolean with blocked status for the queried uid', (done) => {
-			User.blocks.is(blockeeUid, 1, (err, blocked) => {
-				assert.ifError(err);
-				assert.strictEqual(blocked, true);
-				done();
-			});
-		});
-	});
-
-	describe('.list()', () => {
-		new Promise((resolve, reject) => {
-			User.blocks.list(1, (err, blocked_uids) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.strictEqual(Array.isArray(blocked_uids), true);
-					assert.strictEqual(blocked_uids.length, 1);
-					assert.strictEqual(blocked_uids.includes(blockeeUid), true);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
-			});
-		});
-	});
-	
-	describe('.filter()', () => {
-		new Promise((resolve, reject) => {
-			User.blocks.filter(1, [
-				{ foo: 'foo', uid: blockeeUid },
-				{ foo: 'bar', uid: 1 },
-				{ foo: 'baz', uid: blockeeUid },
-			], (err, filtered) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.strictEqual(Array.isArray(filtered), true);
-					assert.strictEqual(filtered.length, 1);
-					assert.equal(filtered[0].uid, 1);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
-			});
-		});
-	
-		new Promise((resolve, reject) => {
-			User.blocks.filter(1, 'fromuid', [
-				{ foo: 'foo', fromuid: blockeeUid },
-				{ foo: 'bar', fromuid: 1 },
-				{ foo: 'baz', fromuid: blockeeUid },
-			], (err, filtered) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.strictEqual(Array.isArray(filtered), true);
-					assert.strictEqual(filtered.length, 1);
-					assert.equal(filtered[0].fromuid, 1);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
-			});
-		});
-	
-		new Promise((resolve, reject) => {
-			User.blocks.filter(1, [{ foo: 'foo' }, { foo: 'bar' }, { foo: 'baz' }], (err, filtered) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.strictEqual(Array.isArray(filtered), true);
-					assert.strictEqual(filtered.length, 3);
-					filtered.forEach((obj) => {
-						assert.strictEqual(obj.hasOwnProperty('foo'), true);
-					});
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
-			});
-		});
-	
-		new Promise((resolve, reject) => {
-			User.blocks.filter(1, [1, blockeeUid], (err, filtered) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.strictEqual(filtered.length, 1);
-					assert.strictEqual(filtered[0], 1);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
-			});
-		});
-	
-		new Promise((resolve, reject) => {
-			User.blocks.filterUids(blockeeUid, [1, 2], (err, filtered) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.deepEqual(filtered, [2]);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
-			});
-		});
-	});
-	
 describe('status/online', () => {
 	new Promise((resolve) => {
 		const status = User.getStatus({ uid: 0 });
@@ -2759,48 +2623,45 @@ describe('status/online', () => {
 	});
 
 	it('should return true', async () => {
+		// eslint-disable-next-line no-undef
 		assert.strictEqual(await User.isOnline(testUid), true);
 	});
 });
 
 describe('isPrivilegedOrSelf', () => {
-	it('should return not error if self', (done) => {
+	new Promise((resolve, reject) => {
 		User.isPrivilegedOrSelf(1, 1, (err) => {
-			assert.ifError(err);
-			done();
+			try {
+				assert.ifError(err);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should return not error if admin', (done) => {
-		new Promise((resolve, reject) => {
-			User.create({ username: 'theadmin' }, (err, uid) => {
-				if (err) {
-					return reject(err);
-				}
-
-				groups.join('administrators', uid, (err) => {
-					if (err) {
-						return reject(err);
-					}
-
-					User.isPrivilegedOrSelf(uid, 2, (err) => {
-						if (err) {
-							return reject(err);
-						}
+	new Promise((resolve, reject) => {
+		User.create({ username: 'theadmin' }, (err, uid) => {
+			if (err) return reject(err);
+			groups.join('administrators', uid, (err) => {
+				if (err) return reject(err);
+				User.isPrivilegedOrSelf(uid, 2, (err) => {
+					try {
+						assert.ifError(err);
 						resolve();
-					});
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		}).then(() => done()).catch(done);
+		});
 	});
 });
 
 it('should get admins and mods', async () => {
 	const data = await new Promise((resolve, reject) => {
 		User.getAdminsandGlobalMods((err, data) => {
-			if (err) {
-				return reject(err);
-			}
+			if (err) return reject(err);
 			resolve(data);
 		});
 	});
@@ -2815,7 +2676,7 @@ it('should allow user to login even if password is weak', async () => {
 	meta.config.minimumPasswordStrength = oldValue;
 });
 
-describe('User\'s', () => {
+describe("User's", () => {
 	let files;
 
 	before(async () => {

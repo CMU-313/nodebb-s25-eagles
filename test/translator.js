@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable no-undef */
+/* eslint-disable no-async-promise-executor */
 // For tests relating to Transifex configuration, check i18n.js
 
 const assert = require('assert');
@@ -10,46 +12,73 @@ const db = require('./mocks/databasemock');
 
 describe('Translator shim', () => {
 	describe('.translate()', () => {
-		it('should translate correctly', (done) => {
+		new Promise((resolve, reject) => {
 			shim.translate('[[global:pagination.out-of, (foobar), [[global:home]]]]', (translated) => {
-				assert.strictEqual(translated, '(foobar) out of Home');
-				done();
+				try {
+					assert.strictEqual(translated, '(foobar) out of Home');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
-
-		it('should accept a language parameter and adjust accordingly', (done) => {
-			shim.translate('[[global:home]]', 'de', (translated) => {
-				assert.strictEqual(translated, 'Übersicht');
-				done();
-			});
-		});
-
-		it('should translate empty string properly', (done) => {
-			shim.translate('', 'en-GB', (translated) => {
-				assert.strictEqual(translated, '');
-				done();
-			});
-		});
-
-		it('should translate empty string properly', async () => {
-			const translated = await shim.translate('', 'en-GB');
-			assert.strictEqual(translated, '');
-		});
-
-		it('should not allow path traversal', async () => {
-			const t = await shim.translate('[[../../../../config:secret]]');
-			assert.strictEqual(t, 'secret');
 		});
 	});
 });
 
-describe('new Translator(language)', () => {
-	it('should throw if not passed a language', (done) => {
-		assert.throws(() => {
-			new Translator();
-		}, /language string/);
-		done();
+new Promise((resolve, reject) => {
+	shim.translate('[[global:home]]', 'de', (translated) => {
+		try {
+			assert.strictEqual(translated, 'Übersicht');
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
 	});
+});
+
+new Promise((resolve, reject) => {
+	shim.translate('', 'en-GB', (translated) => {
+		try {
+			assert.strictEqual(translated, '');
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
+	});
+});
+
+new Promise(async (resolve, reject) => {
+	try {
+		const translated = await shim.translate('', 'en-GB');
+		assert.strictEqual(translated, '');
+		resolve();
+	} catch (error) {
+		reject(error);
+	}
+});
+
+new Promise(async (resolve, reject) => {
+	try {
+		const t = await shim.translate('[[../../../../config:secret]]');
+		assert.strictEqual(t, 'secret');
+		resolve();
+	} catch (error) {
+		reject(error);
+	}
+});
+
+describe('new Translator(language)', () => {
+	new Promise((resolve, reject) => {
+		try {
+			assert.throws(() => {
+				new Translator();
+			}, /language string/);
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
+	});
+
 
 	describe('.translate()', () => {
 		it('should handle basic translations', () => {
@@ -224,24 +253,35 @@ describe('new Translator(language)', () => {
 });
 
 describe('Translator.create()', () => {
-	it('should return an instance of Translator', (done) => {
-		const translator = Translator.create('en-GB');
-
-		assert(translator instanceof Translator);
-		done();
+	new Promise((resolve, reject) => {
+		try {
+			const translator = Translator.create('en-GB');
+			assert(translator instanceof Translator);
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
 	});
-	it('should return the same object for the same language', (done) => {
-		const one = Translator.create('de');
-		const two = Translator.create('de');
 
-		assert.strictEqual(one, two);
-		done();
+	new Promise((resolve, reject) => {
+		try {
+			const one = Translator.create('de');
+			const two = Translator.create('de');
+			assert.strictEqual(one, two);
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
 	});
-	it('should default to defaultLang', (done) => {
-		const translator = Translator.create();
 
-		assert.strictEqual(translator.lang, 'en-GB');
-		done();
+	new Promise((resolve, reject) => {
+		try {
+			const translator = Translator.create();
+			assert.strictEqual(translator.lang, 'en-GB');
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
 	});
 });
 
@@ -276,74 +316,101 @@ describe('Translator modules', () => {
 		});
 	});
 
-	it('registerModule be passed the language', (done) => {
-		Translator.registerModule('something', (lang) => {
-			assert.ok(lang);
-		});
+	new Promise((resolve, reject) => {
+		try {
+			Translator.registerModule('something', lang => assert.ok(lang));
 
-		const translator = Translator.create('fr_FR');
-		done();
+			const translator = Translator.create('fr_FR');
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
 	});
 });
 
 describe('Translator static methods', () => {
 	describe('.removePatterns', () => {
-		it('should remove translator patterns from text', (done) => {
-			assert.strictEqual(
-				Translator.removePatterns('Lorem ipsum dolor [[sit:amet]], consectetur adipiscing elit. [[sed:vitae, [[semper:dolor]]]] lorem'),
-				'Lorem ipsum dolor , consectetur adipiscing elit.  lorem'
-			);
-			done();
+		new Promise((resolve, reject) => {
+			try {
+				assert.strictEqual(
+					Translator.removePatterns(
+						'Lorem ipsum dolor [[sit:amet]], consectetur adipiscing elit. [[sed:vitae, [[semper:dolor]]]] lorem'
+					),
+					'Lorem ipsum dolor , consectetur adipiscing elit.  lorem'
+				);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
+
 	describe('.escape', () => {
-		it('should escape translation patterns within text', (done) => {
-			assert.strictEqual(
-				Translator.escape('some nice text [[global:home]] here'),
-				'some nice text &lsqb;&lsqb;global:home&rsqb;&rsqb; here'
-			);
-			done();
+		new Promise((resolve) => {
+			try {
+				assert.strictEqual(
+					Translator.escape('some nice text [[global:home]] here'),
+					'some nice text &lsqb;&lsqb;global:home&rsqb;&rsqb; here'
+				);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
 	describe('.unescape', () => {
-		it('should unescape escaped translation patterns within text', (done) => {
-			assert.strictEqual(
-				Translator.unescape('some nice text &lsqb;&lsqb;global:home&rsqb;&rsqb; here'),
-				'some nice text [[global:home]] here'
-			);
-			done();
+		new Promise((resolve) => {
+			try {
+				assert.strictEqual(
+					Translator.unescape('some nice text &lsqb;&lsqb;global:home&rsqb;&rsqb; here'),
+					'some nice text [[global:home]] here'
+				);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
 	describe('.compile', () => {
-		it('should create a translator pattern from a key and list of arguments', (done) => {
-			assert.strictEqual(
-				Translator.compile('amazing:cool', 'awesome', 'great'),
-				'[[amazing:cool, awesome, great]]'
-			);
-			done();
+		new Promise((resolve, reject) => {
+			try {
+				assert.strictEqual(
+					Translator.compile('amazing:cool', 'awesome', 'great'),
+					'[[amazing:cool, awesome, great]]'
+				);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
+	});
 
-		it('should escape `%` and `,` in arguments', (done) => {
+	new Promise((resolve, reject) => {
+		try {
 			assert.strictEqual(
 				Translator.compile('amazing:cool', '100% awesome!', 'one, two, and three'),
 				'[[amazing:cool, 100&#37; awesome!, one&#44; two&#44; and three]]'
 			);
-			done();
-		});
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
 	});
+});
 
-	describe('add translation', () => {
-		it('should add custom translations', async () => {
-			shim.addTranslation('en-GB', 'my-namespace', { foo: 'a custom translation' });
-			const t = await shim.translate('this is best [[my-namespace:foo]]');
-			assert.strictEqual(t, 'this is best a custom translation');
-		});
+describe('add translation', () => {
+	it('should add custom translations', async () => {
+		shim.addTranslation('en-GB', 'my-namespace', { foo: 'a custom translation' });
+		const t = await shim.translate('this is best [[my-namespace:foo]]');
+		assert.strictEqual(t, 'this is best a custom translation');
 	});
+});
 
-	describe('translate nested keys', () => {
-		it('should handle nested translations', async () => {
+describe('translate nested keys', () => {
+	it('should handle nested translations', () => new Promise(async (resolve, reject) => {
+		try {
 			shim.addTranslation('en-GB', 'my-namespace', {
 				key: {
 					key1: 'key1 translated',
@@ -356,8 +423,13 @@ describe('Translator static methods', () => {
 			const t2 = await shim.translate('this is best [[my-namespace:key.key2.key3]]');
 			assert.strictEqual(t1, 'this is best key1 translated');
 			assert.strictEqual(t2, 'this is best key3 translated');
-		});
-		it("should try the defaults if it didn't reach a string in a nested translation", async () => {
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
+	}));
+	it("should try the defaults if it didn't reach a string in a nested translation", () => new Promise(async (resolve, reject) => {
+		try {
 			shim.addTranslation('en-GB', 'my-namespace', {
 				default1: {
 					default1: 'default1 translated',
@@ -371,6 +443,9 @@ describe('Translator static methods', () => {
 			const d2 = await shim.translate('this is best [[my-namespace:default2]]');
 			assert.strictEqual(d1, 'this is best default1 translated');
 			assert.strictEqual(d2, 'this is best default2 translated');
-		});
-	});
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
+	}));
 });

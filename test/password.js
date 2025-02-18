@@ -13,8 +13,11 @@ describe('Password', () => {
 		});
 	});
 
-	describe('.compare()', async () => {
-		const salt = await bcrypt.genSalt(12);
+	describe('.compare()', () => {
+		let salt;
+		before(async () => {
+			salt = await bcrypt.genSalt(12);
+		});
 
 		it('should correctly compare a password and a hash', async () => {
 			const hash = await password.hash(12, 'test');

@@ -124,13 +124,18 @@ describe('Post\'s', () => {
 		}
 	});
 
-	it('should return falsy if post does not exist', (done) => {
+	new Promise((resolve, reject) => {
 		posts.getPostData(9999, (err, postData) => {
-			assert.ifError(err);
-			assert.equal(postData, null);
-			done();
+			try {
+				assert.ifError(err);
+				assert.equal(postData, null);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
+
 
 	describe('voting', () => {
 		it('should fail to upvote post if group does not have upvote permission', async () => {

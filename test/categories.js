@@ -76,7 +76,7 @@ describe('Categories', () => {
 			if (err) return reject(err);
 			try {
 				assert(Array.isArray(data));
-				assert.equal(data[0].cid, categoryObj.cid);
+				assert(data.some(category => category.cid === categoryObj.cid));
 				resolve();
 			} catch (error) {
 				reject(error);

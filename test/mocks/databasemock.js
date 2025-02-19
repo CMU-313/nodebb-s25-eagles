@@ -4,10 +4,13 @@
  * Database Mock - wrapper for database.js, makes system use separate test db, instead of production
  * ATTENTION: testing db is flushed before every use!
  */
-
-require('../../require-main');
+const fs = require('fs');
 
 const path = require('path');
+
+const configJSON = fs.readFileSync(path.join(__dirname, '../../config.json'), 'utf-8');
+
+require('../../require-main');
 const nconf = require('nconf');
 const url = require('url');
 const util = require('util');
@@ -19,6 +22,7 @@ global.env = process.env.NODE_ENV || 'production';
 const winston = require('winston');
 
 const packageInfo = require(path.join(__dirname, '../../package.json'));
+nconf.file({ file: path.join(__dirname, '../../config.json') });
 
 winston.add(new winston.transports.Console({
 	format: winston.format.combine(

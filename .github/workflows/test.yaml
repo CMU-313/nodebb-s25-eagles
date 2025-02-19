@@ -88,3 +88,9 @@ jobs:
 
       - name: Test coverage
         uses: coverallsapp/github-action@v2
+
+      - name: Enable memory overcommit 
+        run: echo 'vm.overcommit_memory = 1' | sudo tee -a /etc/sysctl.conf
+
+      - name: Start Redis
+        run: sudo service redis-server start

@@ -144,7 +144,7 @@ async function listEvents(count = 10) {
 
 async function info() {
 	console.log('');
-	const { version } = require('../../package.json');
+	const { version } = require('../../../package.json');
 	console.log(`  version:  ${version}`);
 
 	console.log(`  Node ver: ${process.version}`);

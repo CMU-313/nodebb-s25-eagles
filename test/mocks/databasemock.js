@@ -17,7 +17,8 @@ global.env = process.env.NODE_ENV || 'production';
 
 
 const winston = require('winston');
-const packageInfo = require('../../package.json');
+
+const packageInfo = require(path.join(__dirname, '../../package.json'));
 
 winston.add(new winston.transports.Console({
 	format: winston.format.combine(

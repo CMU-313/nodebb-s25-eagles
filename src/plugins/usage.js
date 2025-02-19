@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const cronJob = require('cron').CronJob;
 
 const request = require('../request');
-const pkg = require('../../package.json');
+const pkg = require('../../../package.json');
 
 const meta = require('../meta');
 

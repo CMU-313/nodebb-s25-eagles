@@ -20,27 +20,22 @@ describe('Categories', () => {
 		posterUid = await User.create({ username: 'poster' });
 		adminUid = await User.create({ username: 'admin' });
 		await groups.join('administrators', adminUid);
+
+		categoryObj = await new Promise((resolve, reject) => {
+			Categories.create({
+				name: 'Test Category & NodeBB',
+				description: 'Test category created by testing script',
+				icon: 'fa-check',
+				blockclass: 'category-blue',
+				order: '5',
+			}, (err, category) => {
+				if (err) return reject(err);
+				resolve(category);
+			});
+		});
 	});
 
-	new Promise((resolve, reject) => {
-		Categories.create({
-			name: 'Test Category & NodeBB',
-			description: 'Test category created by testing script',
-			icon: 'fa-check',
-			blockclass: 'category-blue',
-			order: '5',
-		}, (err, category) => {
-			if (err) return reject(err);
-			try {
-				categoryObj = category;
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}).catch(err => assert.ifError(err));
-
-	new Promise((resolve, reject) => {
+	it('should get category by id', () => new Promise((resolve, reject) => {
 		Categories.getCategoryById({
 			cid: categoryObj.cid,
 			start: 0,
@@ -58,9 +53,9 @@ describe('Categories', () => {
 				reject(error);
 			}
 		});
-	}).catch(err => assert.ifError(err));
+	}).catch(err => assert.ifError(err)));
 
-	new Promise((resolve, reject) => {
+	it('should return null for non-existent category', () => new Promise((resolve, reject) => {
 		Categories.getCategoryById({
 			cid: 123123123,
 			start: 0,
@@ -74,9 +69,9 @@ describe('Categories', () => {
 				reject(error);
 			}
 		});
-	}).catch(err => assert.ifError(err));
+	}).catch(err => assert.ifError(err)));
 
-	new Promise((resolve, reject) => {
+	it('should get all categories', () => new Promise((resolve, reject) => {
 		Categories.getAllCategories((err, data) => {
 			if (err) return reject(err);
 			try {
@@ -87,7 +82,7 @@ describe('Categories', () => {
 				reject(error);
 			}
 		});
-	}).catch(err => assert.ifError(err));
+	}).catch(err => assert.ifError(err)));
 
 
 	it('should load a category route', async () => {

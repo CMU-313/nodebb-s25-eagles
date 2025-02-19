@@ -22,8 +22,7 @@ describe('Categories', () => {
 		await groups.join('administrators', adminUid);
 	});
 
-
-	it('should create a new category', (done) => {
+	new Promise((resolve, reject) => {
 		Categories.create({
 			name: 'Test Category & NodeBB',
 			description: 'Test category created by testing script',
@@ -31,50 +30,65 @@ describe('Categories', () => {
 			blockclass: 'category-blue',
 			order: '5',
 		}, (err, category) => {
-			assert.ifError(err);
-
-			categoryObj = category;
-			done();
+			if (err) return reject(err);
+			try {
+				categoryObj = category;
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
-	});
+	}).catch(err => assert.ifError(err));
 
-	it('should retrieve a newly created category by its ID', (done) => {
+	new Promise((resolve, reject) => {
 		Categories.getCategoryById({
 			cid: categoryObj.cid,
 			start: 0,
 			stop: -1,
 			uid: 0,
 		}, (err, categoryData) => {
-			assert.ifError(err);
-
-			assert(categoryData);
-			assert.equal('Test Category &amp; NodeBB', categoryData.name);
-			assert.equal(categoryObj.description, categoryData.description);
-			assert.strictEqual(categoryObj.disabled, 0);
-			done();
+			if (err) return reject(err);
+			try {
+				assert(categoryData);
+				assert.equal('Test Category &amp; NodeBB', categoryData.name);
+				assert.equal(categoryObj.description, categoryData.description);
+				assert.strictEqual(categoryObj.disabled, 0);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
-	});
+	}).catch(err => assert.ifError(err));
 
-	it('should return null if category does not exist', (done) => {
+	new Promise((resolve, reject) => {
 		Categories.getCategoryById({
 			cid: 123123123,
 			start: 0,
 			stop: -1,
 		}, (err, categoryData) => {
-			assert.ifError(err);
-			assert.strictEqual(categoryData, null);
-			done();
+			if (err) return reject(err);
+			try {
+				assert.strictEqual(categoryData, null);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
-	});
+	}).catch(err => assert.ifError(err));
 
-	it('should get all categories', (done) => {
+	new Promise((resolve, reject) => {
 		Categories.getAllCategories((err, data) => {
-			assert.ifError(err);
-			assert(Array.isArray(data));
-			assert.equal(data[0].cid, categoryObj.cid);
-			done();
+			if (err) return reject(err);
+			try {
+				assert(Array.isArray(data));
+				assert.equal(data[0].cid, categoryObj.cid);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
-	});
+	}).catch(err => assert.ifError(err));
+
 
 	it('should load a category route', async () => {
 		const { response, body } = await request.get(`${nconf.get('url')}/api/category/${categoryObj.cid}/test-category`);
@@ -84,7 +98,7 @@ describe('Categories', () => {
 	});
 
 	describe('Categories.getRecentTopicReplies', () => {
-		it('should not throw', (done) => {
+		it('should not throw', () => new Promise((done) => {
 			Categories.getCategoryById({
 				cid: categoryObj.cid,
 				set: `cid:${categoryObj.cid}:tids`,
@@ -99,11 +113,11 @@ describe('Categories', () => {
 					done();
 				});
 			});
-		});
+		}));
 	});
 
 	describe('.getCategoryTopics', () => {
-		it('should return a list of topics', (done) => {
+		new Promise((resolve, reject) => {
 			Categories.getCategoryTopics({
 				cid: categoryObj.cid,
 				start: 0,
@@ -111,16 +125,18 @@ describe('Categories', () => {
 				uid: 0,
 				sort: 'oldest_to_newest',
 			}, (err, result) => {
-				assert.equal(err, null);
-
-				assert(Array.isArray(result.topics));
-				assert(result.topics.every(topic => topic instanceof Object));
-
-				done();
+				if (err) return reject(err);
+				try {
+					assert(Array.isArray(result.topics));
+					assert(result.topics.every(topic => topic instanceof Object));
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should return a list of topics by a specific user', (done) => {
+		new Promise((resolve, reject) => {
 			Categories.getCategoryTopics({
 				cid: categoryObj.cid,
 				start: 0,
@@ -129,13 +145,16 @@ describe('Categories', () => {
 				targetUid: 1,
 				sort: 'oldest_to_newest',
 			}, (err, result) => {
-				assert.equal(err, null);
-				assert(Array.isArray(result.topics));
-				assert(result.topics.every(topic => topic instanceof Object && topic.uid === '1'));
-
-				done();
+				if (err) return reject(err);
+				try {
+					assert(Array.isArray(result.topics));
+					assert(result.topics.every(topic => topic instanceof Object && topic.uid === '1'));
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 	});
 
 	describe('Categories.moveRecentReplies', () => {
@@ -159,7 +178,7 @@ describe('Categories', () => {
 			await Topics.reply({ uid: posterUid, content: 'test post', tid: moveTid });
 		});
 
-		it('should move posts from one category to another', (done) => {
+		it('should move posts from one category to another', () => new Promise((done) => {
 			Categories.moveRecentReplies(moveTid, categoryObj.cid, moveCid, (err) => {
 				assert.ifError(err);
 				db.getSortedSetRange(`cid:${categoryObj.cid}:pids`, 0, -1, (err, pids) => {
@@ -172,7 +191,7 @@ describe('Categories', () => {
 					});
 				});
 			});
-		});
+		}));
 	});
 
 	describe('api/socket methods', () => {
@@ -195,31 +214,43 @@ describe('Categories', () => {
 			await Topics.delete(data.topicData.tid, adminUid);
 		});
 
-		it('should get recent replies in category', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.getRecentReplies({ uid: posterUid }, categoryObj.cid, (err, data) => {
-				assert.ifError(err);
-				assert(Array.isArray(data));
-				done();
+				if (err) return reject(err);
+				try {
+					assert(Array.isArray(data));
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should get categories', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.get({ uid: posterUid }, {}, (err, data) => {
-				assert.ifError(err);
-				assert(Array.isArray(data));
-				done();
+				if (err) return reject(err);
+				try {
+					assert(Array.isArray(data));
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should get watched categories', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.getWatchedCategories({ uid: posterUid }, {}, (err, data) => {
-				assert.ifError(err);
-				assert(Array.isArray(data));
-				done();
+				if (err) return reject(err);
+				try {
+					assert(Array.isArray(data));
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should load more topics', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.loadMore({ uid: posterUid }, {
 				cid: categoryObj.cid,
 				after: 0,
@@ -228,14 +259,19 @@ describe('Categories', () => {
 					tag: 'nodebb',
 				},
 			}, (err, data) => {
-				assert.ifError(err);
-				assert(Array.isArray(data.topics));
-				assert.equal(data.topics[0].user.username, 'poster');
-				assert.equal(data.topics[0].tags[0].value, 'nodebb');
-				assert.equal(data.topics[0].category.cid, categoryObj.cid);
-				done();
+				if (err) return reject(err);
+				try {
+					assert(Array.isArray(data.topics));
+					assert.equal(data.topics[0].user.username, 'poster');
+					assert.equal(data.topics[0].tags[0].value, 'nodebb');
+					assert.equal(data.topics[0].category.cid, categoryObj.cid);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
+
 
 		it('should not show deleted topic titles', async () => {
 			const data = await socketCategories.loadMore({ uid: 0 }, {
@@ -249,70 +285,102 @@ describe('Categories', () => {
 			);
 		});
 
-		it('should load topic count', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.getTopicCount({ uid: posterUid }, categoryObj.cid, (err, topicCount) => {
-				assert.ifError(err);
-				assert.strictEqual(topicCount, 3);
-				done();
+				if (err) return reject(err);
+				try {
+					assert.strictEqual(topicCount, 3);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should load category by privilege', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.getCategoriesByPrivilege({ uid: posterUid }, 'find', (err, data) => {
-				assert.ifError(err);
-				assert(Array.isArray(data));
-				done();
+				if (err) return reject(err);
+				try {
+					assert(Array.isArray(data));
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should get move categories', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.getMoveCategories({ uid: posterUid }, {}, (err, data) => {
-				assert.ifError(err);
-				assert(Array.isArray(data));
-				done();
+				if (err) return reject(err);
+				try {
+					assert(Array.isArray(data));
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should ignore category', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.ignore({ uid: posterUid }, { cid: categoryObj.cid }, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
 				Categories.isIgnored([categoryObj.cid], posterUid, (err, isIgnored) => {
-					assert.ifError(err);
-					assert.equal(isIgnored[0], true);
-					Categories.getIgnorers(categoryObj.cid, 0, -1, (err, ignorers) => {
-						assert.ifError(err);
-						assert.deepEqual(ignorers, [posterUid]);
-						done();
-					});
+					if (err) return reject(err);
+					try {
+						assert.equal(isIgnored[0], true);
+						Categories.getIgnorers(categoryObj.cid, 0, -1, (err, ignorers) => {
+							if (err) return reject(err);
+							try {
+								assert.deepEqual(ignorers, [posterUid]);
+								resolve();
+							} catch (error) {
+								reject(error);
+							}
+						});
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should watch category', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.watch({ uid: posterUid }, { cid: categoryObj.cid }, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
 				Categories.isIgnored([categoryObj.cid], posterUid, (err, isIgnored) => {
-					assert.ifError(err);
-					assert.equal(isIgnored[0], false);
-					done();
+					if (err) return reject(err);
+					try {
+						assert.equal(isIgnored[0], false);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should error if watch state does not exist', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.setWatchState({ uid: posterUid }, { cid: categoryObj.cid, state: 'invalid-state' }, (err) => {
-				assert.equal(err.message, '[[error:invalid-watch-state]]');
-				done();
+				try {
+					assert.equal(err.message, '[[error:invalid-watch-state]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should check if user is moderator', (done) => {
+		new Promise((resolve, reject) => {
 			socketCategories.isModerator({ uid: posterUid }, {}, (err, isModerator) => {
-				assert.ifError(err);
-				assert(!isModerator);
-				done();
+				if (err) return reject(err);
+				try {
+					assert(!isModerator);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
 		it('should get category data', async () => {
 			const data = await apiCategories.get({ uid: posterUid }, { cid: categoryObj.cid });
@@ -454,13 +522,13 @@ describe('Categories', () => {
 			assert.strictEqual(data, null);
 		});
 
-		it('should get all category names', (done) => {
+		it('should get all category names', () => new Promise((done) => {
 			socketCategories.getNames({ uid: adminUid }, {}, (err, data) => {
 				assert.ifError(err);
 				assert(Array.isArray(data));
 				done();
 			});
-		});
+		}));
 
 		it('should give privilege', async () => {
 			await apiCategories.setPrivilege({ uid: adminUid }, { cid: categoryObj.cid, privilege: ['groups:topics:delete'], set: true, member: 'registered-users' });
@@ -552,7 +620,7 @@ describe('Categories', () => {
 		});
 	});
 
-	it('should get active users', (done) => {
+	it('should get active users', () => new Promise((done) => {
 		Categories.create({
 			name: 'test',
 		}, (err, category) => {
@@ -571,7 +639,7 @@ describe('Categories', () => {
 				});
 			});
 		});
-	});
+	}));
 
 	describe('tag whitelist', () => {
 		let cid;
@@ -586,53 +654,73 @@ describe('Categories', () => {
 			});
 		});
 
-		it('should error if data is invalid', (done) => {
+		new Promise((resolve, reject) => {
 			socketTopics.isTagAllowed({ uid: posterUid }, null, (err) => {
-				assert.equal(err.message, '[[error:invalid-data]]');
-				done();
+				try {
+					assert.equal(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should return true if category whitelist is empty', (done) => {
+		new Promise((resolve, reject) => {
 			socketTopics.isTagAllowed({ uid: posterUid }, { tag: 'notallowed', cid: cid }, (err, allowed) => {
-				assert.ifError(err);
-				assert(allowed);
-				done();
+				if (err) return reject(err);
+				try {
+					assert(allowed);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should add tags to category whitelist', (done) => {
+		new Promise((resolve, reject) => {
 			const data = {};
 			data[cid] = {
 				tagWhitelist: 'nodebb,jquery,javascript',
 			};
 			Categories.update(data, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
 				db.getSortedSetRange(`cid:${cid}:tag:whitelist`, 0, -1, (err, tagWhitelist) => {
-					assert.ifError(err);
-					assert.deepEqual(['nodebb', 'jquery', 'javascript'], tagWhitelist);
-					done();
+					if (err) return reject(err);
+					try {
+						assert.deepEqual(['nodebb', 'jquery', 'javascript'], tagWhitelist);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should return false if category whitelist does not have tag', (done) => {
+		new Promise((resolve, reject) => {
 			socketTopics.isTagAllowed({ uid: posterUid }, { tag: 'notallowed', cid: cid }, (err, allowed) => {
-				assert.ifError(err);
-				assert(!allowed);
-				done();
+				if (err) return reject(err);
+				try {
+					assert(!allowed);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should return true if category whitelist has tag', (done) => {
+		new Promise((resolve, reject) => {
 			socketTopics.isTagAllowed({ uid: posterUid }, { tag: 'nodebb', cid: cid }, (err, allowed) => {
-				assert.ifError(err);
-				assert(allowed);
-				done();
+				if (err) return reject(err);
+				try {
+					assert(allowed);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should post a topic with only allowed tags', (done) => {
+		new Promise((resolve, reject) => {
 			Topics.post({
 				uid: posterUid,
 				cid: cid,
@@ -640,34 +728,38 @@ describe('Categories', () => {
 				content: 'The content of test topic',
 				tags: ['nodebb', 'jquery', 'notallowed'],
 			}, (err, data) => {
-				assert.ifError(err);
-				assert.equal(data.topicData.tags.length, 2);
-				done();
+				if (err) return reject(err);
+				try {
+					assert.equal(data.topicData.tags.length, 2);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 	});
 
 
 	describe('privileges', () => {
 		const privileges = require('../src/privileges');
 
-		it('should return empty array if uids is empty array', (done) => {
+		it('should return empty array if uids is empty array', () => new Promise((done) => {
 			privileges.categories.filterUids('find', categoryObj.cid, [], (err, uids) => {
 				assert.ifError(err);
 				assert.equal(uids.length, 0);
 				done();
 			});
-		});
+		}));
 
-		it('should filter uids by privilege', (done) => {
+		it('should filter uids by privilege', () => new Promise((done) => {
 			privileges.categories.filterUids('find', categoryObj.cid, [1, 2, 3, 4], (err, uids) => {
 				assert.ifError(err);
 				assert.deepEqual(uids, [1, 2]);
 				done();
 			});
-		});
+		}));
 
-		it('should load category user privileges', (done) => {
+		it('should load category user privileges', () => new Promise((done) => {
 			privileges.categories.userPrivileges(categoryObj.cid, 1, (err, data) => {
 				assert.ifError(err);
 				assert.deepEqual(data, {
@@ -691,9 +783,9 @@ describe('Categories', () => {
 
 				done();
 			});
-		});
+		}));
 
-		it('should load global user privileges', (done) => {
+		it('should load global user privileges', () => new Promise((done) => {
 			privileges.global.userPrivileges(1, (err, data) => {
 				assert.ifError(err);
 				assert.deepEqual(data, {
@@ -718,9 +810,9 @@ describe('Categories', () => {
 
 				done();
 			});
-		});
+		}));
 
-		it('should load category group privileges', (done) => {
+		it('should load category group privileges', () => new Promise((done) => {
 			privileges.categories.groupPrivileges(categoryObj.cid, 'registered-users', (err, data) => {
 				assert.ifError(err);
 				assert.deepEqual(data, {
@@ -744,9 +836,9 @@ describe('Categories', () => {
 
 				done();
 			});
-		});
+		}));
 
-		it('should load global group privileges', (done) => {
+		it('should load global group privileges', () => new Promise((done) => {
 			privileges.global.groupPrivileges('registered-users', (err, data) => {
 				assert.ifError(err);
 				assert.deepEqual(data, {
@@ -771,15 +863,15 @@ describe('Categories', () => {
 
 				done();
 			});
-		});
+		}));
 
-		it('should return false if cid is falsy', (done) => {
+		it('should return false if cid is falsy', () => new Promise((done) => {
 			privileges.categories.isUserAllowedTo('find', null, adminUid, (err, isAllowed) => {
 				assert.ifError(err);
 				assert.equal(isAllowed, false);
 				done();
 			});
-		});
+		}));
 
 		describe('Categories.getModeratorUids', () => {
 			let cid;
@@ -791,7 +883,7 @@ describe('Categories', () => {
 				await groups.join('testGroup', 1);
 			});
 
-			it('should retrieve all users with moderator bit in category privilege', (done) => {
+			it('should retrieve all users with moderator bit in category privilege', () => new Promise((done) => {
 				Categories.getModeratorUids([cid, 2], (err, uids) => {
 					assert.ifError(err);
 					assert.strictEqual(uids.length, 2);
@@ -799,7 +891,7 @@ describe('Categories', () => {
 					assert.strictEqual(uids[1].length, 0);
 					done();
 				});
-			});
+			}));
 
 			it('should not fail when there are multiple groups', async () => {
 				await groups.create({ name: 'testGroup2' });
@@ -829,7 +921,7 @@ describe('Categories', () => {
 
 	describe('getTopicIds', () => {
 		const plugins = require('../src/plugins');
-		it('should get topic ids with filter', (done) => {
+		it('should get topic ids with filter', () => new Promise((done) => {
 			function method(data, callback) {
 				data.tids = [1, 2, 3];
 				callback(null, data);
@@ -850,7 +942,7 @@ describe('Categories', () => {
 				plugins.hooks.unregister('my-test-plugin', 'filter:categories.getTopicIds', method);
 				done();
 			});
-		});
+		}));
 	});
 
 	it('should return nested children categories', async () => {

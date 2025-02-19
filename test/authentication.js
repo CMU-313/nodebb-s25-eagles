@@ -75,7 +75,7 @@ describe('authentication', () => {
 		assert.equal(body, '[[error:username-too-short]]');
 	});
 
-	it('should fail to create user if userslug is too short', async () => {
+	it('should fail to create user if the userslug is too short', async () => {
 		const { response, body } = await helpers.registerUser({
 			username: '     a',
 			password: '123456',
@@ -84,7 +84,7 @@ describe('authentication', () => {
 		assert.equal(body, '[[error:username-too-short]]');
 	});
 
-	it('should fail to create user if userslug is too short', async () => {
+	it('should fail to create user if userslug is too_short', async () => {
 		const { response, body } = await helpers.registerUser({
 			username: 'a      ',
 			password: '123456',

@@ -12,18 +12,18 @@ describe('Hash methods', () => {
 		age: 99,
 	};
 
-	beforeEach((done) => {
+	beforeEach(() => new Promise((done) => {
 		db.setObject('hashTestObject', testData, done);
-	});
+	}));
 
 	describe('setObject()', () => {
-		it('should create a object', (done) => {
+		it('should create a object', () => new Promise((done) => {
 			db.setObject('testObject1', { foo: 'baris', bar: 99 }, function (err) {
 				assert.ifError(err);
 				assert(arguments.length < 2);
 				done();
 			});
-		});
+		}));
 
 		it('should set two objects to same data', async () => {
 			const data = { foo: 'baz', test: '1' };
@@ -33,44 +33,55 @@ describe('Hash methods', () => {
 			assert.deepStrictEqual(result[1], data);
 		});
 
-		it('should do nothing if key is falsy', (done) => {
+		new Promise((resolve, reject) => {
 			db.setObject('', { foo: 1, derp: 2 }, (err) => {
-				assert.ifError(err);
-				done();
+				if (err) return reject(err);
+				resolve();
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should do nothing if data is falsy', (done) => {
+		new Promise((resolve, reject) => {
 			db.setObject('falsy', null, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				db.exists('falsy', (err, exists) => {
-					assert.ifError(err);
-					assert.equal(exists, false);
-					done();
+					if (err) return reject(err);
+					try {
+						assert.equal(exists, false);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should not error if a key is empty string', (done) => {
+		new Promise((resolve, reject) => {
 			db.setObject('emptyField', { '': '', b: 1 }, (err) => {
-				assert.ifError(err);
-				db.getObject('emptyField', (err, data) => {
-					assert.ifError(err);
-					done();
-				});
-			});
-		});
+				if (err) return reject(err);
 
-		it('should work for field names with "." in them', (done) => {
-			db.setObject('dotObject', { 'my.dot.field': 'foo' }, (err) => {
-				assert.ifError(err);
-				db.getObject('dotObject', (err, data) => {
-					assert.ifError(err);
-					assert.equal(data['my.dot.field'], 'foo');
-					done();
+				db.getObject('emptyField', (err, data) => {
+					if (err) return reject(err);
+					resolve();
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
+
+		new Promise((resolve, reject) => {
+			db.setObject('dotObject', { 'my.dot.field': 'foo' }, (err) => {
+				if (err) return reject(err);
+
+				db.getObject('dotObject', (err, data) => {
+					if (err) return reject(err);
+					try {
+						assert.equal(data['my.dot.field'], 'foo');
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
+				});
+			});
+		}).catch(err => assert.ifError(err));
 
 		it('should set multiple keys to different objects', async () => {
 			await db.setObjectBulk([
@@ -97,13 +108,13 @@ describe('Hash methods', () => {
 			assert.deepStrictEqual(result, { foo: '1', baz: '2' });
 		});
 
-		it('should not error if object is empty', async () => {
+		it('should not_error if object is empty', async () => {
 			await db.setObjectBulk([['bulkKey5', {}]]);
 			const result = await db.getObjects(['bulkKey5']);
 			assert.deepStrictEqual(result, [null]);
 		});
 
-		it('should not error if object is empty', async () => {
+		it('should not throw error if object is empty', async () => {
 			const keys = ['bulkKey6', 'bulkKey7'];
 			const data = {};
 
@@ -112,7 +123,7 @@ describe('Hash methods', () => {
 			assert.deepStrictEqual(result, [null, null]);
 		});
 
-		it('should not error if object is empty', async () => {
+		it('should not throw an error if object is empty', async () => {
 			await db.setObject('emptykey', {});
 			const result = await db.getObject('emptykey');
 			assert.deepStrictEqual(result, null);
@@ -120,21 +131,21 @@ describe('Hash methods', () => {
 	});
 
 	describe('setObjectField()', () => {
-		it('should create a new object with field', (done) => {
+		it('should create a new object with field', () => new Promise((done) => {
 			db.setObjectField('testObject2', 'name', 'ginger', function (err) {
 				assert.ifError(err);
 				assert(arguments.length < 2);
 				done();
 			});
-		});
+		}));
 
-		it('should add a new field to an object', (done) => {
+		it('should add a new field to an object', () => new Promise((done) => {
 			db.setObjectField('testObject2', 'type', 'cat', function (err) {
 				assert.ifError(err, null);
 				assert(arguments.length < 2);
 				done();
 			});
-		});
+		}));
 
 		it('should set two objects fields to same data', async () => {
 			const data = { foo: 'baz', test: '1' };
@@ -144,7 +155,7 @@ describe('Hash methods', () => {
 			assert.deepStrictEqual(result[1].myField, '2');
 		});
 
-		it('should work for field names with "." in them', (done) => {
+		it('should work for field names with "." in them', () => new Promise((done) => {
 			db.setObjectField('dotObject2', 'my.dot.field', 'foo2', (err) => {
 				assert.ifError(err);
 				db.getObjectField('dotObject2', 'my.dot.field', (err, value) => {
@@ -153,9 +164,9 @@ describe('Hash methods', () => {
 					done();
 				});
 			});
-		});
+		}));
 
-		it('should work for field names with "." in them when they are cached', (done) => {
+		it('should work for field names with "." in them when they are cached', () => new Promise((done) => {
 			db.setObjectField('dotObject3', 'my.dot.field', 'foo2', (err) => {
 				assert.ifError(err);
 				db.getObject('dotObject3', (err, data) => {
@@ -167,20 +178,20 @@ describe('Hash methods', () => {
 					});
 				});
 			});
-		});
+		}));
 	});
 
 	describe('getObject()', () => {
-		it('should return falsy if object does not exist', (done) => {
+		it('should return falsy if object does not exist', () => new Promise((done) => {
 			db.getObject('doesnotexist', function (err, data) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(!!data, false);
 				done();
 			});
-		});
+		}));
 
-		it('should retrieve an object', (done) => {
+		it('should retrieve an object', () => new Promise((done) => {
 			db.getObject('hashTestObject', (err, data) => {
 				assert.equal(err, null);
 				assert.equal(data.name, testData.name);
@@ -188,16 +199,16 @@ describe('Hash methods', () => {
 				assert.equal(data.lastname, 'usakli');
 				done();
 			});
-		});
+		}));
 
-		it('should return null if key is falsy', (done) => {
+		it('should return null if key is falsy', () => new Promise((done) => {
 			db.getObject(null, function (err, data) {
 				assert.ifError(err);
 				assert.equal(arguments.length, 2);
 				assert.equal(data, null);
 				done();
 			});
-		});
+		}));
 
 		it('should return fields if given', async () => {
 			const data = await db.getObject('hashTestObject', ['name', 'age']);
@@ -214,7 +225,7 @@ describe('Hash methods', () => {
 			], done);
 		});
 
-		it('should return 3 objects with correct data', (done) => {
+		it('should return 3 objects with correct data', () => new Promise((done) => {
 			db.getObjects(['testObject4', 'testObject5', 'doesnotexist'], function (err, objects) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
@@ -224,7 +235,7 @@ describe('Hash methods', () => {
 				assert.equal(!!objects[2], false);
 				done();
 			});
-		});
+		}));
 
 		it('should return fields if given', async () => {
 			await db.setObject('fieldsObj1', { foo: 'foo', baz: 'baz', herp: 'herp' });
@@ -240,41 +251,41 @@ describe('Hash methods', () => {
 	});
 
 	describe('getObjectField()', () => {
-		it('should return falsy if object does not exist', (done) => {
+		it('should return falsy if object does not exist', () => new Promise((done) => {
 			db.getObjectField('doesnotexist', 'fieldName', function (err, value) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(!!value, false);
 				done();
 			});
-		});
+		}));
 
-		it('should return falsy if field does not exist', (done) => {
+		it('should return falsy if field does not exist', () => new Promise((done) => {
 			db.getObjectField('hashTestObject', 'fieldName', function (err, value) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(!!value, false);
 				done();
 			});
-		});
+		}));
 
-		it('should get an objects field', (done) => {
+		it('should get an objects field', () => new Promise((done) => {
 			db.getObjectField('hashTestObject', 'lastname', function (err, value) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(value, 'usakli');
 				done();
 			});
-		});
+		}));
 
-		it('should return null if key is falsy', (done) => {
+		it('should return null if key is falsy', () => new Promise((done) => {
 			db.getObjectField(null, 'test', function (err, data) {
 				assert.ifError(err);
 				assert.equal(arguments.length, 2);
 				assert.equal(data, null);
 				done();
 			});
-		});
+		}));
 
 		it('should return null and not error', async () => {
 			const data = await db.getObjectField('hashTestObject', ['field1', 'field2']);
@@ -283,7 +294,7 @@ describe('Hash methods', () => {
 	});
 
 	describe('getObjectFields()', () => {
-		it('should return an object with falsy values', (done) => {
+		it('should return an object with falsy values', () => new Promise((done) => {
 			db.getObjectFields('doesnotexist', ['field1', 'field2'], function (err, object) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
@@ -292,9 +303,9 @@ describe('Hash methods', () => {
 				assert.equal(!!object.field2, false);
 				done();
 			});
-		});
+		}));
 
-		it('should return an object with correct fields', (done) => {
+		it('should return an object with correct fields', () => new Promise((done) => {
 			db.getObjectFields('hashTestObject', ['lastname', 'age', 'field1'], function (err, object) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
@@ -304,16 +315,16 @@ describe('Hash methods', () => {
 				assert.equal(!!object.field1, false);
 				done();
 			});
-		});
+		}));
 
-		it('should return null if key is falsy', (done) => {
+		it('should return null if key is falsy', () => new Promise((done) => {
 			db.getObjectFields(null, ['test', 'foo'], function (err, data) {
 				assert.ifError(err);
 				assert.equal(arguments.length, 2);
 				assert.equal(data, null);
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('getObjectsFields()', () => {
@@ -324,7 +335,7 @@ describe('Hash methods', () => {
 			], done);
 		});
 
-		it('should return an array of objects with correct values', (done) => {
+		it('should return an array of objects with correct values', () => new Promise((done) => {
 			db.getObjectsFields(['testObject8', 'testObject9', 'doesnotexist'], ['name', 'age'], function (err, objects) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
@@ -337,9 +348,9 @@ describe('Hash methods', () => {
 				assert.equal(!!objects[2].name, false);
 				done();
 			});
-		});
+		}));
 
-		it('should return undefined for all fields if object does not exist', (done) => {
+		it('should return undefined for all fields if object does not exist', () => new Promise((done) => {
 			db.getObjectsFields(['doesnotexist1', 'doesnotexist2'], ['name', 'age'], (err, data) => {
 				assert.ifError(err);
 				assert(Array.isArray(data));
@@ -349,7 +360,7 @@ describe('Hash methods', () => {
 				assert.equal(data[1].age, null);
 				done();
 			});
-		});
+		}));
 
 		it('should return all fields if fields is empty array', async () => {
 			const objects = await db.getObjectsFields(['testObject8', 'testObject9', 'doesnotexist'], []);
@@ -373,16 +384,16 @@ describe('Hash methods', () => {
 	});
 
 	describe('getObjectKeys()', () => {
-		it('should return an empty array for a object that does not exist', (done) => {
+		it('should return an empty array for a object that does not exist', () => new Promise((done) => {
 			db.getObjectKeys('doesnotexist', function (err, keys) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(Array.isArray(keys) && keys.length === 0, true);
 				done();
 			});
-		});
+		}));
 
-		it('should return an array of keys for the object\'s fields', (done) => {
+		it('should return an array of keys for the object\'s fields', () => new Promise((done) => {
 			db.getObjectKeys('hashTestObject', function (err, keys) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
@@ -392,20 +403,20 @@ describe('Hash methods', () => {
 				});
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('getObjectValues()', () => {
-		it('should return an empty array for a object that does not exist', (done) => {
+		it('should return an empty array for a object that does not exist', () => new Promise((done) => {
 			db.getObjectValues('doesnotexist', function (err, values) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(Array.isArray(values) && values.length === 0, true);
 				done();
 			});
-		});
+		}));
 
-		it('should return an array of values for the object\'s fields', (done) => {
+		it('should return an array of values for the object\'s fields', () => new Promise((done) => {
 			db.getObjectValues('hashTestObject', function (err, values) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
@@ -413,36 +424,36 @@ describe('Hash methods', () => {
 				assert.deepEqual(['baris', 'usakli', 99].sort(), values.sort());
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('isObjectField()', () => {
-		it('should return false if object does not exist', (done) => {
+		it('should return false if object does not exist', () => new Promise((done) => {
 			db.isObjectField('doesnotexist', 'field1', function (err, value) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(value, false);
 				done();
 			});
-		});
+		}));
 
-		it('should return false if field does not exist', (done) => {
+		it('should return false if field does not exist', () => new Promise((done) => {
 			db.isObjectField('hashTestObject', 'field1', function (err, value) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(value, false);
 				done();
 			});
-		});
+		}));
 
-		it('should return true if field exists', (done) => {
+		it('should return true if field exists', () => new Promise((done) => {
 			db.isObjectField('hashTestObject', 'name', function (err, value) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(value, true);
 				done();
 			});
-		});
+		}));
 
 		it('should not error if field is falsy', async () => {
 			const value = await db.isObjectField('hashTestObjectEmpty', '');
@@ -452,23 +463,23 @@ describe('Hash methods', () => {
 
 
 	describe('isObjectFields()', () => {
-		it('should return an array of false if object does not exist', (done) => {
+		it('should return an array of false if object does not exist', () => new Promise((done) => {
 			db.isObjectFields('doesnotexist', ['field1', 'field2'], function (err, values) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.deepEqual(values, [false, false]);
 				done();
 			});
-		});
+		}));
 
-		it('should return false if field does not exist', (done) => {
+		it('should return false if field does not exist', () => new Promise((done) => {
 			db.isObjectFields('hashTestObject', ['name', 'age', 'field1'], function (err, values) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.deepEqual(values, [true, true, false]);
 				done();
 			});
-		});
+		}));
 
 		it('should not error if one field is falsy', async () => {
 			const values = await db.isObjectFields('hashTestObject', ['name', '']);
@@ -481,7 +492,7 @@ describe('Hash methods', () => {
 			db.setObject('testObject10', { foo: 'bar', delete: 'this', delete1: 'this', delete2: 'this' }, done);
 		});
 
-		it('should delete an objects field', (done) => {
+		it('should delete an objects field', () => new Promise((done) => {
 			db.deleteObjectField('testObject10', 'delete', function (err) {
 				assert.ifError(err);
 				assert(arguments.length < 2);
@@ -491,9 +502,9 @@ describe('Hash methods', () => {
 					done();
 				});
 			});
-		});
+		}));
 
-		it('should delete multiple fields of the object', (done) => {
+		it('should delete multiple fields of the object', () => new Promise((done) => {
 			db.deleteObjectFields('testObject10', ['delete1', 'delete2'], function (err) {
 				assert.ifError(err);
 				assert(arguments.length < 2);
@@ -507,7 +518,7 @@ describe('Hash methods', () => {
 					done();
 				});
 			});
-		});
+		}));
 
 		it('should delete multiple fields of multiple objects', async () => {
 			await db.setObject('deleteFields1', { foo: 'foo1', baz: '2' });
@@ -523,37 +534,37 @@ describe('Hash methods', () => {
 			await db.deleteObjectFields('someKey', []);
 		});
 
-		it('should not error if key is undefined', (done) => {
+		it('should not error if key is undefined', () => new Promise((done) => {
 			db.deleteObjectField(undefined, 'someField', (err) => {
 				assert.ifError(err);
 				done();
 			});
-		});
+		}));
 
-		it('should not error if key is null', (done) => {
+		it('should not error if key is null', () => new Promise((done) => {
 			db.deleteObjectField(null, 'someField', (err) => {
 				assert.ifError(err);
 				done();
 			});
-		});
+		}));
 
-		it('should not error if field is undefined', (done) => {
+		it('should not error if field is undefined', () => new Promise((done) => {
 			db.deleteObjectField('someKey', undefined, (err) => {
 				assert.ifError(err);
 				done();
 			});
-		});
+		}));
 
 		it('should not error if one of the fields is undefined', async () => {
 			await db.deleteObjectFields('someKey', ['best', undefined]);
 		});
 
-		it('should not error if field is null', (done) => {
+		it('should not error if field is null', () => new Promise((done) => {
 			db.deleteObjectField('someKey', null, (err) => {
 				assert.ifError(err);
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('incrObjectField()', () => {
@@ -561,23 +572,23 @@ describe('Hash methods', () => {
 			db.setObject('testObject11', { age: 99 }, done);
 		});
 
-		it('should set an objects field to 1 if object does not exist', (done) => {
+		it('should set an objects field to 1 if object does not exist', () => new Promise((done) => {
 			db.incrObjectField('testObject12', 'field1', function (err, newValue) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.strictEqual(newValue, 1);
 				done();
 			});
-		});
+		}));
 
-		it('should increment an object fields by 1 and return it', (done) => {
+		it('should increment an object fields by 1 and return it', () => new Promise((done) => {
 			db.incrObjectField('testObject11', 'age', function (err, newValue) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.strictEqual(newValue, 100);
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('decrObjectField()', () => {
@@ -585,25 +596,25 @@ describe('Hash methods', () => {
 			db.setObject('testObject13', { age: 99 }, done);
 		});
 
-		it('should set an objects field to -1 if object does not exist', (done) => {
+		it('should set an objects field to -1 if object does not exist', () => new Promise((done) => {
 			db.decrObjectField('testObject14', 'field1', function (err, newValue) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(newValue, -1);
 				done();
 			});
-		});
+		}));
 
-		it('should decrement an object fields by 1 and return it', (done) => {
+		it('should decrement an object fields by 1 and return it', () => new Promise((done) => {
 			db.decrObjectField('testObject13', 'age', function (err, newValue) {
 				assert.equal(err, null);
 				assert.equal(arguments.length, 2);
 				assert.equal(newValue, 98);
 				done();
 			});
-		});
+		}));
 
-		it('should decrement multiple objects field by 1 and return an array of new values', (done) => {
+		it('should decrement multiple objects field by 1 and return an array of new values', () => new Promise((done) => {
 			db.decrObjectField(['testObject13', 'testObject14', 'decrTestObject'], 'age', (err, data) => {
 				assert.ifError(err);
 				assert.equal(data[0], 97);
@@ -611,7 +622,7 @@ describe('Hash methods', () => {
 				assert.equal(data[2], -1);
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('incrObjectFieldBy()', () => {
@@ -619,33 +630,33 @@ describe('Hash methods', () => {
 			db.setObject('testObject15', { age: 100 }, done);
 		});
 
-		it('should set an objects field to 5 if object does not exist', (done) => {
+		it('should set an objects field to 5 if object does not exist', () => new Promise((done) => {
 			db.incrObjectFieldBy('testObject16', 'field1', 5, function (err, newValue) {
 				assert.ifError(err);
 				assert.equal(arguments.length, 2);
 				assert.equal(newValue, 5);
 				done();
 			});
-		});
+		}));
 
-		it('should increment an object fields by passed in value and return it', (done) => {
+		it('should increment an object fields by passed in value and return it', () => new Promise((done) => {
 			db.incrObjectFieldBy('testObject15', 'age', 11, function (err, newValue) {
 				assert.ifError(err);
 				assert.equal(arguments.length, 2);
 				assert.equal(newValue, 111);
 				done();
 			});
-		});
+		}));
 
-		it('should increment an object fields by passed in value and return it', (done) => {
+		it('should increment an object fields by a passed in value and return it', () => new Promise((done) => {
 			db.incrObjectFieldBy('testObject15', 'age', '11', (err, newValue) => {
 				assert.ifError(err);
 				assert.equal(newValue, 122);
 				done();
 			});
-		});
+		}));
 
-		it('should return null if value is NaN', (done) => {
+		it('should return null if value is NaN', () => new Promise((done) => {
 			db.incrObjectFieldBy('testObject15', 'lastonline', 'notanumber', (err, newValue) => {
 				assert.ifError(err);
 				assert.strictEqual(newValue, null);
@@ -655,7 +666,7 @@ describe('Hash methods', () => {
 					done();
 				});
 			});
-		});
+		}));
 	});
 
 	describe('incrObjectFieldByBulk', () => {

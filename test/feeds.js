@@ -80,7 +80,7 @@ describe('feeds', () => {
 		assert.equal(response.statusCode, 404);
 	});
 
-	it('should redirect if we do not have read privilege', async () => {
+	it('should redirect if we do not have any read privilege', async () => {
 		await privileges.categories.rescind(['groups:read'], cid, 'guests');
 		const { response, body } = await request.get(`${nconf.get('url')}/category/${cid}.rss`);
 		assert.equal(response.statusCode, 200);

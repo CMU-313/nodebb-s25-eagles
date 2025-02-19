@@ -259,7 +259,7 @@ describe('Admin Controllers', () => {
 		assert(body);
 	});
 
-	it('should load /admin/users/csv', (done) => {
+	it('should load /admin/users/csv', () => new Promise((done) => {
 		const socketAdmin = require('../src/socket.io/admin');
 		socketAdmin.user.exportUsersCSV({ uid: adminUid }, {}, (err) => {
 			assert.ifError(err);
@@ -275,7 +275,7 @@ describe('Admin Controllers', () => {
 				done();
 			}, 2000);
 		});
-	});
+	}));
 
 	it('should return 403 if no referer', async () => {
 		const { response, body } = await request.get(`${nconf.get('url')}/api/admin/groups/administrators/csv`, { jar });

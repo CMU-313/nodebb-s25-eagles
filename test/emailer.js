@@ -47,7 +47,7 @@ describe('emailer', () => {
 
 	// TODO: test sendmail here at some point
 
-	it('plugin hook should work', (done) => {
+	it('plugin hook should work', () => new Promise((done) => {
 		const error = new Error();
 		const method = function (data, next) {
 			assert(data);
@@ -68,9 +68,9 @@ describe('emailer', () => {
 			Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
 			done();
 		});
-	});
+	}));
 
-	it('should build custom template on config change', (done) => {
+	it('should build custom template on config change', () => new Promise((done) => {
 		const text = 'a random string of text';
 
 		// make sure it's not already set
@@ -93,9 +93,9 @@ describe('emailer', () => {
 				}, 2000);
 			});
 		});
-	});
+	}));
 
-	it('should send via SMTP', (done) => {
+	it('should send via SMTP', () => new Promise((done) => {
 		const from = 'admin@example.org';
 		const username = 'another@example.com';
 
@@ -134,7 +134,7 @@ describe('emailer', () => {
 				});
 			}, 200);
 		});
-	});
+	}));
 
 	after((done) => {
 		fs.unlinkSync(path.join(__dirname, '../build/public/templates/emails/test.js'));

@@ -8,9 +8,40 @@ const postcss = require('postcss');
 const autoprefixer = require('autoprefixer');
 const clean = require('postcss-clean');
 const rtlcss = require('rtlcss');
+
+const { fork } = require('child_process');
+const path = require('path');
 const sass = require('../utils').getSass();
 
-const fork = require('./debugFork');
+const minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
+
+minifierProcess.on('error', (err) => {
+	console.error('Minifier process error:', err);
+});
+
+minifierProcess.on('exit', (code, signal) => {
+	if (code !== 0) {
+		console.error(`Minifier process exited with code ${code} and signal ${signal}`);
+	}
+});
+
+function sendToMinifier(data) {
+	if (minifierProcess.connected) {
+		minifierProcess.send(data);
+	} else {
+		console.error('Cannot send data to minifier process: IPC channel is closed');
+	}
+}
+
+process.on('message', (msg) => {
+	try {
+		sendToMinifier(msg);
+	} catch (err) {
+		console.error('Failed to send message to minifier process:', err);
+	}
+});
+
+// const fork = require('./debugFork');
 require('../file'); // for graceful-fs
 
 const Minifier = module.exports;

@@ -36,9 +36,13 @@ actions.concat = async function concat(data) {
 		}));
 		const output = files.join('\n;');
 		await fs.promises.writeFile(data.destPath, output);
-		parentPort.postMessage({ type: 'end', result: output });
+		if (parentPort) {
+			parentPort.postMessage({ type: 'end', result: output });
+		}
 	} catch (err) {
-		parentPort.postMessage({ type: 'error', message: err.message });
+		if (parentPort) {
+			parentPort.postMessage({ type: 'error', message: err.message });
+		}
 	}
 };
 
@@ -48,35 +52,40 @@ actions.buildCSS = async function buildCSS(data) {
 			loadPaths: data.paths,
 		});
 
-
 		const [ltrresult, rtlresult] = await Promise.all([
 			processScss('ltr', scssOutput, data),
 			processScss('rtl', scssOutput, data),
 		]);
 
-		parentPort.postMessage({
-			type: 'end',
-			result: {
-				ltr: { code: ltrresult.css },
-				rtl: { code: rtlresult.css },
-			},
-		});
-	} catch (err) {
-		parentPort.postMessage({ type: 'error', message: err.message });
-	}
-};
-
-parentPort.on('message', async (message) => {
-	if (message.type === 'action') {
-		const { action } = message;
-		if (typeof actions[action.act] !== 'function') {
-			parentPort.postMessage({ type: 'error', message: 'Unknown action' });
-			return;
+		if (parentPort) {
+			parentPort.postMessage({
+				type: 'end',
+				result: {
+					ltr: { code: ltrresult.css },
+					rtl: { code: rtlresult.css },
+				},
+			});
 		}
-		try {
-			await actions[action.act](action);
-		} catch (err) {
+	} catch (err) {
+		if (parentPort) {
 			parentPort.postMessage({ type: 'error', message: err.message });
 		}
 	}
-});
+};
+
+if (parentPort) {
+	parentPort.on('message', async (message) => {
+		if (message.type === 'action') {
+			const { action } = message;
+			if (typeof actions[action.act] !== 'function') {
+				parentPort.postMessage({ type: 'error', message: 'Unknown action' });
+				return;
+			}
+			try {
+				await actions[action.act](action);
+			} catch (err) {
+				parentPort.postMessage({ type: 'error', message: err.message });
+			}
+		}
+	});
+}

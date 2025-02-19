@@ -14,28 +14,40 @@ const path = require('path');
 const sass = require('../utils').getSass();
 
 let minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
+let retryCount = 0;
+const maxRetries = 5;
+const retryDelay = 1000; // 1 second
 
 function restartMinifierProcess() {
+	if (retryCount >= maxRetries) {
+		console.error('Max retries reached. Minifier process will not be restarted.');
+		return;
+	}
+
 	if (minifierProcess) {
 		minifierProcess.removeAllListeners();
 		minifierProcess.kill();
 	}
-	minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
 
-	minifierProcess.on('error', (err) => {
-		console.error('Minifier process error:', err);
-	});
+	setTimeout(() => {
+		minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
+		retryCount += 1;
 
-	minifierProcess.on('exit', (code, signal) => {
-		if (code !== 0) {
-			console.error(`Minifier process exited with code ${code} and signal ${signal}`);
-		}
-	});
+		minifierProcess.on('error', (err) => {
+			console.error('Minifier process error:', err);
+		});
 
-	minifierProcess.on('disconnect', () => {
-		console.error('Minifier process disconnected');
-		restartMinifierProcess();
-	});
+		minifierProcess.on('exit', (code, signal) => {
+			if (code !== 0) {
+				console.error(`Minifier process exited with code ${code} and signal ${signal}`);
+			}
+		});
+
+		minifierProcess.on('disconnect', () => {
+			console.error('Minifier process disconnected');
+			restartMinifierProcess();
+		});
+	}, retryDelay);
 }
 
 minifierProcess.on('error', (err) => {

@@ -89,6 +89,9 @@ describe('Categories', () => {
 
 
 	it('should load a category route', async () => {
+		if (!categoryObj || !categoryObj.cid) {
+			throw new Error('categoryObj is not defined or missing cid');
+		}
 		const { response, body } = await request.get(`${nconf.get('url')}/api/category/${categoryObj.cid}/test-category`);
 		assert.equal(response.statusCode, 200);
 		assert.equal(body.name, 'Test Category &amp; NodeBB');
@@ -97,6 +100,9 @@ describe('Categories', () => {
 
 	describe('Categories.getRecentTopicReplies', () => {
 		it('should not throw', () => new Promise((done) => {
+			if (!categoryObj || !categoryObj.cid) {
+				throw new Error('categoryObj is not defined or missing cid');
+			}
 			Categories.getCategoryById({
 				cid: categoryObj.cid,
 				set: `cid:${categoryObj.cid}:tids`,
@@ -116,6 +122,9 @@ describe('Categories', () => {
 
 	describe('.getCategoryTopics', () => {
 		new Promise((resolve, reject) => {
+			if (!categoryObj || !categoryObj.cid) {
+				reject(new Error('categoryObj is not defined or missing cid'));
+			}
 			Categories.getCategoryTopics({
 				cid: categoryObj.cid,
 				start: 0,
@@ -135,6 +144,9 @@ describe('Categories', () => {
 		}).catch(err => assert.ifError(err));
 
 		new Promise((resolve, reject) => {
+			if (!categoryObj || !categoryObj.cid) {
+				reject(new Error('categoryObj is not defined or missing cid'));
+			}
 			Categories.getCategoryTopics({
 				cid: categoryObj.cid,
 				start: 0,
@@ -177,6 +189,9 @@ describe('Categories', () => {
 		});
 
 		it('should move posts from one category to another', () => new Promise((done) => {
+			if (!categoryObj || !categoryObj.cid) {
+				throw new Error('categoryObj is not defined or missing cid');
+			}
 			Categories.moveRecentReplies(moveTid, categoryObj.cid, moveCid, (err) => {
 				assert.ifError(err);
 				db.getSortedSetRange(`cid:${categoryObj.cid}:pids`, 0, -1, (err, pids) => {
@@ -213,6 +228,9 @@ describe('Categories', () => {
 		});
 
 		new Promise((resolve, reject) => {
+			if (!categoryObj || !categoryObj.cid) {
+				reject(new Error('categoryObj is not defined or missing cid'));
+			}
 			socketCategories.getRecentReplies({ uid: posterUid }, categoryObj.cid, (err, data) => {
 				if (err) return reject(err);
 				try {
@@ -249,6 +267,9 @@ describe('Categories', () => {
 		}).catch(err => assert.ifError(err));
 
 		new Promise((resolve, reject) => {
+			if (!categoryObj || !categoryObj.cid) {
+				reject(new Error('categoryObj is not defined or missing cid'));
+			}
 			socketCategories.loadMore({ uid: posterUid }, {
 				cid: categoryObj.cid,
 				after: 0,
@@ -272,6 +293,9 @@ describe('Categories', () => {
 
 
 		it('should not show deleted topic titles', async () => {
+			if (!categoryObj || !categoryObj.cid) {
+				throw new Error('categoryObj is not defined or missing cid');
+			}
 			const data = await socketCategories.loadMore({ uid: 0 }, {
 				cid: categoryObj.cid,
 				after: 0,
@@ -284,6 +308,9 @@ describe('Categories', () => {
 		});
 
 		new Promise((resolve, reject) => {
+			if (!categoryObj || !categoryObj.cid) {
+				reject(new Error('categoryObj is not defined or missing cid'));
+			}
 			socketCategories.getTopicCount({ uid: posterUid }, categoryObj.cid, (err, topicCount) => {
 				if (err) return reject(err);
 				try {
@@ -320,6 +347,9 @@ describe('Categories', () => {
 		}).catch(err => assert.ifError(err));
 
 		new Promise((resolve, reject) => {
+			if (!categoryObj || !categoryObj.cid) {
+				reject(new Error('categoryObj is not defined or missing cid'));
+			}
 			socketCategories.ignore({ uid: posterUid }, { cid: categoryObj.cid }, (err) => {
 				if (err) return reject(err);
 				Categories.isIgnored([categoryObj.cid], posterUid, (err, isIgnored) => {
@@ -343,6 +373,9 @@ describe('Categories', () => {
 		}).catch(err => assert.ifError(err));
 
 		new Promise((resolve, reject) => {
+			if (!categoryObj || !categoryObj.cid) {
+				reject(new Error('categoryObj is not defined or missing cid'));
+			}
 			socketCategories.watch({ uid: posterUid }, { cid: categoryObj.cid }, (err) => {
 				if (err) return reject(err);
 				Categories.isIgnored([categoryObj.cid], posterUid, (err, isIgnored) => {
@@ -358,6 +391,9 @@ describe('Categories', () => {
 		}).catch(err => assert.ifError(err));
 
 		new Promise((resolve, reject) => {
+			if (!categoryObj || !categoryObj.cid) {
+				reject(new Error('categoryObj is not defined or missing cid'));
+			}
 			socketCategories.setWatchState({ uid: posterUid }, { cid: categoryObj.cid, state: 'invalid-state' }, (err) => {
 				try {
 					assert.equal(err.message, '[[error:invalid-watch-state]]');
@@ -381,6 +417,9 @@ describe('Categories', () => {
 		}).catch(err => assert.ifError(err));
 
 		it('should get category data', async () => {
+			if (!categoryObj || !categoryObj.cid) {
+				throw new Error('categoryObj is not defined or missing cid');
+			}
 			const data = await apiCategories.get({ uid: posterUid }, { cid: categoryObj.cid });
 			assert.equal(categoryObj.cid, data.cid);
 		});

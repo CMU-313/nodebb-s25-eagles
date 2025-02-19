@@ -6,7 +6,7 @@ const winston = require('winston');
 const path = require('path');
 const chalk = require('chalk');
 
-const pkg = require('../package.json');
+const pkg = require(path.join(__dirname, '../package.json'));
 const { paths } = require('./constants');
 
 function setupWinston() {

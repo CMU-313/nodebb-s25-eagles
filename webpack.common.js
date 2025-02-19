@@ -4,7 +4,12 @@ const path = require('path');
 const url = require('url');
 const nconf = require('nconf');
 
-const activePlugins = require('./build/active_plugins.json');
+let activePlugins = [];
+try {
+	activePlugins = require(path.resolve(__dirname, 'build/active_plugins.json'));
+} catch (e) {
+	console.warn('Could not load active plugins:', e.message);
+}
 
 let relativePath = nconf.get('relative_path');
 if (relativePath === undefined) {

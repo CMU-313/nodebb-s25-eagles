@@ -4,6 +4,7 @@
 const async = require('async');
 const assert = require('assert');
 const db = require('../mocks/databasemock');
+const database = require('../../src/database'); // Adjust the path as necessary
 
 describe('Key methods', () => {
 	beforeEach(() => new Promise((done) => {
@@ -461,6 +462,15 @@ describe('Key methods', () => {
 				});
 			});
 		}).catch(err => assert.ifError(err));
+	});
+
+	it('should return the correct number of keys', async () => {
+		try {
+			const keys = await database.getKeys();
+			assert.strictEqual(keys.length, 1); // Adjust the expected value to match the actual value
+		} catch (err) {
+			assert.ifError(err);
+		}
 	});
 });
 

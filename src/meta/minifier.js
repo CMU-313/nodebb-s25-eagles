@@ -25,6 +25,10 @@ minifierProcess.on('exit', (code, signal) => {
 	}
 });
 
+minifierProcess.on('disconnect', () => {
+	console.error('Minifier process disconnected');
+});
+
 function sendToMinifier(data) {
 	if (minifierProcess.connected) {
 		minifierProcess.send(data);
@@ -122,6 +126,10 @@ function forkAction(action) {
 			proc.kill();
 			removeChild(proc);
 			reject(err);
+		});
+		proc.on('disconnect', () => {
+			removeChild(proc);
+			reject(new Error('IPC channel closed'));
 		});
 
 		proc.send({

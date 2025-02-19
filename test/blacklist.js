@@ -22,61 +22,75 @@ describe('blacklist', () => {
 	const socketBlacklist = require('../src/socket.io/blacklist');
 	const rules = '1.1.1.1\n2.2.2.2\n::ffff:0:2.2.2.2\n127.0.0.1\n192.168.100.0/22';
 
-	it('should validate blacklist', (done) => {
-		socketBlacklist.validate({ uid: adminUid }, {
-			rules: rules,
-		}, (err, data) => {
-			assert.ifError(err);
-			done();
+	new Promise((resolve, reject) => {
+		socketBlacklist.validate({ uid: adminUid }, { rules: rules }, (err, data) => {
+			if (err) return reject(err);
+			resolve();
 		});
-	});
+	}).catch(err => assert.ifError(err));
 
-	it('should error if not admin', (done) => {
+	new Promise((resolve, reject) => {
 		socketBlacklist.save({ uid: 0 }, rules, (err) => {
-			assert.equal(err.message, '[[error:no-privileges]]');
-			done();
+			try {
+				assert.equal(err.message, '[[error:no-privileges]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
-	});
+	}).catch(err => assert.ifError(err));
 
-	it('should save blacklist', (done) => {
+	new Promise((resolve, reject) => {
 		socketBlacklist.save({ uid: adminUid }, rules, (err) => {
-			assert.ifError(err);
-			done();
+			if (err) return reject(err);
+			resolve();
 		});
-	});
+	}).catch(err => assert.ifError(err));
 
-	it('should pass ip test against blacklist', (done) => {
+	new Promise((resolve, reject) => {
 		blacklist.test('3.3.3.3', (err) => {
-			assert.ifError(err);
-			done();
+			if (err) return reject(err);
+			resolve();
 		});
-	});
+	}).catch(err => assert.ifError(err));
 
-	it('should fail ip test against blacklist', (done) => {
+	new Promise((resolve, reject) => {
 		blacklist.test('1.1.1.1', (err) => {
-			assert.equal(err.message, '[[error:blacklisted-ip]]');
-			done();
+			try {
+				assert.equal(err.message, '[[error:blacklisted-ip]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
-	});
+	}).catch(err => assert.ifError(err));
 
-	it('should fail ip test against blacklist with port', (done) => {
+	new Promise((resolve, reject) => {
 		blacklist.test('1.1.1.1:4567', (err) => {
-			assert.equal(err.message, '[[error:blacklisted-ip]]');
-			done();
+			try {
+				assert.equal(err.message, '[[error:blacklisted-ip]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
-	});
+	}).catch(err => assert.ifError(err));
 
-	it('should pass ip test and not crash with ipv6 address', (done) => {
+	new Promise((resolve, reject) => {
 		blacklist.test('2001:db8:85a3:0:0:8a2e:370:7334', (err) => {
-			assert.ifError(err);
-			done();
+			if (err) return reject(err);
+			resolve();
 		});
-	});
+	}).catch(err => assert.ifError(err));
 
-	it('should fail ip test due to cidr', (done) => {
+	new Promise((resolve, reject) => {
 		blacklist.test('192.168.100.1', (err) => {
-			assert.equal(err.message, '[[error:blacklisted-ip]]');
-			done();
+			try {
+				assert.equal(err.message, '[[error:blacklisted-ip]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
-	});
+	}).catch(err => assert.ifError(err));
 });

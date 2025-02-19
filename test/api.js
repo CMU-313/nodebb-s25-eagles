@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable jest/valid-describe-callback */
+
 const _ = require('lodash');
 const assert = require('assert');
 const path = require('path');
@@ -166,10 +168,10 @@ describe('API', async () => {
 		},
 	};
 
-	async function dummySearchHook(data) {
+	async function dummySearchHook(_data) {
 		return [1];
 	}
-	async function dummyEmailerHook(data) {
+	async function dummyEmailerHook(_data) {
 		// pretend to handle sending emails
 	}
 
@@ -238,9 +240,9 @@ describe('API', async () => {
 				timestamp: Date.now(),
 			}],
 		});
-		meta.config.allowTopicsThumbnail = 1;
-		meta.config.termsOfUse = 'I, for one, welcome our new test-driven overlords';
-		meta.config.chatMessageDelay = 0;
+		meta.configs.allowTopicsThumbnail = 1;
+		meta.configs.termsOfUse = 'I, for one, welcome our new test-driven overlords';
+		meta.configs.chatMessageDelay = 0;
 
 		// Create a category
 		const testCategory = await categories.create({ name: 'test' });
@@ -650,7 +652,7 @@ describe('API', async () => {
 								});
 							} else if (response[prop].length) { // for now
 								response[prop].forEach((item) => {
-									assert.strictEqual(typeof item, schema[prop].items.type, `"${prop}" should have ${schema[prop].items.type} items, but found ${typeof items} instead (path: ${method} ${path}, context: ${context})`);
+									assert.strictEqual(typeof item, schema[prop].items.type, `"${prop}" should have ${schema[prop].items.type} items, but found ${typeof item} instead (path: ${method} ${path}, context: ${context})`);
 								});
 							}
 						}

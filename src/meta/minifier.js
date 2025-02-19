@@ -13,7 +13,30 @@ const { fork } = require('child_process');
 const path = require('path');
 const sass = require('../utils').getSass();
 
-const minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
+let minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
+
+function restartMinifierProcess() {
+	if (minifierProcess) {
+		minifierProcess.removeAllListeners();
+		minifierProcess.kill();
+	}
+	minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
+
+	minifierProcess.on('error', (err) => {
+		console.error('Minifier process error:', err);
+	});
+
+	minifierProcess.on('exit', (code, signal) => {
+		if (code !== 0) {
+			console.error(`Minifier process exited with code ${code} and signal ${signal}`);
+		}
+	});
+
+	minifierProcess.on('disconnect', () => {
+		console.error('Minifier process disconnected');
+		restartMinifierProcess();
+	});
+}
 
 minifierProcess.on('error', (err) => {
 	console.error('Minifier process error:', err);
@@ -27,6 +50,7 @@ minifierProcess.on('exit', (code, signal) => {
 
 minifierProcess.on('disconnect', () => {
 	console.error('Minifier process disconnected');
+	restartMinifierProcess();
 });
 
 function sendToMinifier(data) {
@@ -34,6 +58,7 @@ function sendToMinifier(data) {
 		minifierProcess.send(data);
 	} else {
 		console.error('Cannot send data to minifier process: IPC channel is closed');
+		restartMinifierProcess();
 	}
 }
 
@@ -42,13 +67,14 @@ process.on('message', (msg) => {
 		sendToMinifier(msg);
 	} catch (err) {
 		console.error('Failed to send message to minifier process:', err);
+		restartMinifierProcess();
 	}
 });
 
 process.on('error', (err) => {
 	if (err.code === 'ERR_IPC_CHANNEL_CLOSED') {
 		console.error('Minifier process disconnected:', err);
-		// Handle the error, e.g., restart the process or notify the user
+		restartMinifierProcess();
 	} else {
 		// If it's not the specific error we're looking for, rethrow it
 		throw err;

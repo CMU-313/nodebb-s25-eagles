@@ -45,6 +45,16 @@ process.on('message', (msg) => {
 	}
 });
 
+process.on('error', (err) => {
+	if (err.code === 'ERR_IPC_CHANNEL_CLOSED') {
+		console.error('Minifier process disconnected:', err);
+		// Handle the error, e.g., restart the process or notify the user
+	} else {
+		// If it's not the specific error we're looking for, rethrow it
+		throw err;
+	}
+});
+
 // const fork = require('./debugFork');
 require('../file'); // for graceful-fs
 

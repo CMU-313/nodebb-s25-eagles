@@ -36,6 +36,9 @@ describe('Categories', () => {
 	});
 
 	it('should get category by id', () => new Promise((resolve, reject) => {
+		if (!categoryObj || !categoryObj.cid) {
+			reject(new Error('categoryObj is not defined or missing cid'));
+		}
 		Categories.getCategoryById({
 			cid: categoryObj.cid,
 			start: 0,

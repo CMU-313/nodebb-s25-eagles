@@ -38,62 +38,87 @@ describe('meta', () => {
 
 	describe('settings', () => {
 		const socketAdmin = require('../src/socket.io/admin');
-		it('should set setting', (done) => {
-			socketAdmin.settings.set({ uid: fooUid }, { hash: 'some:hash', values: { foo: '1', derp: 'value' } }, (err) => {
-				assert.ifError(err);
-				db.getObject('settings:some:hash', (err, data) => {
-					assert.ifError(err);
-					assert.equal(data.foo, '1');
-					assert.equal(data.derp, 'value');
-					done();
-				});
-			});
-		});
+		it('should set setting', () => new Promise((resolve, reject) => {
+			socketAdmin.settings.set(
+				{ uid: fooUid },
+				{ hash: 'some:hash', values: { foo: '1', derp: 'value' } },
+				(err) => {
+					if (err) return reject(err);
+					db.getObject('settings:some:hash', (err, data) => {
+						if (err) return reject(err);
+						try {
+							assert.equal(data.foo, '1');
+							assert.equal(data.derp, 'value');
+							resolve();
+						} catch (assertionError) {
+							reject(assertionError);
+						}
+					});
+				}
+			);
+		}));
 
-		it('should get setting', (done) => {
+		it('should get setting', () => new Promise((resolve, reject) => {
 			socketAdmin.settings.get({ uid: fooUid }, { hash: 'some:hash' }, (err, data) => {
-				assert.ifError(err);
-				assert.equal(data.foo, '1');
-				assert.equal(data.derp, 'value');
-				done();
+				if (err) return reject(err);
+				try {
+					assert.equal(data.foo, '1');
+					assert.equal(data.derp, 'value');
+					resolve();
+				} catch (assertionError) {
+					reject(assertionError);
+				}
 			});
-		});
+		}));
 
-		it('should not set setting if not empty', (done) => {
+		it('should not set setting if not empty', () => new Promise((resolve, reject) => {
 			meta.settings.setOnEmpty('some:hash', { foo: 2 }, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
 				db.getObject('settings:some:hash', (err, data) => {
-					assert.ifError(err);
-					assert.equal(data.foo, '1');
-					assert.equal(data.derp, 'value');
-					done();
+					if (err) return reject(err);
+					try {
+						assert.equal(data.foo, '1');
+						assert.equal(data.derp, 'value');
+						resolve();
+					} catch (assertionError) {
+						reject(assertionError);
+					}
 				});
 			});
-		});
+		}));
 
-		it('should set setting if empty', (done) => {
+		it('should set setting if empty', () => new Promise((resolve, reject) => {
 			meta.settings.setOnEmpty('some:hash', { empty: '2' }, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
 				db.getObject('settings:some:hash', (err, data) => {
-					assert.ifError(err);
-					assert.equal(data.foo, '1');
-					assert.equal(data.derp, 'value');
-					assert.equal(data.empty, '2');
-					done();
+					if (err) return reject(err);
+					try {
+						assert.equal(data.foo, '1');
+						assert.equal(data.derp, 'value');
+						assert.equal(data.empty, '2');
+						resolve();
+					} catch (assertionError) {
+						reject(assertionError);
+					}
 				});
 			});
-		});
+		}));
 
-		it('should set one and get one', (done) => {
+		it('should set one and get one', () => new Promise((resolve, reject) => {
 			meta.settings.setOne('some:hash', 'myField', 'myValue', (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
 				meta.settings.getOne('some:hash', 'myField', (err, myValue) => {
-					assert.ifError(err);
-					assert.equal(myValue, 'myValue');
-					done();
+					if (err) return reject(err);
+					try {
+						assert.equal(myValue, 'myValue');
+						resolve();
+					} catch (assertionError) {
+						reject(assertionError);
+					}
 				});
 			});
-		});
+		}));
+
 
 		it('should return null if setting field does not exist', async () => {
 			const val = await meta.settings.getOne('some:hash', 'does not exist');
@@ -106,84 +131,116 @@ describe('meta', () => {
 		];
 		const anotherList = [];
 
-		it('should set setting with sorted list', (done) => {
-			socketAdmin.settings.set({ uid: fooUid }, { hash: 'another:hash', values: { foo: '1', derp: 'value', someList: someList, anotherList: anotherList } }, (err) => {
+		it('should set setting with sorted list', () => new Promise((resolve, reject) => {
+			socketAdmin.settings.set(
+				{ uid: fooUid },
+				{ hash: 'another:hash', values: { foo: '1', derp: 'value', someList, anotherList } },
+				(err) => {
+					if (err) return reject(err);
+
+					db.getObject('settings:another:hash', (err, data) => {
+						if (err) return reject(err);
+						try {
+							assert.equal(data.foo, '1');
+							assert.equal(data.derp, 'value');
+							assert.equal(data.someList, undefined);
+							assert.equal(data.anotherList, undefined);
+							resolve();
+						} catch (assertionError) {
+							reject(assertionError);
+						}
+					});
+				}
+			);
+		}));
+
+		it('should get setting with sorted list', () => new Promise((resolve, reject) => {
+			socketAdmin.settings.get({ uid: fooUid }, { hash: 'another:hash' }, (err, data) => {
+				if (err) return reject(err);
+				try {
+					assert.strictEqual(data.foo, '1');
+					assert.strictEqual(data.derp, 'value');
+					assert.deepStrictEqual(data.someList, someList);
+					assert.deepStrictEqual(data.anotherList, anotherList);
+					resolve();
+				} catch (assertionError) {
+					reject(assertionError);
+				}
+			});
+		}));
+
+		it('should not_set setting if not empty', () => new Promise((resolve, reject) => {
+			meta.settings.setOnEmpty('some:hash', { foo: 2 }, (err) => {
+				if (err) return reject(err);
+
+				db.getObject('settings:some:hash', (err, data) => {
+					if (err) return reject(err);
+					try {
+						assert.equal(data.foo, '1');
+						assert.equal(data.derp, 'value');
+						resolve();
+					} catch (assertionError) {
+						reject(assertionError);
+					}
+				});
+			});
+		}));
+
+		it('should not set setting with sorted list if not empty', () => new Promise((resolve, reject) => {
+			meta.settings.setOnEmpty('another:hash', { foo: anotherList }, (err) => {
+				if (err) return reject(err);
+
+				socketAdmin.settings.get({ uid: fooUid }, { hash: 'another:hash' }, (err, data) => {
+					if (err) return reject(err);
+					try {
+						assert.equal(data.foo, '1');
+						assert.equal(data.derp, 'value');
+						resolve();
+					} catch (assertionError) {
+						reject(assertionError);
+					}
+				});
+			});
+		}));
+
+		it('should set setting with sorted list if empty', () => new Promise((resolve, reject) => {
+			meta.settings.setOnEmpty('another:hash', { empty: someList }, (err) => {
+				if (err) return reject(err);
+
+				socketAdmin.settings.get({ uid: fooUid }, { hash: 'another:hash' }, (err, data) => {
+					if (err) return reject(err);
+					try {
+						assert.equal(data.foo, '1');
+						assert.equal(data.derp, 'value');
+						assert.deepEqual(data.empty, someList);
+						resolve();
+					} catch (assertionError) {
+						reject(assertionError);
+					}
+				});
+			});
+		}));
+
+		new Promise((resolve, reject) => {
+			meta.settings.setOne('another:hash', 'someList', someList, (err) => {
 				if (err) {
-					return done(err);
+					return reject(err);
 				}
 
-				db.getObject('settings:another:hash', (err, data) => {
+				meta.settings.getOne('another:hash', 'someList', (err, _someList) => {
 					if (err) {
-						return done(err);
+						return reject(err);
 					}
 
-					assert.equal(data.foo, '1');
-					assert.equal(data.derp, 'value');
-					assert.equal(data.someList, undefined);
-					assert.equal(data.anotherList, undefined);
-					done();
+					try {
+						assert.deepEqual(_someList, someList);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
-
-		it('should get setting with sorted list', (done) => {
-			socketAdmin.settings.get({ uid: fooUid }, { hash: 'another:hash' }, (err, data) => {
-				assert.ifError(err);
-				assert.strictEqual(data.foo, '1');
-				assert.strictEqual(data.derp, 'value');
-				assert.deepStrictEqual(data.someList, someList);
-				assert.deepStrictEqual(data.anotherList, anotherList);
-				done();
-			});
-		});
-
-		it('should not set setting if not empty', (done) => {
-			meta.settings.setOnEmpty('some:hash', { foo: 2 }, (err) => {
-				assert.ifError(err);
-				db.getObject('settings:some:hash', (err, data) => {
-					assert.ifError(err);
-					assert.equal(data.foo, '1');
-					assert.equal(data.derp, 'value');
-					done();
-				});
-			});
-		});
-
-		it('should not set setting with sorted list if not empty', (done) => {
-			meta.settings.setOnEmpty('another:hash', { foo: anotherList }, (err) => {
-				assert.ifError(err);
-				socketAdmin.settings.get({ uid: fooUid }, { hash: 'another:hash' }, (err, data) => {
-					assert.ifError(err);
-					assert.equal(data.foo, '1');
-					assert.equal(data.derp, 'value');
-					done();
-				});
-			});
-		});
-
-		it('should set setting with sorted list if empty', (done) => {
-			meta.settings.setOnEmpty('another:hash', { empty: someList }, (err) => {
-				assert.ifError(err);
-				socketAdmin.settings.get({ uid: fooUid }, { hash: 'another:hash' }, (err, data) => {
-					assert.ifError(err);
-					assert.equal(data.foo, '1');
-					assert.equal(data.derp, 'value');
-					assert.deepEqual(data.empty, someList);
-					done();
-				});
-			});
-		});
-
-		it('should set one and get one sorted list', (done) => {
-			meta.settings.setOne('another:hash', 'someList', someList, (err) => {
-				assert.ifError(err);
-				meta.settings.getOne('another:hash', 'someList', (err, _someList) => {
-					assert.ifError(err);
-					assert.deepEqual(_someList, someList);
-					done();
-				});
-			});
-		});
+		}).catch(err => assert.ifError(err));
 	});
 
 
@@ -193,275 +250,413 @@ describe('meta', () => {
 			db.setObject('config', { minimumTagLength: 3, maximumTagLength: 15 }, done);
 		});
 
-		it('should get config fields', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.getFields(['minimumTagLength', 'maximumTagLength'], (err, data) => {
-				assert.ifError(err);
-				assert.strictEqual(data.minimumTagLength, 3);
-				assert.strictEqual(data.maximumTagLength, 15);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.strictEqual(data.minimumTagLength, 3);
+					assert.strictEqual(data.maximumTagLength, 15);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should get the correct type and default value', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('loginAttempts', '', (err) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
 				meta.configs.get('loginAttempts', (err, value) => {
-					assert.ifError(err);
-					assert.strictEqual(value, 5);
-					done();
+					if (err) {
+						return reject(err);
+					}
+					try {
+						assert.strictEqual(value, 5);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should get the correct type and correct value', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('loginAttempts', '0', (err) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
 				meta.configs.get('loginAttempts', (err, value) => {
-					assert.ifError(err);
-					assert.strictEqual(value, 0);
-					done();
+					if (err) {
+						return reject(err);
+					}
+					try {
+						assert.strictEqual(value, 0);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should get the correct value', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('title', 123, (err) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
 				meta.configs.get('title', (err, value) => {
-					assert.ifError(err);
-					assert.strictEqual(value, '123');
-					done();
+					if (err) {
+						return reject(err);
+					}
+					try {
+						assert.strictEqual(value, '123');
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should get the correct value', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('title', 0, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				meta.configs.get('title', (err, value) => {
-					assert.ifError(err);
-					assert.strictEqual(value, '0');
-					done();
+					if (err) return reject(err);
+					try {
+						assert.strictEqual(value, '0');
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should get the correct value', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('title', '', (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				meta.configs.get('title', (err, value) => {
-					assert.ifError(err);
-					assert.strictEqual(value, '');
-					done();
+					if (err) return reject(err);
+					try {
+						assert.strictEqual(value, '');
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should use default value if value is null', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('teaserPost', null, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				meta.configs.get('teaserPost', (err, value) => {
-					assert.ifError(err);
-					assert.strictEqual(value, 'last-reply');
-					done();
+					if (err) return reject(err);
+					try {
+						assert.strictEqual(value, 'last-reply');
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should fail if field is invalid', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('', 'someValue', (err) => {
-				assert.equal(err.message, '[[error:invalid-data]]');
-				done();
+				try {
+					assert.equal(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should fail if data is invalid', (done) => {
+		new Promise((resolve, reject) => {
 			socketAdmin.config.set({ uid: fooUid }, null, (err) => {
-				assert.equal(err.message, '[[error:invalid-data]]');
-				done();
+				try {
+					assert.equal(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should set multiple config values', (done) => {
+		new Promise((resolve, reject) => {
 			socketAdmin.config.set({ uid: fooUid }, { key: 'someKey', value: 'someValue' }, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				meta.configs.getFields(['someKey'], (err, data) => {
-					assert.ifError(err);
-					assert.equal(data.someKey, 'someValue');
-					done();
+					if (err) return reject(err);
+					try {
+						assert.equal(data.someKey, 'someValue');
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should set config value', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('someField', 'someValue', (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				meta.configs.getFields(['someField'], (err, data) => {
-					assert.ifError(err);
-					assert.strictEqual(data.someField, 'someValue');
-					done();
+					if (err) return reject(err);
+					try {
+						assert.strictEqual(data.someField, 'someValue');
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should get back string if field is not in defaults', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('numericField', 123, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				meta.configs.getFields(['numericField'], (err, data) => {
-					assert.ifError(err);
-					assert.strictEqual(data.numericField, 123);
-					done();
+					if (err) return reject(err);
+					try {
+						assert.strictEqual(data.numericField, 123);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should set boolean config value', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('booleanField', true, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				meta.configs.getFields(['booleanField'], (err, data) => {
-					assert.ifError(err);
-					assert.strictEqual(data.booleanField, true);
-					done();
+					if (err) return reject(err);
+					try {
+						assert.strictEqual(data.booleanField, true);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should set boolean config value', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('booleanField', 'false', (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				meta.configs.getFields(['booleanField'], (err, data) => {
-					assert.ifError(err);
-					assert.strictEqual(data.booleanField, false);
-					done();
+					if (err) return reject(err);
+					try {
+						assert.strictEqual(data.booleanField, false);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should set string config value', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.set('stringField', '123', (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				meta.configs.getFields(['stringField'], (err, data) => {
-					assert.ifError(err);
-					assert.strictEqual(data.stringField, 123);
-					done();
+					if (err) return reject(err);
+					try {
+						assert.strictEqual(data.stringField, 123);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should fail if data is invalid', (done) => {
+		new Promise((resolve, reject) => {
 			socketAdmin.config.setMultiple({ uid: fooUid }, null, (err) => {
-				assert.equal(err.message, '[[error:invalid-data]]');
-				done();
+				try {
+					assert.equal(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should set multiple values', (done) => {
+		new Promise((resolve, reject) => {
 			socketAdmin.config.setMultiple({ uid: fooUid }, {
 				someField1: 'someValue1',
 				someField2: 'someValue2',
 				customCSS: '.derp{color:#00ff00;}',
 			}, (err) => {
-				assert.ifError(err);
+				if (err) return reject(err);
+
 				meta.configs.getFields(['someField1', 'someField2'], (err, data) => {
-					assert.ifError(err);
-					assert.equal(data.someField1, 'someValue1');
-					assert.equal(data.someField2, 'someValue2');
-					done();
+					if (err) return reject(err);
+					try {
+						assert.equal(data.someField1, 'someValue1');
+						assert.equal(data.someField2, 'someValue2');
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should not set config if not empty', (done) => {
+		new Promise((resolve, reject) => {
 			meta.configs.setOnEmpty({ someField1: 'foo' }, (err) => {
-				assert.ifError(err);
-				meta.configs.get('someField1', (err, value) => {
-					assert.ifError(err);
-					assert.equal(value, 'someValue1');
-					done();
-				});
-			});
-		});
+				if (err) return reject(err);
 
-		it('should remove config field', (done) => {
-			socketAdmin.config.remove({ uid: fooUid }, 'someField1', (err) => {
-				assert.ifError(err);
-				db.isObjectField('config', 'someField1', (err, isObjectField) => {
-					assert.ifError(err);
-					assert(!isObjectField);
-					done();
+				meta.configs.get('someField1', (err, value) => {
+					if (err) return reject(err);
+					try {
+						assert.equal(value, 'someValue1');
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
-		});
+		}).catch(err => assert.ifError(err));
+
+		new Promise((resolve, reject) => {
+			socketAdmin.config.remove({ uid: fooUid }, 'someField1', (err) => {
+				if (err) return reject(err);
+
+				db.isObjectField('config', 'someField1', (err, isObjectField) => {
+					if (err) return reject(err);
+					try {
+						assert(!isObjectField);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
+				});
+			});
+		}).catch(err => assert.ifError(err));
 	});
 
 
 	describe('session TTL', () => {
-		it('should return 14 days in seconds', (done) => {
-			assert(meta.getSessionTTLSeconds(), 1209600);
-			done();
-		});
+		new Promise((resolve, reject) => {
+			try {
+				assert.strictEqual(meta.getSessionTTLSeconds(), 1209600);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+		}).catch(err => assert.ifError(err));
 
-		it('should return 7 days in seconds', (done) => {
-			meta.config.loginDays = 7;
-			assert(meta.getSessionTTLSeconds(), 604800);
-			done();
-		});
+		new Promise((resolve, reject) => {
+			try {
+				meta.config.loginDays = 7;
+				assert.strictEqual(meta.getSessionTTLSeconds(), 604800);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+		}).catch(err => assert.ifError(err));
 
-		it('should return 2 days in seconds', (done) => {
-			meta.config.loginSeconds = 172800;
-			assert(meta.getSessionTTLSeconds(), 172800);
-			done();
-		});
+		new Promise((resolve, reject) => {
+			try {
+				meta.config.loginSeconds = 172800;
+				assert.strictEqual(meta.getSessionTTLSeconds(), 172800);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+		}).catch(err => assert.ifError(err));
 	});
 
 	describe('dependencies', () => {
-		it('should return ENOENT if module is not found', (done) => {
+		new Promise((resolve, reject) => {
 			meta.dependencies.checkModule('some-module-that-does-not-exist', (err) => {
-				assert.equal(err.code, 'ENOENT');
-				done();
+				try {
+					assert.equal(err.code, 'ENOENT');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should not error if module is a nodebb-plugin-*', (done) => {
+		new Promise((resolve, reject) => {
 			meta.dependencies.checkModule('nodebb-plugin-somePlugin', (err) => {
-				assert.ifError(err);
-				done();
+				if (err) return reject(err);
+				resolve();
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should not error if module is nodebb-theme-*', (done) => {
+		new Promise((resolve, reject) => {
 			meta.dependencies.checkModule('nodebb-theme-someTheme', (err) => {
-				assert.ifError(err);
-				done();
+				if (err) return reject(err);
+				resolve();
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should parse json package data', (done) => {
-			const pkgData = meta.dependencies.parseModuleData('nodebb-plugin-test', '{"a": 1}');
-			assert.equal(pkgData.a, 1);
-			done();
-		});
+		new Promise((resolve, reject) => {
+			try {
+				const pkgData = meta.dependencies.parseModuleData('nodebb-plugin-test', '{"a": 1}');
+				assert.equal(pkgData.a, 1);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+		}).catch(err => assert.ifError(err));
 
-		it('should return null data with invalid json', (done) => {
-			const pkgData = meta.dependencies.parseModuleData('nodebb-plugin-test', 'asdasd');
-			assert.strictEqual(pkgData, null);
-			done();
-		});
+		new Promise((resolve, reject) => {
+			try {
+				const pkgData = meta.dependencies.parseModuleData('nodebb-plugin-test', 'asdasd');
+				assert.strictEqual(pkgData, null);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+		}).catch(err => assert.ifError(err));
 
-		it('should return false if moduleData is falsy', (done) => {
-			assert(!meta.dependencies.doesSatisfy(null, '1.0.0'));
-			done();
-		});
+		new Promise((resolve, reject) => {
+			try {
+				assert(!meta.dependencies.doesSatisfy(null, '1.0.0'));
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+		}).catch(err => assert.ifError(err));
 
-		it('should return false if moduleData doesnt not satisfy package.json', (done) => {
-			assert(!meta.dependencies.doesSatisfy({ name: 'nodebb-plugin-test', version: '0.9.0' }, '1.0.0'));
-			done();
-		});
+		new Promise((resolve, reject) => {
+			try {
+				assert(!meta.dependencies.doesSatisfy({ name: 'nodebb-plugin-test', version: '0.9.0' }, '1.0.0'));
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+		}).catch(err => assert.ifError(err));
 
-		it('should return true if _resolved is from github', (done) => {
-			assert(meta.dependencies.doesSatisfy({ name: 'nodebb-plugin-test', _resolved: 'https://github.com/some/repo', version: '0.9.0' }, '1.0.0'));
-			done();
-		});
+		new Promise((resolve, reject) => {
+			try {
+				assert(meta.dependencies.doesSatisfy({ name: 'nodebb-plugin-test', _resolved: 'https://github.com/some/repo', version: '0.9.0' }, '1.0.0'));
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+		}).catch(err => assert.ifError(err));
 	});
 
 	describe('debugFork', () => {
@@ -471,18 +666,23 @@ describe('meta', () => {
 			process.execArgv = ['--debug=5858', '--foo=1'];
 		});
 
-		it('should detect debugging', (done) => {
-			let debugFork = require('../src/meta/debugFork');
-			assert(!debugFork.debugging);
+		new Promise((resolve, reject) => {
+			try {
+				let debugFork = require('../src/meta/debugFork');
+				assert(!debugFork.debugging);
 
-			const debugForkPath = require.resolve('../src/meta/debugFork');
-			delete require.cache[debugForkPath];
+				const debugForkPath = require.resolve('../src/meta/debugFork');
+				delete require.cache[debugForkPath];
 
-			debugFork = require('../src/meta/debugFork');
-			assert(debugFork.debugging);
+				debugFork = require('../src/meta/debugFork');
+				assert(debugFork.debugging);
 
-			done();
-		});
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
+		}).catch(err => assert.ifError(err));
+
 
 		after(() => {
 			process.execArgv = oldArgv;
@@ -529,7 +729,7 @@ describe('meta', () => {
 			meta.config['access-control-allow-origin'] = oldValue;
 		});
 
-		it('should set proper Access-Control-Allow-Origin header', async () => {
+		it('should set proper Access-Control Allow Origin header', async () => {
 			const jar = request.jar();
 			const oldValue = meta.config['access-control-allow-origin-regex'];
 			meta.config['access-control-allow-origin-regex'] = 'match\\.this\\..+\\.domain.com, mydomain\\.com';
@@ -544,7 +744,7 @@ describe('meta', () => {
 			meta.config['access-control-allow-origin-regex'] = oldValue;
 		});
 
-		it('Access-Control-Allow-Origin header should be empty if origin does not match', async () => {
+		it('Access Control Allow-Origin header should be empty if origin does not match', async () => {
 			const jar = request.jar();
 			const oldValue = meta.config['access-control-allow-origin-regex'];
 			meta.config['access-control-allow-origin-regex'] = 'match\\.this\\..+\\.domain.com, mydomain\\.com';
@@ -573,9 +773,13 @@ describe('meta', () => {
 		});
 	});
 
-	it('should log targets', (done) => {
-		const aliases = require('../src/meta/aliases');
-		aliases.buildTargets();
-		done();
-	});
+	new Promise((resolve, reject) => {
+		try {
+			const aliases = require('../src/meta/aliases');
+			aliases.buildTargets();
+			resolve();
+		} catch (error) {
+			reject(error);
+		}
+	}).catch(err => assert.ifError(err));
 });

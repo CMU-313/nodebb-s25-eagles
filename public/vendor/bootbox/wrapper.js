@@ -1,8 +1,12 @@
+
 'use strict';
 
-
-import shim from 'translator';
+/* eslint-disable import/no-unresolved */
+/* eslint-disable import/extensions */
 import bootbox from 'bootbox';
+// eslint-disable-next-line import/no-unresolved
+import shim from '../../test/translator.js';
+import config from '../../config';
 
 
 // expose as global with a warning

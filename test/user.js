@@ -919,25 +919,25 @@ describe('User', () => {
 		});
 
 		it('should set user status to anonymous', (done) => {
-			socketUser.setStatus({ uid: uid}, 'anonymous', (err, data) => {
+			socketUser.setStatus({ uid: uid }, 'anonymous', (err, data) => {
 				assert.ifError(err);
 				assert.equal(data.uid, uid);
 				assert.equal(data.status, 'anonymous');
 				console.log(JSON.stringify(data.anonymous));
-				//assert.equal(data.anonymous, true);
+				//	assert.equal(data.anonymous, true);
 				done();
-			})
-		})
+			});
+		});
 
 		it('should turn anonymous status off', (done) => {
-			socketUser.setStatus({ uid: uid}, 'online', (err, data) => {
+			socketUser.setStatus({ uid: uid }, 'online', (err, data) => {
 				assert.ifError(err);
 				assert.equal(data.uid, uid);
 				assert.equal(data.status, 'online');
-				//assert.equal(data.anonymous, '0');
+				//	assert.equal(data.anonymous, '0');
 				done();
-			})
-		})
+			});
+		});
 
 		it('should fail for invalid status', (done) => {
 			socketUser.setStatus({ uid: uid }, '12345', (err) => {

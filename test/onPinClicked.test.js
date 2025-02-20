@@ -1,7 +1,9 @@
 'use strict';
 
+/* eslint-disable import/no-unresolved */
 const { JSDOM } = require('jsdom');
 const { describe, test, expect, beforeEach } = require('@jest/globals');
+/* eslint-enable import/no-unresolved */
 
 describe('onPinClicked', () => {
 	let document;
@@ -9,17 +11,17 @@ describe('onPinClicked', () => {
 	// ✅ Setup a fresh DOM before each test
 	beforeEach(() => {
 		const dom = new JSDOM(`
-			<!DOCTYPE html>
-			<html>
-			<body>
-				<div component="topic">
-					<div data-pid="1">Post 1</div>
-					<div data-pid="2">Post 2</div>
-					<div data-pid="3">Post 3</div>
-				</div>
-			</body>
-			</html>
-		`);
+            <!DOCTYPE html>
+            <html>
+            <body>
+                <div component="topic">
+                    <div data-pid="1">Post 1</div>
+                    <div data-pid="2">Post 2</div>
+                    <div data-pid="3">Post 3</div>
+                </div>
+            </body>
+            </html>
+        `);
 		document = dom.window.document;
 	});
 

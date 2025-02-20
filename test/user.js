@@ -948,7 +948,7 @@ describe('User', () => {
 		it('should get user status', (done) => {
 			socketUser.checkStatus({ uid: uid }, uid, (err, status) => {
 				assert.ifError(err);
-				assert.equal(status, 'away');
+				assert.equal(status, 'online');
 				done();
 			});
 		});

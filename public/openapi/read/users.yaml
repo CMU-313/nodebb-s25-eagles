@@ -88,6 +88,8 @@ get:
                           type: number
                         banned_until_readable:
                           type: string
+                        anonymous:
+                          type: number
                   userCount:
                     type: number
                   title:

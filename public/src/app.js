@@ -271,7 +271,7 @@ if (document.readyState === 'loading') {
 
 		require(['translator'], function (translator) {
 			translator.translate('[[global:' + status + ']]', function (translated) {
-				el.removeClass('online offline dnd away')
+				el.removeClass('online offline dnd away anonymous')
 					.addClass(status)
 					.attr('data-new-title', translated);
 			});

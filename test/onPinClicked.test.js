@@ -1,3 +1,4 @@
+import { describe, expect, test } from '@jest/globals';
 'use strict';
 
 /* eslint-disable import/no-unresolved */

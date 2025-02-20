@@ -7,7 +7,7 @@ const semver = require('semver');
 const winston = require('winston');
 const chalk = require('chalk');
 
-const pkg = require('../../package.json');
+const pkg = require('../../../package.json');
 const { paths, pluginNamePattern } = require('../constants');
 
 const Dependencies = module.exports;

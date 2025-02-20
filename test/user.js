@@ -924,7 +924,7 @@ describe('User', () => {
 				assert.equal(data.uid, uid);
 				assert.equal(data.status, 'anonymous');
 				console.log(JSON.stringify(data.anonymous));
-				//	assert.equal(data.anonymous, true);
+				// assert.equal(data.anonymous, true);
 				done();
 			});
 		});
@@ -934,7 +934,7 @@ describe('User', () => {
 				assert.ifError(err);
 				assert.equal(data.uid, uid);
 				assert.equal(data.status, 'online');
-				//	assert.equal(data.anonymous, '0');
+				// assert.equal(data.anonymous, '0');
 				done();
 			});
 		});

@@ -15,7 +15,7 @@ const intFields = [
 	'uid', 'postcount', 'topiccount', 'reputation', 'profileviews',
 	'banned', 'banned:expire', 'email:confirmed', 'joindate', 'lastonline',
 	'lastqueuetime', 'lastposttime', 'followingCount', 'followerCount',
-	'blocksCount', 'passwordExpiry', 'mutedUntil',
+	'blocksCount', 'passwordExpiry', 'mutedUntil', 'anonymous',
 ];
 
 module.exports = function (User) {
@@ -25,7 +25,7 @@ module.exports = function (User) {
 		'aboutme', 'signature', 'uploadedpicture', 'profileviews', 'reputation',
 		'postcount', 'topiccount', 'lastposttime', 'banned', 'banned:expire',
 		'status', 'flags', 'followerCount', 'followingCount', 'cover:url',
-		'cover:position', 'groupTitle', 'mutedUntil', 'mutedReason',
+		'cover:position', 'groupTitle', 'mutedUntil', 'mutedReason', 'anonymous',
 	];
 
 	User.guestData = {

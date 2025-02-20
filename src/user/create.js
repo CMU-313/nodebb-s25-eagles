@@ -49,6 +49,7 @@ module.exports = function (User) {
 			joindate: timestamp,
 			lastonline: timestamp,
 			status: 'online',
+			anonymous: 0,
 		};
 		['picture', 'fullname', 'location', 'birthday'].forEach((field) => {
 			if (data[field]) {

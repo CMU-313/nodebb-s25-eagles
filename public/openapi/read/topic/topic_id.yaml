@@ -35,6 +35,8 @@ get:
                 properties:
                   title:
                     type: string
+                  anonymous:
+                    type: number
                   slug:
                     type: string
                   teaserPid:
@@ -61,6 +63,8 @@ get:
                           description: A topic identifier
                         content:
                           type: string
+                        anonymous: 
+                          type: number
                         timestamp:
                           type: number
                         votes:

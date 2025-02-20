@@ -144,7 +144,8 @@ async function listEvents(count = 10) {
 
 async function info() {
 	console.log('');
-	const { version } = require('../../../package.json'); // Corrected path to package.json
+	const path = require('path');
+	const { version } = require(path.join(__dirname, '../../../package.json'));
 	console.log(`  version:  ${version}`);
 
 	console.log(`  Node ver: ${process.version}`);

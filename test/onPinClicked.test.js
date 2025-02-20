@@ -1,9 +1,9 @@
 'use strict';
 
-/* eslint-disable import/no-unresolved */
+
 const { JSDOM } = require('jsdom');
 const { describe, test, expect, beforeEach } = require('@jest/globals');
-/* eslint-enable import/no-unresolved */
+
 
 describe('onPinClicked', () => {
 	let document;

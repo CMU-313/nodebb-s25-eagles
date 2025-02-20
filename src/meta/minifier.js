@@ -16,7 +16,7 @@ const sass = require('../utils').getSass();
 let minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
 let retryCount = 0;
 const maxRetries = 5;
-const retryDelay = 1000; // 1 second
+const retryDelay = 5000; // Increase delay to 5 seconds
 
 function restartMinifierProcess() {
 	if (retryCount >= maxRetries) {
@@ -30,6 +30,7 @@ function restartMinifierProcess() {
 	}
 
 	setTimeout(() => {
+		console.log(`Restarting minifier process (attempt ${retryCount + 1}/${maxRetries})`);
 		minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
 		retryCount += 1;
 

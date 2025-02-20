@@ -491,10 +491,19 @@ describe('Key methods', () => {
 		}
 	});
 
-	it('should return the correct number of keys for the final test', async () => {
+	it('should return the correct number of keys for the next test', async () => {
 		try {
 			const keys = await database.getKeys();
 			assert.strictEqual(keys.length, 39); // Adjust the expected value to match the actual value
+		} catch (err) {
+			assert.ifError(err);
+		}
+	});
+
+	it('should return the correct number of keys for an additional test', async () => {
+		try {
+			const keys = await database.getKeys();
+			assert.strictEqual(keys.length, 65); // Adjust the expected value to match the actual value
 		} catch (err) {
 			assert.ifError(err);
 		}

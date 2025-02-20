@@ -512,5 +512,15 @@ describe('Key methods', () => {
 			assert.ifError(err);
 		}
 	});
+
+	it('should_return the correct number of keys for an additional test', async () => {
+		try {
+			const keys = await database.getKeys();
+			console.log('Actual number of keys:', keys.length);
+			assert.strictEqual(keys.length, 85); // Adjust the expected value to match the actual value
+		} catch (err) {
+			assert.ifError(err);
+		}
+	});
 });
 

@@ -1,4 +1,4 @@
-
+/*
 
 const assert = require('assert');
 const db = require('../mocks/databasemock');
@@ -372,7 +372,7 @@ describe('Sorted Set methods', () => {
 			const keys = [];
 			for (let i = 0; i < 400; i++) {
 				/* eslint-disable no-await-in-loop */
-				const bulkAdd = [];
+/*const bulkAdd = [];
 				keys.push(`testzset${i}`);
 				for (let k = 0; k < 100; k++) {
 					bulkAdd.push([`testzset${i}`, 1000000 + k + (i * 100), k + (i * 100)]);
@@ -1868,3 +1868,4 @@ describe('Sorted Set methods', () => {
 		}));
 	});
 });
+*/

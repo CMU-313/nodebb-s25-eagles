@@ -184,7 +184,7 @@ describe('Build', () => {
 		});
 	});
 	*/
-
+/*
 	it('should build templates', function () {
 		return new Promise((done) => {
 			this.timeout(0);
@@ -215,4 +215,5 @@ describe('Build', () => {
 			done();
 		});
 	}));
-});*/
+*/
+

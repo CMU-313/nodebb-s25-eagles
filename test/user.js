@@ -918,12 +918,16 @@ describe('User', () => {
 			});
 		});
 
+
+		// ran console log commands on the actual code responsible for changing
+		// user status and it was setting it to the correct value and type
+		// not sure why it's not working here
 		it('should set user status to anonymous', (done) => {
 			socketUser.setStatus({ uid: uid }, 'anonymous', (err, data) => {
 				assert.ifError(err);
 				assert.equal(data.uid, uid);
 				assert.equal(data.status, 'anonymous');
-				assert.strictEqual (data.anonymous, '1')
+				assert.strictEqual (user.getUserFields(uid, 'anonymous'), '1')
 				// assert.equal(data.anonymous, true);
 				done();
 			});

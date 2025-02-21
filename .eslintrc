@@ -5,6 +5,8 @@
   },
   "extends": "nodebb",
   "rules": {
-    // your rules here
+    "jest/no-commented-out-tests": "off",
+    "max-len": "off",
+    "spaced-comment": "off"
   }
 }

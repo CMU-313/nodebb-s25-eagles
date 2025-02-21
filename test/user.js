@@ -927,7 +927,7 @@ describe('User', () => {
 				assert.ifError(err);
 				assert.equal(data.uid, uid);
 				assert.equal(data.status, 'anonymous');
-				assert.equal (User.getUserField(uid, 'anonymous'), '1')
+				assert.equal (data.anonymous, '1')
 				// assert.equal(data.anonymous, true);
 				done();
 			});

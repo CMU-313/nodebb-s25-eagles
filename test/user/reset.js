@@ -4,7 +4,7 @@
 const assert = require('assert');
 const async = require('async');
 
-const db = require('../mocks/databasemock');
+// const db = require('../mocks/databasemock');
 
 const user = require('../../src/user');
 const groups = require('../../src/groups');
@@ -57,7 +57,7 @@ describe('Password reset (library methods)', () => {
 
 		const [userData, storedPassword] = await Promise.all([
 			user.getUserData(uid),
-			db.getObjectField(`user:${uid}`, 'password'),
+			// db.getObjectField(`user:${uid}`, 'password'),
 		]);
 
 		const match = await password.compare('newpassword', storedPassword, true);

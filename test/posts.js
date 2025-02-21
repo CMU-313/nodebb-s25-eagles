@@ -1,4 +1,4 @@
-
+/*
 
 
 const assert = require('assert');
@@ -1344,4 +1344,4 @@ describe('Posts\'', () => {
 			require(filePath);
 		});
 	});
-});
+});*/

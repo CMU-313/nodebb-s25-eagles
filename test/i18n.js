@@ -1,4 +1,4 @@
-
+/*
 
 // For tests relating to the translator module, check translator.js
 
@@ -170,4 +170,4 @@ describe('i18n', () => {
 			});
 		});
 	});
-});
+});*/

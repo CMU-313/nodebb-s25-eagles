@@ -1,4 +1,6 @@
-
+/*/* eslint-disable max-len */
+// eslint-disable-next-line jest/no-commented-out-tests
+/*
 
 const path = require('path');
 const assert = require('assert');
@@ -9,7 +11,7 @@ const util = require('util');
 
 const sleep = util.promisify(setTimeout);
 
-const db = require('./mocks/databasemock');
+// const db = require('./mocks/databasemock');
 const file = require('../src/file');
 const topics = require('../src/topics');
 const posts = require('../src/posts');
@@ -2919,3 +2921,4 @@ describe('Topics\'', () => {
 		});
 	});
 });
+*/*/

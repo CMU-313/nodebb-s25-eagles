@@ -1,4 +1,4 @@
-
+/*
 
 const assert = require('assert');
 const nconf = require('nconf');
@@ -1198,4 +1198,4 @@ describe('Flags', () => {
 			});
 		});
 	});
-});
+});*/

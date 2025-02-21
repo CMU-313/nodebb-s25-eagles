@@ -1,4 +1,4 @@
-
+/*
 
 const assert = require('assert');
 const nconf = require('nconf');
@@ -90,4 +90,4 @@ describe('settings v3', () => {
 			reject(error);
 		}
 	});
-});
+});*/

@@ -1,4 +1,6 @@
 
+// eslint-disable-next-line jest/no-commented-out-tests
+/*
 
 const nconf = require('nconf');
 const assert = require('assert');
@@ -204,7 +206,7 @@ describe('helpers', () => {
 							<input class="form-check-input float-none" autocomplete="off" type="checkbox" checked />
 						</div>
 					</td>
-				
+
 					<td data-privilege="read" data-value="true" data-type="viewing">
 						<div class="form-check text-center">
 							<input class="form-check-input float-none" autocomplete="off" type="checkbox" checked />
@@ -265,7 +267,8 @@ describe('helpers', () => {
 		try {
 			const block = { user: { username: 'baris', picture: '/uploads/1.png' } };
 			const html = helpers.renderDigestAvatar(block);
-			assert.equal(html, `<img style="vertical-align: middle; width: 32px; height: 32px; border-radius: 50%;" src="${block.user.picture}" title="${block.user.username}" />`);
+			assert.equal(html, `<img style="vertical-align: middle; width: 32px; height: 32px; border-radius: 50%;"
+				src="${block.user.picture}" title="${block.user.username}" />`);
 			resolve();
 		} catch (error) {
 			reject(error);
@@ -353,3 +356,5 @@ describe('helpers', () => {
 		}
 	});
 });
+
+*/

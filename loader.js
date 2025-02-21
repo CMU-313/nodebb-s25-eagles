@@ -10,7 +10,8 @@ const { mkdirp } = require('mkdirp');
 const winston = require('winston');
 
 const file = require('./src/file');
-const pkg = require('../package.json');
+
+const pkg = require(path.join(__dirname, '../package.json'));
 
 const pathToConfig = path.resolve(__dirname, process.env.CONFIG || 'config.json');
 

@@ -4,9 +4,10 @@ const nconf = require('nconf');
 const winston = require('winston');
 const crypto = require('crypto');
 const cronJob = require('cron').CronJob;
+const pkg = require('../../package.json');
 
 const request = require('../request');
-const pkg = require('../../../package.json'); // Corrected path to package.json
+
 
 const meta = require('../meta');
 

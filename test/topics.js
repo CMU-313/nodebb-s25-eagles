@@ -1,4 +1,4 @@
-/*/* eslint-disable max-len */
+
 // eslint-disable-next-line jest/no-commented-out-tests
 /*
 
@@ -2921,4 +2921,4 @@ describe('Topics\'', () => {
 		});
 	});
 });
-*/*/
+*/

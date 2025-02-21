@@ -1,4 +1,4 @@
-'use strict';
+
 
 // see https://gist.github.com/jfromaniello/4087861#gistcomment-1447029
 

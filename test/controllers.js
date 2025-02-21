@@ -1,4 +1,4 @@
-'use strict';
+
 
 /* eslint-disable jest/valid-title */
 const assert = require('assert');

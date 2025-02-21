@@ -1,5 +1,5 @@
 
-'use strict';
+
 
 const winston = require('winston');
 const _ = require('lodash');

@@ -1,3 +1,10 @@
 {
-	"extends": "nodebb"
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "extends": "nodebb",
+  "rules": {
+    // your rules here
+  }
 }

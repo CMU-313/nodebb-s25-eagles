@@ -1,4 +1,4 @@
-'use strict';
+
 
 const webserver = require('../webserver');
 const plugins = require('../plugins');

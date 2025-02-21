@@ -1,4 +1,4 @@
-'use strict';
+
 
 /**
  * v4 note — all methods here are deprecated and can be removed except for:

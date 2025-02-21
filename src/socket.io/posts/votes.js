@@ -1,4 +1,4 @@
-'use strict';
+
 
 const api = require('../../api');
 const sockets = require('../index');

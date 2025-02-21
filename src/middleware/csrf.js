@@ -1,4 +1,4 @@
-'use strict';
+
 
 const { csrfSync } = require('csrf-sync');
 

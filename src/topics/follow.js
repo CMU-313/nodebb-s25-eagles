@@ -1,5 +1,5 @@
 
-'use strict';
+
 
 const db = require('../database');
 const notifications = require('../notifications');

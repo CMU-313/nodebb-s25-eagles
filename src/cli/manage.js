@@ -1,4 +1,4 @@
-'use strict';
+
 
 const winston = require('winston');
 const childProcess = require('child_process');

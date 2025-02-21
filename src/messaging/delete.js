@@ -1,4 +1,4 @@
-'use strict';
+
 
 const sockets = require('../socket.io');
 const plugins = require('../plugins');

@@ -1,4 +1,4 @@
-'use strict';
+
 
 /* eslint-disable jest/expect-expect */
 const assert = require('assert');

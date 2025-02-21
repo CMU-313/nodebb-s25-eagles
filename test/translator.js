@@ -1,4 +1,4 @@
-'use strict';
+
 
 /* eslint-disable no-undef */
 /* eslint-disable no-async-promise-executor */

@@ -1,4 +1,4 @@
-'use strict';
+
 
 const widgets = require('../../widgets');
 

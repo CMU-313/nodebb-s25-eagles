@@ -1,4 +1,4 @@
-'use strict';
+
 
 const loggerController = module.exports;
 

@@ -1,4 +1,4 @@
-'use strict';
+
 
 module.exports = function (module) {
 	module.sortedSetIntersectCard = async function (keys) {

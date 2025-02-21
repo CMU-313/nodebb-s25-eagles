@@ -1,4 +1,4 @@
-'use strict';
+
 
 const semver = require('semver');
 const async = require('async');

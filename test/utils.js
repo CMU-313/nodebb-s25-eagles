@@ -1,10 +1,8 @@
-'use strict';
-
 const assert = require('assert');
 const validator = require('validator');
 const { JSDOM } = require('jsdom');
 const slugify = require('../src/slugify');
-const db = require('./mocks/databasemock');
+// const db = require('./mocks/databasemock');
 
 describe('Utility Methods', () => {
 	// Set up jsdom for jQuery

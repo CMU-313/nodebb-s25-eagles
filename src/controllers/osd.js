@@ -1,4 +1,4 @@
-'use strict';
+
 
 const xml = require('xml');
 const nconf = require('nconf');

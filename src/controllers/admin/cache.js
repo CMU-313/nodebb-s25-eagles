@@ -1,4 +1,4 @@
-'use strict';
+
 
 const cacheController = module.exports;
 

@@ -1,4 +1,4 @@
-'use strict';
+
 
 const workerpool = require('workerpool');
 const bcrypt = require('bcryptjs');

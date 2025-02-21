@@ -1,4 +1,4 @@
-'use strict';
+
 
 const helpers = module.exports;
 const winston = require('winston');

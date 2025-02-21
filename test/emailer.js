@@ -1,4 +1,4 @@
-'use strict';
+
 
 const { SMTPServer } = require('smtp-server');
 const assert = require('assert');

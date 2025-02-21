@@ -1,6 +1,6 @@
 // webpack config for webinstaller
 
-'use strict';
+
 
 const path = require('path');
 

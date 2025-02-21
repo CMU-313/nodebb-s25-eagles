@@ -1,4 +1,4 @@
-'use strict';
+
 
 const prompt = require('prompt');
 const cproc = require('child_process');

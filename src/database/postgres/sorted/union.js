@@ -1,4 +1,4 @@
-'use strict';
+
 
 module.exports = function (module) {
 	module.sortedSetUnionCard = async function (keys) {

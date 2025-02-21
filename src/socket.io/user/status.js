@@ -31,9 +31,9 @@ module.exports = function (SocketUser) {
 			userData.lastonline = Date.now();
 		}
 		if (status === 'anonymous') {
-			userData.anonymous = 1
+			userData.anonymous = 1;
 		} else {
-			userData.anonymous = 0
+			userData.anonymous = 0;
 		}
 
 		await user.setUserFields(socket.uid, userData);

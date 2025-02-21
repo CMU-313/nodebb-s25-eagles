@@ -924,6 +924,7 @@ describe('User', () => {
 				assert.equal(data.uid, uid);
 				assert.equal(data.status, 'anonymous');
 				console.log(User.getUserField(uid,'anonymous'));
+				console.log(User.getStatus(uid))
 				// assert.equal(data.anonymous, true);
 				done();
 			});

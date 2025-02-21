@@ -923,8 +923,7 @@ describe('User', () => {
 				assert.ifError(err);
 				assert.equal(data.uid, uid);
 				assert.equal(data.status, 'anonymous');
-				console.log(data.anonymous.toString());
-				console.log('why')
+				console.log(data.anonymous);
 				// assert.equal(data.anonymous, true);
 				done();
 			});

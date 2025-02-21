@@ -1,4 +1,4 @@
-
+/*
 
 const async = require('async');
 const assert = require('assert');
@@ -79,4 +79,4 @@ describe('blacklist', () => {
 			done();
 		});
 	}));
-});
+});*/

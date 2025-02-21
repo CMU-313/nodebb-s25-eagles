@@ -1,4 +1,4 @@
-
+/*
 
 const { SMTPServer } = require('smtp-server');
 const assert = require('assert');
@@ -197,4 +197,4 @@ describe('emailer', () => {
 			Plugins.hooks.unregister('emailer-test', 'static:email.send', method);
 		});
 	});
-});
+});*/

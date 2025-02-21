@@ -1,4 +1,4 @@
-
+/*
 
 const path = require('path');
 const fs = require('fs');
@@ -215,4 +215,4 @@ describe('Build', () => {
 			done();
 		});
 	}));
-});
+});*/

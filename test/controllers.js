@@ -1,6 +1,8 @@
-/*
+
 
 /* eslint-disable jest/valid-title */
+
+/*
 const assert = require('assert');
 const nconf = require('nconf');
 const fs = require('fs');
@@ -1870,4 +1872,7 @@ describe('Controllers', () => {
 		const analytics = require('../src/analytics');
 		analytics.writeData(done);
 	});
-});*/
+});
+*/
+
+

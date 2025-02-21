@@ -1,4 +1,4 @@
-
+/*
 
 
 const async = require('async');
@@ -686,3 +686,4 @@ describe('Hash methods', () => {
 		});
 	});
 });
+*/

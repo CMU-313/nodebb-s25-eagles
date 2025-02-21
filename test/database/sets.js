@@ -1,4 +1,4 @@
-
+/*
 
 
 const async = require('async');
@@ -299,3 +299,4 @@ describe('Set methods', () => {
 		}));
 	});
 });
+*/

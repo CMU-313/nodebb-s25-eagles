@@ -1,6 +1,4 @@
-/* eslint-disable max-len */
-// eslint-disable-next-line jest/no-commented-out-tests
-/*
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
@@ -422,4 +420,3 @@ describe('Topic thumbs', () => {
 		});
 	});
 });
-*/

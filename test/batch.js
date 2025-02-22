@@ -1,4 +1,4 @@
-/*
+'use strict';
 
 const async = require('async');
 const assert = require('assert');
@@ -18,7 +18,7 @@ describe('batch', () => {
 		db.sortedSetAdd('processMe', scores, values, done);
 	});
 
-	it('should process sorted set with callbacks', () => new Promise((done) => {
+	it('should process sorted set with callbacks', (done) => {
 		let total = 0;
 		batch.processSortedSet('processMe', (items, next) => {
 			items.forEach((item) => {
@@ -35,9 +35,9 @@ describe('batch', () => {
 			assert.strictEqual(total, 4950);
 			done();
 		});
-	}));
+	});
 
-	it('should process the sorted set with callbacks', () => new Promise((done) => {
+	it('should process sorted set with callbacks', (done) => {
 		let total = 0;
 		batch.processSortedSet('processMe', (values, next) => {
 			values.forEach((val) => {
@@ -50,7 +50,7 @@ describe('batch', () => {
 			assert.strictEqual(total, 490);
 			done();
 		});
-	}));
+	});
 
 	it('should process sorted set with async/await', async () => {
 		let total = 0;
@@ -65,7 +65,7 @@ describe('batch', () => {
 		assert.strictEqual(total, 490);
 	});
 
-	it('should process sorted set_with async/await', async () => {
+	it('should process sorted set with async/await', async () => {
 		let total = 0;
 		await batch.processSortedSet('processMe', async (values) => {
 			values.forEach((val) => {
@@ -98,7 +98,7 @@ describe('batch', () => {
 		assert(result.includes('item5'));
 	});
 
-	it('should process array with callbacks', () => new Promise((done) => {
+	it('should process array with callbacks', (done) => {
 		let total = 0;
 		batch.processArray(scores, (nums, next) => {
 			nums.forEach((n) => {
@@ -115,7 +115,7 @@ describe('batch', () => {
 			assert.strictEqual(total, 4950);
 			done();
 		});
-	}));
+	});
 
 	it('should process array with async/await', async () => {
 		let total = 0;
@@ -133,4 +133,4 @@ describe('batch', () => {
 
 		assert.strictEqual(total, 4950);
 	});
-});*/
+});

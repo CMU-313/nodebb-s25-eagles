@@ -1,4 +1,4 @@
-/*
+'use strict';
 
 const async = require('async');
 const assert = require('assert');
@@ -259,7 +259,7 @@ describe('Admin Controllers', () => {
 		assert(body);
 	});
 
-	it('should load /admin/users/csv', () => new Promise((done) => {
+	it('should load /admin/users/csv', (done) => {
 		const socketAdmin = require('../src/socket.io/admin');
 		socketAdmin.user.exportUsersCSV({ uid: adminUid }, {}, (err) => {
 			assert.ifError(err);
@@ -275,7 +275,7 @@ describe('Admin Controllers', () => {
 				done();
 			}, 2000);
 		});
-	}));
+	});
 
 	it('should return 403 if no referer', async () => {
 		const { response, body } = await request.get(`${nconf.get('url')}/api/admin/groups/administrators/csv`, { jar });
@@ -640,11 +640,9 @@ describe('Admin Controllers', () => {
 				];
 				const adminRoutes = Object.keys(privileges.admin.routeMap)
 					.filter(route => !uploadRoutes.includes(route));
-				for (const route of adminRoutes) { */
-
-
-/* eslint-disable no-await-in-loop */
-/*await privileges.admin.rescind([privileges.admin.routeMap[route]], uid);
+				for (const route of adminRoutes) {
+					/* eslint-disable no-await-in-loop */
+					await privileges.admin.rescind([privileges.admin.routeMap[route]], uid);
 					let { response: res } = await request.get(`${nconf.get('url')}/api/admin/${route}`, requestOpts);
 					assert.strictEqual(res.statusCode, 403);
 
@@ -657,7 +655,6 @@ describe('Admin Controllers', () => {
 
 				for (const route of adminRoutes) {
 					/* eslint-disable no-await-in-loop */
-/*
 					await privileges.admin.rescind([privileges.admin.routeMap[route]], uid);
 					let { response: res } = await await request.get(`${nconf.get('url')}/api/admin`, requestOpts);
 					assert.strictEqual(res.statusCode, 403);
@@ -675,7 +672,6 @@ describe('Admin Controllers', () => {
 			it('should allow normal user access to admin pages', async () => {
 				for (const route of Object.keys(privileges.admin.routePrefixMap)) {
 					/* eslint-disable no-await-in-loop */
-/*
 					await privileges.admin.rescind([privileges.admin.routePrefixMap[route]], uid);
 					let { response: res } = await request.get(`${nconf.get('url')}/api/admin/${route}foobar/derp`, requestOpts);
 					assert.strictEqual(res.statusCode, 403);
@@ -748,4 +744,4 @@ describe('Admin Controllers', () => {
 			assert.strictEqual(res.keys.groups.includes('admin:privileges'), false);
 		});
 	});
-});*/
+});

@@ -1,4 +1,4 @@
-
+'use strict';
 
 const { Command, Option } = require('commander');
 

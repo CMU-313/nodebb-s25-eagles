@@ -1,4 +1,4 @@
-/*
+'use strict';
 
 const assert = require('assert');
 const fs = require('fs');
@@ -62,24 +62,17 @@ describe('upload methods', () => {
 	});
 
 	describe('.sync()', () => {
-		new Promise((resolve, reject) => {
+		it('should properly add new images to the post\'s zset', (done) => {
 			posts.uploads.sync(pid, (err) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
+
 				db.sortedSetCard(`post:${pid}:uploads`, (err, length) => {
-					if (err) {
-						return reject(err);
-					}
-					try {
-						assert.strictEqual(length, 2);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.strictEqual(length, 2);
+					done();
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
 		it('should remove an image if it is edited out of the post', async () => {
 			await posts.edit({
@@ -94,51 +87,33 @@ describe('upload methods', () => {
 	});
 
 	describe('.list()', () => {
-		new Promise((resolve, reject) => {
+		it('should display the uploaded files for a specific post', (done) => {
 			posts.uploads.list(pid, (err, uploads) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.equal(true, Array.isArray(uploads));
-					assert.strictEqual(1, uploads.length);
-					assert.equal('string', typeof uploads[0]);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(true, Array.isArray(uploads));
+				assert.strictEqual(1, uploads.length);
+				assert.equal('string', typeof uploads[0]);
+				done();
 			});
-		}).catch(err => assert.ifError(err));
+		});
 	});
 
 	describe('.isOrphan()', () => {
-		new Promise((resolve, reject) => {
+		it('should return false if upload is not an orphan', (done) => {
 			posts.uploads.isOrphan('files/abracadabra.png', (err, isOrphan) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.equal(isOrphan, false);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(isOrphan, false);
+				done();
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should return true if upload is an orphan', (done) => {
 			posts.uploads.isOrphan('files/shazam.jpg', (err, isOrphan) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.equal(true, isOrphan);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(true, isOrphan);
+				done();
 			});
-		}).catch(err => assert.ifError(err));
+		});
 	});
 
 	describe('.associate()', () => {
@@ -370,21 +345,14 @@ describe('post uploads management', () => {
 		reply = replyData;
 	});
 
-	new Promise((resolve, reject) => {
+	it('should automatically sync uploads on topic create and reply', (done) => {
 		db.sortedSetsCard([`post:${topic.topicData.mainPid}:uploads`, `post:${reply.pid}:uploads`], (err, lengths) => {
-			if (err) {
-				return reject(err);
-			}
-			try {
-				assert.strictEqual(lengths[0], 1);
-				assert.strictEqual(lengths[1], 1);
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+			assert.ifError(err);
+			assert.strictEqual(lengths[0], 1);
+			assert.strictEqual(lengths[1], 1);
+			done();
 		});
-	}).catch(err => assert.ifError(err));
-
+	});
 
 	it('should automatically sync uploads on post edit', async () => {
 		await posts.edit({
@@ -397,5 +365,3 @@ describe('post uploads management', () => {
 		assert.strictEqual(0, uploads.length);
 	});
 });
-*/
-

@@ -1,4 +1,4 @@
-
+'use strict';
 
 const validator = require('validator');
 const plugins = require('../../plugins');

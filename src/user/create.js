@@ -1,4 +1,4 @@
-
+'use strict';
 
 const zxcvbn = require('zxcvbn');
 const winston = require('winston');

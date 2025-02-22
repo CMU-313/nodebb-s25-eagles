@@ -1,4 +1,4 @@
-
+'use strict';
 
 module.exports = function (module) {
 	const _ = require('lodash');

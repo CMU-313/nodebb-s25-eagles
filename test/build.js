@@ -1,4 +1,4 @@
-/*
+'use strict';
 
 const path = require('path');
 const fs = require('fs');
@@ -30,7 +30,7 @@ describe('minifier', () => {
 		filename: path.basename(script),
 	}));
 
-	it('.js.bundle() should concat scripts', () => new Promise((done) => {
+	it('.js.bundle() should concat scripts', (done) => {
 		const destPath = path.resolve(__dirname, '../test/build/concatenated.js');
 
 		minifier.js.bundle({
@@ -57,7 +57,7 @@ describe('minifier', () => {
 			);
 			done();
 		});
-	}));
+	});
 
 	const styles = [
 		'@import "./1";',
@@ -66,21 +66,21 @@ describe('minifier', () => {
 	const paths = [
 		path.resolve(__dirname, './files'),
 	];
-	it('.css.bundle() should concat styles', () => new Promise((done) => {
+	it('.css.bundle() should concat styles', (done) => {
 		minifier.css.bundle(styles, paths, false, false, 'ltr', (err, bundle) => {
 			assert.ifError(err);
 			assert.strictEqual(bundle.ltr.code, '.help {\n  margin: 10px;\n}\n\n.yellow {\n  background: yellow;\n}\n\n.help {\n  display: block;\n}\n.help .blue {\n  background: blue;\n}');
 			done();
 		});
-	}));
+	});
 
-	it('.css.bundle() should minify styles', () => new Promise((done) => {
+	it('.css.bundle() should minify styles', (done) => {
 		minifier.css.bundle(styles, paths, true, false, 'ltr', (err, bundle) => {
 			assert.ifError(err);
 			assert.strictEqual(bundle.ltr.code, '.help{margin:10px}.yellow{background:#ff0}.help{display:block}.help .blue{background:#00f}');
 			done();
 		});
-	}));
+	});
 });
 
 describe('Build', () => {
@@ -91,82 +91,61 @@ describe('Build', () => {
 		await db.sortedSetAdd('plugins:active', Date.now(), 'nodebb-plugin-markdown');
 	});
 
-	new Promise((resolve, reject) => {
+	it('should build plugin static dirs', (done) => {
 		build.build(['plugin static dirs'], (err) => {
-			if (err) return reject(err);
-			resolve();
+			assert.ifError(err);
+			done();
 		});
-	}).catch(err => assert.ifError(err));
+	});
 
-	new Promise((resolve, reject) => {
+	it('should build requirejs modules', (done) => {
 		build.build(['requirejs modules'], (err) => {
-			if (err) return reject(err);
-			try {
-				const filename = path.join(__dirname, '../build/public/src/modules/alerts.js');
-				assert(file.existsSync(filename));
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+			assert.ifError(err);
+			const filename = path.join(__dirname, '../build/public/src/modules/alerts.js');
+			assert(file.existsSync(filename));
+			done();
 		});
-	}).catch(err => assert.ifError(err));
+	});
 
-	new Promise((resolve, reject) => {
+	it('should build client js bundle', (done) => {
 		build.build(['client js bundle'], (err) => {
-			if (err) return reject(err);
-			try {
-				const filename = path.join(__dirname, '../build/public/scripts-client.js');
-				assert(file.existsSync(filename));
-				assert(fs.readFileSync(filename).length > 1000);
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+			assert.ifError(err);
+			const filename = path.join(__dirname, '../build/public/scripts-client.js');
+			assert(file.existsSync(filename));
+			assert(fs.readFileSync(filename).length > 1000);
+			done();
 		});
-	}).catch(err => assert.ifError(err));
+	});
 
-	new Promise((resolve, reject) => {
+	it('should build admin js bundle', (done) => {
 		build.build(['admin js bundle'], (err) => {
-			if (err) return reject(err);
-			try {
-				const filename = path.join(__dirname, '../build/public/scripts-admin.js');
-				assert(file.existsSync(filename));
-				assert(fs.readFileSync(filename).length > 1000);
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+			assert.ifError(err);
+			const filename = path.join(__dirname, '../build/public/scripts-admin.js');
+			assert(file.existsSync(filename));
+			assert(fs.readFileSync(filename).length > 1000);
+			done();
 		});
-	}).catch(err => assert.ifError(err));
+	});
 
-	new Promise((resolve, reject) => {
+	it('should build client side styles', (done) => {
 		build.build(['client side styles'], (err) => {
-			if (err) return reject(err);
-			try {
-				const filename = path.join(__dirname, '../build/public/client.css');
-				assert(file.existsSync(filename));
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+			assert.ifError(err);
+			const filename = path.join(__dirname, '../build/public/client.css');
+			assert(file.existsSync(filename));
+			done();
 		});
-	}).catch(err => assert.ifError(err));
+	});
 
-	new Promise((resolve, reject) => {
+	it('should build admin control panel styles', (done) => {
 		build.build(['admin control panel styles'], (err) => {
-			if (err) return reject(err);
-			try {
-				const filename = path.join(__dirname, '../build/public/admin.css');
-				assert(file.existsSync(filename));
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+			assert.ifError(err);
+			const filename = path.join(__dirname, '../build/public/admin.css');
+			assert(file.existsSync(filename));
+			done();
 		});
-	}).catch(err => assert.ifError(err));
+	});
 
 
-	// eslint-disable-next-line jest/no-commented-out-tests
 	/* disabled, doesn't work on gh actions in prod mode
 	it('should build bundle files', function (done) {
 		this.timeout(0);
@@ -184,21 +163,19 @@ describe('Build', () => {
 		});
 	});
 	*/
-/*
-	it('should build templates', function () {
-		return new Promise((done) => {
-			this.timeout(0);
-			build.build(['templates'], (err) => {
-				assert.ifError(err);
-				const filename = path.join(__dirname, '../build/public/templates/admin/header.tpl');
-				assert(file.existsSync(filename));
-				assert(fs.readFileSync(filename).toString().startsWith('<!DOCTYPE html>'));
-				done();
-			});
+
+	it('should build templates', function (done) {
+		this.timeout(0);
+		build.build(['templates'], (err) => {
+			assert.ifError(err);
+			const filename = path.join(__dirname, '../build/public/templates/admin/header.tpl');
+			assert(file.existsSync(filename));
+			assert(fs.readFileSync(filename).toString().startsWith('<!DOCTYPE html>'));
+			done();
 		});
 	});
 
-	it('should build languages', () => new Promise((done) => {
+	it('should build languages', (done) => {
 		build.build(['languages'], (err) => {
 			assert.ifError(err);
 
@@ -214,6 +191,5 @@ describe('Build', () => {
 
 			done();
 		});
-	}));
-*/
-
+	});
+});

@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 
-
+'use strict';
 
 const crypto = require('crypto');
 

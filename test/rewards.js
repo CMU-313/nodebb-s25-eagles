@@ -1,4 +1,4 @@
-/*
+'use strict';
 
 const assert = require('assert');
 const async = require('async');
@@ -42,7 +42,7 @@ describe('rewards', () => {
 	describe('rewards create', () => {
 		const socketAdmin = require('../src/socket.io/admin');
 		const rewards = require('../src/rewards');
-		new Promise((resolve, reject) => {
+		it('it should save a reward', (done) => {
 			const data = [
 				{
 					rewards: { groupname: 'Gamers' },
@@ -57,24 +57,23 @@ describe('rewards', () => {
 			];
 
 			socketAdmin.rewards.save({ uid: adminUid }, data, (err) => {
-				if (err) return reject(err);
-				resolve();
+				assert.ifError(err);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should check condition', (done) => {
 			function method(next) {
 				next(null, 1);
 			}
-
 			rewards.checkConditionAndRewardUser({
 				uid: adminUid,
 				condition: 'essentials/user.postcount',
 				method: method,
 			}, (err, data) => {
-				if (err) return reject(err);
-				resolve();
+				assert.ifError(err);
+				done();
 			});
 		});
 	});
-});*/
+});

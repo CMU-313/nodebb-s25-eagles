@@ -1,5 +1,5 @@
 
-
+'use strict';
 
 const topics = require('../topics');
 const user = require('../user');

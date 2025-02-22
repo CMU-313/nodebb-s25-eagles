@@ -1,8 +1,5 @@
+'use strict';
 
-
-/* eslint-disable jest/valid-title */
-
-/*
 const assert = require('assert');
 const nconf = require('nconf');
 const fs = require('fs');
@@ -913,7 +910,7 @@ describe('Controllers', () => {
 			assert.equal(response.statusCode, 503);
 		});
 
-		it('should return a 503 in maintenance mode', async () => {
+		it('should return 503 in maintenance mode', async () => {
 			const { response, body } = await request.get(`${nconf.get('url')}/api/recent`);
 			assert.equal(response.statusCode, 503);
 			assert(body);
@@ -1166,7 +1163,7 @@ describe('Controllers', () => {
 			assert.equal(notif.nid, notifData.nid);
 		});
 
-		it('should 404 if the user does not exist', async () => {
+		it('should 404 if user does not exist', async () => {
 			const { response, body } = await request.get(`${nconf.get('url')}/api/user/email/doesnotexist`);
 			assert.equal(response.statusCode, 404);
 			assert(body);
@@ -1233,7 +1230,7 @@ describe('Controllers', () => {
 			assert(body);
 		});
 
-		it('should 404 if the_user does not exist', async () => {
+		it('should 404 if user does not exist', async () => {
 			const { response, body } = await request.get(`${nconf.get('url')}/api/user/doesnotexist`, { jar });
 			assert.equal(response.statusCode, 404);
 		});
@@ -1306,7 +1303,7 @@ describe('Controllers', () => {
 			assert.equal(body.selectedGroup[0].name, 'selectedGroup');
 		});
 
-		it('should 404 if user does not_exist', async () => {
+		it('should 404 if user does not exist', async () => {
 			await groups.join('administrators', fooUid);
 
 			const { response } = await request.get(`${nconf.get('url')}/api/user/doesnotexist/edit`, { jar });
@@ -1433,7 +1430,7 @@ describe('Controllers', () => {
 			assert(body);
 		});
 
-		it('should handle malformed uri', async () => {
+		it('should handle malformed uri ', async () => {
 			const { response, body } = await request.get(`${nconf.get('url')}/user/a%AFc`);
 			assert(body);
 			assert.equal(response.statusCode, 400);
@@ -1655,7 +1652,7 @@ describe('Controllers', () => {
 			assert.deepStrictEqual(data.selectedCids, [1]);
 		});
 
-		it('should load the categories by states', async () => {
+		it('should load categories by states', async () => {
 			const helpers = require('../src/controllers/helpers');
 			const data = await helpers.getCategoriesByStates(1, 0, [categories.watchStates.ignoring], 'topics:read');
 			assert(data.categories.length === 0);
@@ -1700,7 +1697,7 @@ describe('Controllers', () => {
 			assert.equal(response.statusCode, 401);
 		});
 
-		it('should redirect to the login', async () => {
+		it('should redirect to login', async () => {
 			const { response, body } = await request.get(`${nconf.get('url')}/admin/advanced/database`);
 			assert.equal(response.statusCode, 200);
 			assert(body.includes('Login to your account'));
@@ -1873,6 +1870,3 @@ describe('Controllers', () => {
 		analytics.writeData(done);
 	});
 });
-*/
-
-

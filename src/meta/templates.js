@@ -1,4 +1,4 @@
-
+'use strict';
 
 const { mkdirp } = require('mkdirp');
 const winston = require('winston');

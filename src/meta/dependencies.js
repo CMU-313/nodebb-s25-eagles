@@ -1,4 +1,4 @@
-
+'use strict';
 
 const path = require('path');
 const fs = require('fs');
@@ -7,7 +7,7 @@ const semver = require('semver');
 const winston = require('winston');
 const chalk = require('chalk');
 
-const pkg = require(path.join(__dirname, '../../../package.json'));
+const pkg = require('../../package.json');
 const { paths, pluginNamePattern } = require('../constants');
 
 const Dependencies = module.exports;

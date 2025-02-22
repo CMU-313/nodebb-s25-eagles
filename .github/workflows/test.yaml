@@ -37,7 +37,8 @@ jobs:
 
     steps:
       - name: Enable memory overcommit
-        run: sudo sysctl vm.overcommit_memory=1       
+        run: sudo sysctl -w vm.overcommit_memory=1  # Added the -w flag to write the setting immediately
+
       - uses: actions/checkout@v4
         with:
           submodules: recursive

@@ -1,4 +1,4 @@
-
+'use strict';
 
 // override commander help formatting functions
 // to include color styling in the output

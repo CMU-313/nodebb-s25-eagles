@@ -1,10 +1,9 @@
+'use strict';
 
-
-/* eslint-disable jest/expect-expect */
 const assert = require('assert');
 const async = require('async');
 
-// const db = require('../mocks/databasemock');
+const db = require('../mocks/databasemock');
 
 const user = require('../../src/user');
 const groups = require('../../src/groups');
@@ -16,20 +15,23 @@ const socketUser = require('../../src/socket.io/user');
 describe('Password reset (library methods)', () => {
 	let uid;
 	let code;
-
 	before(async () => {
 		uid = await user.create({ username: 'resetuser', password: '123456' });
 		await user.setUserField(uid, 'email', 'reset@me.com');
 		await user.email.confirmByUid(uid);
 	});
 
-	it('.generate() should generate a new reset code', async () => {
-		code = await user.reset.generate(uid);
-		assert(code);
-		assert.strictEqual(typeof code, 'string');
+	it('.generate() should generate a new reset code', (done) => {
+		user.reset.generate(uid, (err, _code) => {
+			assert.ifError(err);
+			assert(_code);
+
+			code = _code;
+			done();
+		});
 	});
 
-	it('.generate() should invalidate a previously generated reset code', async () => {
+	it('.generate() should invalidate a previous generated reset code', async () => {
 		const _code = await user.reset.generate(uid);
 		const valid = await user.reset.validate(code);
 		assert.strictEqual(valid, false);
@@ -37,57 +39,73 @@ describe('Password reset (library methods)', () => {
 		code = _code;
 	});
 
-	it('.validate() should ensure that this new code is valid', async () => {
-		const valid = await user.reset.validate(code);
-		assert.strictEqual(valid, true);
+	it('.validate() should ensure that this new code is valid', (done) => {
+		user.reset.validate(code, (err, valid) => {
+			assert.ifError(err);
+			assert.strictEqual(valid, true);
+			done();
+		});
 	});
 
-	it('.validate() should correctly identify an invalid code', async () => {
-		const valid = await user.reset.validate(`${code}abcdef`);
-		assert.strictEqual(valid, false);
+	it('.validate() should correctly identify an invalid code', (done) => {
+		user.reset.validate(`${code}abcdef`, (err, valid) => {
+			assert.ifError(err);
+			assert.strictEqual(valid, false);
+			done();
+		});
 	});
 
 	it('.send() should create a new reset code and reset password', async () => {
 		code = await user.reset.send('reset@me.com');
-		assert(code);
 	});
 
-	it('.commit() should update the user\'s password and confirm their email', async () => {
-		await user.reset.commit(code, 'newpassword');
+	it('.commit() should update the user\'s password and confirm their email', (done) => {
+		user.reset.commit(code, 'newpassword', (err) => {
+			assert.ifError(err);
 
-		const [userData, storedPassword] = await Promise.all([
-			user.getUserData(uid),
-			// db.getObjectField(`user:${uid}`, 'password'),
-		]);
-
-		const match = await password.compare('newpassword', storedPassword, true);
-		assert(match);
-		assert.strictEqual(userData['email:confirmed'], 1);
-		assert(userData);
-		assert(storedPassword);
+			async.parallel({
+				userData: function (next) {
+					user.getUserData(uid, next);
+				},
+				password: function (next) {
+					db.getObjectField(`user:${uid}`, 'password', next);
+				},
+			}, (err, results) => {
+				assert.ifError(err);
+				password.compare('newpassword', results.password, true, (err, match) => {
+					assert.ifError(err);
+					assert(match);
+					assert.strictEqual(results.userData['email:confirmed'], 1);
+					done();
+				});
+			});
+		});
 	});
 
 	it('.should error if same password is used for reset', async () => {
 		const uid = await user.create({ username: 'badmemory', email: 'bad@memory.com', password: '123456' });
 		const code = await user.reset.generate(uid);
-		await assert.rejects(user.reset.commit(code, '123456'), {
-			message: '[[error:reset-same-password]]',
-		});
+		let err;
+		try {
+			await user.reset.commit(code, '123456');
+		} catch (_err) {
+			err = _err;
+		}
+		assert.strictEqual(err.message, '[[error:reset-same-password]]');
 	});
 
 	it('should not validate email if password reset is due to expiry', async () => {
 		const uid = await user.create({ username: 'resetexpiry', email: 'reset@expiry.com', password: '123456' });
+		let confirmed = await user.getUserField(uid, 'email:confirmed');
+		let [verified, unverified] = await groups.isMemberOfGroups(uid, ['verified-users', 'unverified-users']);
+		assert.strictEqual(confirmed, 0);
+		assert.strictEqual(verified, false);
+		assert.strictEqual(unverified, true);
 		await user.setUserField(uid, 'passwordExpiry', Date.now());
-
 		const code = await user.reset.generate(uid);
 		await user.reset.commit(code, '654321');
-
-		const [confirmed, verified, unverified] = await Promise.all([
-			user.getUserField(uid, 'email:confirmed'),
-			groups.isMemberOfGroups(uid, ['verified-users']),
-			groups.isMemberOfGroups(uid, ['unverified-users']),
-		]);
-
+		confirmed = await user.getUserField(uid, 'email:confirmed');
+		[verified, unverified] = await groups.isMemberOfGroups(uid, ['verified-users', 'unverified-users']);
 		assert.strictEqual(confirmed, 0);
 		assert.strictEqual(verified, false);
 		assert.strictEqual(unverified, true);
@@ -97,10 +115,8 @@ describe('Password reset (library methods)', () => {
 describe('locks', () => {
 	let uid;
 	let email;
-
 	beforeEach(async () => {
-		const username = utils.generateUUID().slice(0, 10);
-		const password = utils.generateUUID();
+		const [username, password] = [utils.generateUUID().slice(0, 10), utils.generateUUID()];
 		uid = await user.create({ username, password });
 		email = `${username}@nodebb.org`;
 		await user.setUserField(uid, 'email', email);
@@ -132,15 +148,15 @@ describe('locks', () => {
 		});
 	});
 
-	it('should properly unlock user reset after a cooldown period', async () => {
+	it('should properly unlock user reset', async () => {
 		await user.reset.send(email);
 		await assert.rejects(user.reset.send(email), {
 			message: '[[error:reset-rate-limited]]',
 		});
-
 		user.reset.minSecondsBetweenEmails = 3;
-		await new Promise((resolve) => { setTimeout(resolve, 4000); }); // Wait 4 seconds
-
+		const util = require('util');
+		const sleep = util.promisify(setTimeout);
+		await sleep(4 * 1000); // wait 4 seconds
 		await user.reset.send(email);
 		user.reset.minSecondsBetweenEmails = 60;
 	});

@@ -1,4 +1,4 @@
-
+'use strict';
 
 const ipaddr = require('ipaddr.js');
 const winston = require('winston');

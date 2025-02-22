@@ -1,4 +1,4 @@
-
+'use strict';
 
 const privileges = module.exports;
 privileges.global = require('./global');

@@ -1,4 +1,4 @@
-/*
+'use strict';
 
 const assert = require('assert');
 const path = require('path');
@@ -8,41 +8,31 @@ const image = require('../src/image');
 const file = require('../src/file');
 
 describe('image', () => {
-	new Promise((resolve, reject) => {
+	it('should normalise image', (done) => {
 		image.normalise(path.join(__dirname, 'files/normalise.jpg'), '.jpg', (err) => {
-			if (err) return reject(err);
-
+			assert.ifError(err);
 			file.exists(path.join(__dirname, 'files/normalise.jpg.png'), (err, exists) => {
-				if (err) return reject(err);
-				try {
-					assert(exists);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(exists);
+				done();
 			});
 		});
-	}).catch(err => assert.ifError(err));
+	});
 
-	new Promise((resolve, reject) => {
+	it('should resize an image', (done) => {
 		image.resizeImage({
 			path: path.join(__dirname, 'files/normalise.jpg'),
 			target: path.join(__dirname, 'files/normalise-resized.jpg'),
 			width: 50,
 			height: 40,
 		}, (err) => {
-			if (err) return reject(err);
-
+			assert.ifError(err);
 			image.size(path.join(__dirname, 'files/normalise-resized.jpg'), (err, bitmap) => {
-				if (err) return reject(err);
-				try {
-					assert.equal(bitmap.width, 50);
-					assert.equal(bitmap.height, 40);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(bitmap.width, 50);
+				assert.equal(bitmap.height, 40);
+				done();
 			});
 		});
-	}).catch(err => assert.ifError(err));
-});*/
+	});
+});

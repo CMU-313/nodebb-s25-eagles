@@ -1,4 +1,4 @@
-
+'use strict';
 
 const { SitemapStream, streamToPromise } = require('sitemap');
 const nconf = require('nconf');

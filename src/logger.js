@@ -1,4 +1,4 @@
-
+'use strict';
 
 /*
  * Logger module: ability to dynamically turn on/off logging for http requests & socket.io events

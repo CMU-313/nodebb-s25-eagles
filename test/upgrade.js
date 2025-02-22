@@ -1,5 +1,4 @@
-/* // eslint-disable-next-line jest/no-commented-out-tests
-
+'use strict';
 
 const assert = require('assert');
 
@@ -34,4 +33,3 @@ describe('Upgrade', () => {
 		await upgrade.runParticular(files.slice(0, 2));
 	});
 });
-*/

@@ -1,4 +1,4 @@
-
+'use strict';
 
 const qs = require('querystring');
 const _ = require('lodash');

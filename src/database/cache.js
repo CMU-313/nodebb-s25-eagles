@@ -1,4 +1,4 @@
-
+'use strict';
 
 module.exports.create = function (name) {
 	const cacheCreate = require('../cache/lru');

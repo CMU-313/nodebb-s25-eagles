@@ -1,4 +1,4 @@
-
+'use strict';
 
 const accountsController = {
 	profile: require('./accounts/profile'),

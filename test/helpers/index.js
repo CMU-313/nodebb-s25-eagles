@@ -1,4 +1,4 @@
-
+'use strict';
 
 const nconf = require('nconf');
 const fs = require('fs');

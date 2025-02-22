@@ -1,4 +1,4 @@
-
+'use strict';
 
 const admin = require('../../rewards/admin');
 

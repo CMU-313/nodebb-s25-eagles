@@ -1,4 +1,4 @@
-
+'use strict';
 
 const db = require('../../database');
 const batch = require('../../batch');

@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 
-
+'use strict';
 
 const db = require('../../database');
 
@@ -10,12 +10,7 @@ module.exports = {
 	method: async function () {
 		let configJSON;
 		try {
-			try {
-				const path = require('path');
-				configJSON = require(path.resolve(__dirname, '../../../config.json'));
-			} catch (err) {
-				configJSON = { [process.env.database]: true, database: process.env.database };
-			}
+			configJSON = require('../../../config.json') || { [process.env.database]: true, database: process.env.database };
 		} catch (err) {
 			configJSON = { [process.env.database]: true, database: process.env.database };
 		}

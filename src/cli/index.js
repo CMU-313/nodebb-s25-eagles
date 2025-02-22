@@ -1,6 +1,6 @@
 /* eslint-disable import/order */
 
-
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
@@ -111,7 +111,7 @@ prestart.versionCheck();
 
 if (!configExists && process.argv[2] !== 'setup') {
 	require('./setup').webInstall();
-	process.exit(0);
+	return;
 }
 
 if (configExists) {

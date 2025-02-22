@@ -1,6 +1,4 @@
-
-// eslint-disable-next-line jest/no-commented-out-tests
-/*
+'use strict';
 
 const path = require('path');
 const assert = require('assert');
@@ -11,7 +9,7 @@ const util = require('util');
 
 const sleep = util.promisify(setTimeout);
 
-// const db = require('./mocks/databasemock');
+const db = require('./mocks/databasemock');
 const file = require('../src/file');
 const topics = require('../src/topics');
 const posts = require('../src/posts');
@@ -65,23 +63,17 @@ describe('Topic\'s', () => {
 			}
 		});
 
-		new Promise((resolve, reject) => {
+		it('should create a new topic with proper parameters', (done) => {
 			topics.post({
 				uid: topic.userId,
 				title: topic.title,
 				content: topic.content,
 				cid: topic.categoryId,
 			}, (err, result) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert(result);
-					topic.tid = result.topicData.tid;
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(result);
+				topic.tid = result.topicData.tid;
+				done();
 			});
 		});
 
@@ -101,61 +93,39 @@ describe('Topic\'s', () => {
 			assert.equal(data.tid, topic.tid);
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail to create new topic with invalid user id', (done) => {
 			topics.post({ uid: null, title: topic.title, content: topic.content, cid: topic.categoryId }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:no-privileges]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:no-privileges]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail to create new topic with empty title', (done) => {
 			topics.post({ uid: fooUid, title: '', content: topic.content, cid: topic.categoryId }, (err) => {
-				try {
-					assert.ok(err);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ok(err);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail to create new topic with empty content', (done) => {
 			topics.post({ uid: fooUid, title: topic.title, content: '', cid: topic.categoryId }, (err) => {
-				try {
-					assert.ok(err);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ok(err);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail to create new topic with non-existant category id', (done) => {
 			topics.post({ uid: topic.userId, title: topic.title, content: topic.content, cid: 99 }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:no-category]]', 'received no error');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:no-category]]', 'received no error');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return false for falsy uid', (done) => {
 			topics.isOwner(topic.tid, 0, (err, isOwner) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert(!isOwner);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(!isOwner);
+				done();
 			});
 		});
 
@@ -289,18 +259,14 @@ describe('Topic\'s', () => {
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should create a new reply with proper parameters', (done) => {
 			topics.reply({ uid: topic.userId, content: 'test post', tid: newTopic.tid }, (err, result) => {
-				try {
-					assert.equal(err, null, 'was created with error');
-					assert.ok(result);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err, null, 'was created with error');
+				assert.ok(result);
+
+				done();
 			});
 		});
-
 
 		it('should handle direct replies', async () => {
 			const result = await topics.reply({ uid: topic.userId, content: 'test reply', tid: newTopic.tid, toPid: newPost.pid });
@@ -320,47 +286,31 @@ describe('Topic\'s', () => {
 			);
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail to create new reply with invalid user id', (done) => {
 			topics.reply({ uid: null, content: 'test post', tid: newTopic.tid }, (err) => {
-				try {
-					assert.strictEqual(err.message, '[[error:no-privileges]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.strictEqual(err.message, '[[error:no-privileges]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail to create new reply with empty content', (done) => {
 			topics.reply({ uid: fooUid, content: '', tid: newTopic.tid }, (err) => {
-				try {
-					assert.strictEqual(err.message, '[[error:content-too-short, 8]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.strictEqual(err.message, '[[error:content-too-short, 8]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail to create new reply with invalid topic id', (done) => {
 			topics.reply({ uid: null, content: 'test post', tid: 99 }, (err) => {
-				try {
-					assert.strictEqual(err.message, '[[error:no-topic]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.strictEqual(err.message, '[[error:no-topic]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail to create new reply with invalid toPid', (done) => {
 			topics.reply({ uid: topic.userId, content: 'test post', tid: newTopic.tid, toPid: '"onmouseover=alert(1);//' }, (err) => {
-				try {
-					assert.strictEqual(err.message, '[[error:invalid-pid]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.strictEqual(err.message, '[[error:invalid-pid]]');
+				done();
 			});
 		});
 
@@ -448,65 +398,49 @@ describe('Topic\'s', () => {
 		});
 
 
-		new Promise((resolve, reject) => {
+		it('should not receive errors', (done) => {
 			topics.getTopicData(newTopic.tid, (err, topicData) => {
-				try {
-					assert.ifError(err);
-					assert(typeof topicData.tid === 'number');
-					assert(typeof topicData.uid === 'number');
-					assert(typeof topicData.cid === 'number');
-					assert(typeof topicData.mainPid === 'number');
+				assert.ifError(err);
+				assert(typeof topicData.tid === 'number');
+				assert(typeof topicData.uid === 'number');
+				assert(typeof topicData.cid === 'number');
+				assert(typeof topicData.mainPid === 'number');
 
-					assert(typeof topicData.timestamp === 'number');
-					assert.strictEqual(topicData.postcount, 1);
-					assert.strictEqual(topicData.viewcount, 0);
-					assert.strictEqual(topicData.upvotes, 0);
-					assert.strictEqual(topicData.downvotes, 0);
-					assert.strictEqual(topicData.votes, 0);
-					assert.strictEqual(topicData.deleted, 0);
-					assert.strictEqual(topicData.locked, 0);
-					assert.strictEqual(topicData.pinned, 0);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert(typeof topicData.timestamp === 'number');
+				assert.strictEqual(topicData.postcount, 1);
+				assert.strictEqual(topicData.viewcount, 0);
+				assert.strictEqual(topicData.upvotes, 0);
+				assert.strictEqual(topicData.downvotes, 0);
+				assert.strictEqual(topicData.votes, 0);
+				assert.strictEqual(topicData.deleted, 0);
+				assert.strictEqual(topicData.locked, 0);
+				assert.strictEqual(topicData.pinned, 0);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should get a single field', (done) => {
 			topics.getTopicFields(newTopic.tid, ['slug'], (err, data) => {
-				try {
-					assert.ifError(err);
-					assert(Object.keys(data).length === 1);
-					assert(data.hasOwnProperty('slug'));
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(Object.keys(data).length === 1);
+				assert(data.hasOwnProperty('slug'));
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should get topic title by pid', (done) => {
 			topics.getTitleByPid(newPost.pid, (err, title) => {
-				try {
-					assert.ifError(err);
-					assert.equal(title, topic.title);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(title, topic.title);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should get topic data by pid', (done) => {
 			topics.getTopicDataByPid(newPost.pid, (err, data) => {
-				try {
-					assert.ifError(err);
-					assert.equal(data.tid, newTopic.tid);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(data.tid, newTopic.tid);
+				done();
 			});
 		});
 
@@ -686,30 +620,20 @@ describe('Topic\'s', () => {
 	});
 
 	describe('Title escaping', () => {
-		new Promise((resolve, reject) => {
+		it('should properly escape topic title', (done) => {
 			const title = '"<script>alert(\'ok1\');</script> new topic test';
 			const titleEscaped = validator.escape(title);
-
 			topics.post({ uid: topic.userId, title: title, content: topic.content, cid: topic.categoryId }, (err, result) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
 				topics.getTopicData(result.topicData.tid, (err, topicData) => {
-					if (err) {
-						return reject(err);
-					}
-					try {
-						assert.strictEqual(topicData.titleRaw, title);
-						assert.strictEqual(topicData.title, titleEscaped);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.strictEqual(topicData.titleRaw, title);
+					assert.strictEqual(topicData.title, titleEscaped);
+					done();
 				});
 			});
 		});
 	});
-
 
 	describe('tools/delete/restore/purge', () => {
 		let newTopic;
@@ -732,18 +656,11 @@ describe('Topic\'s', () => {
 			}));
 		});
 
-		new Promise((resolve, reject) => {
+		it('should load topic tools', (done) => {
 			socketTopics.loadTopicTools({ uid: adminUid }, { tid: newTopic.tid }, (err, data) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert(data);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(data);
+				done();
 			});
 		});
 
@@ -783,44 +700,27 @@ describe('Topic\'s', () => {
 			assert.strictEqual(pinned, 0);
 		});
 
-		new Promise((resolve, reject) => {
+		it('should move all topics', (done) => {
 			socketTopics.moveAll({ uid: adminUid }, { cid: moveCid, currentCid: categoryObj.cid }, (err) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
 				topics.getTopicField(newTopic.tid, 'cid', (err, cid) => {
-					if (err) {
-						return reject(err);
-					}
-					try {
-						assert.equal(cid, moveCid);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(cid, moveCid);
+					done();
 				});
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should move a topic', (done) => {
 			socketTopics.move({ uid: adminUid }, { cid: categoryObj.cid, tids: [newTopic.tid] }, (err) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
 				topics.getTopicField(newTopic.tid, 'cid', (err, cid) => {
-					if (err) {
-						return reject(err);
-					}
-					try {
-						assert.equal(cid, categoryObj.cid);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(cid, categoryObj.cid);
+					done();
 				});
 			});
 		});
-
 
 		it('should properly update sets when post is moved', async () => {
 			const cid1 = topic.categoryId;
@@ -953,89 +853,50 @@ describe('Topic\'s', () => {
 		});
 
 		const socketTopics = require('../src/socket.io/topics');
-
-		before(async () => {
-			const topic1 = await topics.post({ uid: adminUid, tags: ['nodebb'], title: 'topic title 1', content: 'topic 1 content', cid: topic.categoryId });
-			tid1 = topic1.topicData.tid;
-		});
-		new Promise((resolve, reject) => {
+		it('should error with invalid data', (done) => {
 			socketTopics.orderPinnedTopics({ uid: adminUid }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should error with invalid data', (done) => {
 			socketTopics.orderPinnedTopics({ uid: adminUid }, [null, null], (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should error with unprivileged user', (done) => {
 			socketTopics.orderPinnedTopics({ uid: 0 }, { tid: tid1, order: 1 }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:no-privileges]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:no-privileges]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should not do anything if topics are not pinned', (done) => {
 			socketTopics.orderPinnedTopics({ uid: adminUid }, { tid: tid3, order: 1 }, (err) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
 				db.isSortedSetMember(`cid:${topic.categoryId}:tids:pinned`, tid3, (err, isMember) => {
-					if (err) {
-						return reject(err);
-					}
-					try {
-						assert(!isMember);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert(!isMember);
+					done();
 				});
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should order pinned topics', (done) => {
 			db.getSortedSetRevRange(`cid:${topic.categoryId}:tids:pinned`, 0, -1, (err, pinnedTids) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.equal(pinnedTids[0], tid2);
-					assert.equal(pinnedTids[1], tid1);
-				} catch (error) {
-					return reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(pinnedTids[0], tid2);
+				assert.equal(pinnedTids[1], tid1);
 				socketTopics.orderPinnedTopics({ uid: adminUid }, { tid: tid1, order: 0 }, (err) => {
-					if (err) {
-						return reject(err);
-					}
+					assert.ifError(err);
 					db.getSortedSetRevRange(`cid:${topic.categoryId}:tids:pinned`, 0, -1, (err, pinnedTids) => {
-						if (err) {
-							return reject(err);
-						}
-						try {
-							assert.equal(pinnedTids[0], tid1);
-							assert.equal(pinnedTids[1], tid2);
-							resolve();
-						} catch (error) {
-							reject(error);
-						}
+						assert.ifError(err);
+						assert.equal(pinnedTids[0], tid1);
+						assert.equal(pinnedTids[1], tid2);
+						done();
 					});
 				});
 			});
@@ -1119,48 +980,31 @@ describe('Topic\'s', () => {
 			await socketTopics.bookmark({ uid: topic.userId }, { tid: newTopic.tid, index: originalBookmark });
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail with invalid data', (done) => {
 			socketTopics.bookmark({ uid: topic.userId }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
-			try {
-				assert.equal(12, replies.length);
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+		it('should have 12 replies', (done) => {
+			assert.equal(12, replies.length);
+			done();
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail with invalid data', (done) => {
 			socketTopics.createTopicFromPosts({ uid: 0 }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:not-logged-in]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:not-logged-in]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail with invalid data', (done) => {
 			socketTopics.createTopicFromPosts({ uid: adminUid }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
-
 
 		it('should not update the user\'s bookmark', async () => {
 			await socketTopics.createTopicFromPosts({ uid: topic.userId }, {
@@ -1172,7 +1016,7 @@ describe('Topic\'s', () => {
 			assert.equal(originalBookmark, bookmark);
 		});
 
-		it('should update the user\'s bookmark', async () => {
+		it('should update the user\'s bookmark ', async () => {
 			await topics.createTopicFromPosts(
 				topic.userId,
 				'Fork test, no bookmark update',
@@ -1303,7 +1147,7 @@ describe('Topic\'s', () => {
 		});
 
 
-		it('should 404 if tid is_not a number', async () => {
+		it('should 404 if tid is not a number', async () => {
 			const { response } = await request.get(`${nconf.get('url')}/api/topic/pagination/nan`);
 			assert.equal(response.statusCode, 404);
 		});
@@ -1347,27 +1191,19 @@ describe('Topic\'s', () => {
 			});
 		});
 
-		new Promise((resolve, reject) => {
-			topics.getSuggestedTopics(tid, adminUid, 0, -1, (err, topics) => {
-				if (err) return reject(err);
-				try {
-					assert(Array.isArray(topics));
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+		it('should error with invalid data', (done) => {
+			socketTopics.loadMore({ uid: adminUid }, {}, (err) => {
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
-			topics.getSuggestedTopics(tid, adminUid, 0, 2, (err, topics) => {
-				if (err) return reject(err);
-				try {
-					assert(Array.isArray(topics));
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+		it('should infinite load topic posts', (done) => {
+			socketTopics.loadMore({ uid: adminUid }, { tid: tid, after: 0, count: 10 }, (err, data) => {
+				assert.ifError(err);
+				assert(data.posts);
+				assert(data.privileges);
+				done();
 			});
 		});
 	});
@@ -1383,27 +1219,19 @@ describe('Topic\'s', () => {
 			tid3 = topic3.topicData.tid;
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return suggested topics', (done) => {
 			topics.getSuggestedTopics(tid1, adminUid, 0, -1, (err, topics) => {
-				if (err) return reject(err);
-				try {
-					assert(Array.isArray(topics));
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(Array.isArray(topics));
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return suggested topics', (done) => {
 			topics.getSuggestedTopics(tid3, adminUid, 0, 2, (err, topics) => {
-				if (err) return reject(err);
-				try {
-					assert(Array.isArray(topics));
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(Array.isArray(topics));
+				done();
 			});
 		});
 	});
@@ -1438,45 +1266,30 @@ describe('Topic\'s', () => {
 			assert.strictEqual(hasRead, false);
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail with invalid data', (done) => {
 			socketTopics.markAsRead({ uid: 0 }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should mark topic read', (done) => {
 			socketTopics.markAsRead({ uid: adminUid }, [tid], (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				topics.hasReadTopic(tid, adminUid, (err, hasRead) => {
-					if (err) return reject(err);
-
-					try {
-						assert(hasRead);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert(hasRead);
+					done();
 				});
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail with invalid data', (done) => {
 			socketTopics.markTopicNotificationsRead({ uid: 0 }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
-
 
 		it('should mark topic notifications read', async () => {
 			await apiTopics.follow({ uid: adminUid }, { tid: tid });
@@ -1489,68 +1302,49 @@ describe('Topic\'s', () => {
 			assert.strictEqual(count, 0);
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail with invalid data', (done) => {
 			socketTopics.markAllRead({ uid: 0 }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-uid]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-uid]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should mark all read', (done) => {
 			socketTopics.markUnread({ uid: adminUid }, tid, (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				socketTopics.markAllRead({ uid: adminUid }, {}, (err) => {
-					if (err) return reject(err);
-
+					assert.ifError(err);
 					topics.hasReadTopic(tid, adminUid, (err, hasRead) => {
-						if (err) return reject(err);
-
-						try {
-							assert(hasRead);
-							resolve();
-						} catch (error) {
-							reject(error);
-						}
+						assert.ifError(err);
+						assert(hasRead);
+						done();
 					});
 				});
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should mark category topics read', (done) => {
 			socketTopics.markUnread({ uid: adminUid }, tid, (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				socketTopics.markCategoryTopicsRead({ uid: adminUid }, topic.categoryId, (err) => {
-					if (err) return reject(err);
-
+					assert.ifError(err);
 					topics.hasReadTopic(tid, adminUid, (err, hasRead) => {
-						if (err) return reject(err);
-
-						try {
-							assert(hasRead);
-							resolve();
-						} catch (error) {
-							reject(error);
-						}
+						assert.ifError(err);
+						assert(hasRead);
+						done();
 					});
 				});
 			});
 		});
 
-
-		it('should fail if invalid data', async () => {
+		it('should fail with invalid data', async () => {
 			await assert.rejects(
 				apiTopics.bump({ uid: adminUid }, { tid: null }),
 				{ message: '[[error:invalid-tid]]' }
 			);
 		});
 
-		it('should fail if data invalid', async () => {
+		it('should fail with invalid data', async () => {
 			await assert.rejects(
 				apiTopics.bump({ uid: 0 }, { tid: [tid] }),
 				{ message: '[[error:no-privileges]]' }
@@ -1573,19 +1367,13 @@ describe('Topic\'s', () => {
 			assert.equal(regularRead, false);
 		});
 
-		new Promise((resolve, reject) => {
+		it('should not do anything if tids is empty array', (done) => {
 			socketTopics.markAsRead({ uid: adminUid }, [], (err, markedRead) => {
-				if (err) return reject(err);
-				try {
-					assert.ifError(err);
-					assert(!markedRead);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(!markedRead);
+				done();
 			});
 		});
-
 
 		it('should not return topics in category you cant read', async () => {
 			const { cid: privateCid } = await categories.create({
@@ -1646,175 +1434,124 @@ describe('Topic\'s', () => {
 			await topics.post({ uid: adminUid, tags: ['javascript', 'mysql', 'python', 'nodejs'], title: 'topic title 2', content: 'topic 2 content', cid: topic.categoryId });
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return empty array if query is falsy', (done) => {
 			socketTopics.autocompleteTags({ uid: adminUid }, { query: '' }, (err, data) => {
-				if (err) return reject(err);
-				try {
-					assert.deepEqual([], data);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.deepEqual([], data);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should autocomplete tags', (done) => {
 			socketTopics.autocompleteTags({ uid: adminUid }, { query: 'p' }, (err, data) => {
-				if (err) return reject(err);
-				try {
-					['php', 'psql', 'python'].forEach((tag) => {
-						assert.notEqual(data.indexOf(tag), -1);
-					});
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				['php', 'psql', 'python'].forEach((tag) => {
+					assert.notEqual(data.indexOf(tag), -1);
+				});
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return empty array if query is falsy', (done) => {
 			socketTopics.searchTags({ uid: adminUid }, { query: '' }, (err, data) => {
-				if (err) return reject(err);
-				try {
-					assert.deepEqual([], data);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.deepEqual([], data);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should search tags', (done) => {
 			socketTopics.searchTags({ uid: adminUid }, { query: 'no' }, (err, data) => {
-				if (err) return reject(err);
-				try {
-					['nodebb', 'nodejs', 'nosql'].forEach((tag) => {
-						assert.notEqual(data.indexOf(tag), -1);
-					});
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				['nodebb', 'nodejs', 'nosql'].forEach((tag) => {
+					assert.notEqual(data.indexOf(tag), -1);
+				});
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return empty array if query is falsy', (done) => {
 			socketTopics.searchAndLoadTags({ uid: adminUid }, { query: '' }, (err, data) => {
-				if (err) return reject(err);
-				try {
-					assert.equal(data.matchCount, 0);
-					assert.equal(data.pageCount, 1);
-					assert.deepEqual(data.tags, []);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(data.matchCount, 0);
+				assert.equal(data.pageCount, 1);
+				assert.deepEqual(data.tags, []);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should search and load tags', (done) => {
 			socketTopics.searchAndLoadTags({ uid: adminUid }, { query: 'no' }, (err, data) => {
-				if (err) return reject(err);
-				try {
-					assert.equal(data.matchCount, 4);
-					assert.equal(data.pageCount, 1);
-					const tagData = [
-						{ value: 'nodebb', valueEscaped: 'nodebb', valueEncoded: 'nodebb', score: 3, class: 'nodebb' },
-						{ value: 'node icon', valueEscaped: 'node icon', valueEncoded: 'node%20icon', score: 1, class: 'node-icon' },
-						{ value: 'nodejs', valueEscaped: 'nodejs', valueEncoded: 'nodejs', score: 1, class: 'nodejs' },
-						{ value: 'nosql', valueEscaped: 'nosql', valueEncoded: 'nosql', score: 1, class: 'nosql' },
-					];
-					assert.deepEqual(data.tags, tagData);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(data.matchCount, 4);
+				assert.equal(data.pageCount, 1);
+				const tagData = [
+					{ value: 'nodebb', valueEscaped: 'nodebb', valueEncoded: 'nodebb', score: 3, class: 'nodebb' },
+					{ value: 'node icon', valueEscaped: 'node icon', valueEncoded: 'node%20icon', score: 1, class: 'node-icon' },
+					{ value: 'nodejs', valueEscaped: 'nodejs', valueEncoded: 'nodejs', score: 1, class: 'nodejs' },
+					{ value: 'nosql', valueEscaped: 'nosql', valueEncoded: 'nosql', score: 1, class: 'nosql' },
+				];
+				assert.deepEqual(data.tags, tagData);
+
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return error if data is invalid', (done) => {
 			socketTopics.loadMoreTags({ uid: adminUid }, { after: 'asd' }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should load more tags', (done) => {
 			socketTopics.loadMoreTags({ uid: adminUid }, { after: 0 }, (err, data) => {
-				if (err) return reject(err);
-				try {
-					assert(Array.isArray(data.tags));
-					assert.equal(data.nextStart, 100);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(Array.isArray(data.tags));
+				assert.equal(data.nextStart, 100);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should error if data is invalid', (done) => {
 			socketAdmin.tags.create({ uid: adminUid }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should error if tag is invalid', (done) => {
 			socketAdmin.tags.create({ uid: adminUid }, { tag: '' }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-tag]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-tag]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should error if tag is too short', (done) => {
 			socketAdmin.tags.create({ uid: adminUid }, { tag: 'as' }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:tag-too-short]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:tag-too-short]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should create empty tag', (done) => {
 			socketAdmin.tags.create({ uid: adminUid }, { tag: 'emptytag' }, (err) => {
-				if (err) return reject(err);
+				assert.ifError(err);
 				db.sortedSetScore('tags:topic:count', 'emptytag', (err, score) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(score, 0);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(score, 0);
+					done();
 				});
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should do nothing if tag exists', (done) => {
 			socketAdmin.tags.create({ uid: adminUid }, { tag: 'emptytag' }, (err) => {
-				if (err) return reject(err);
+				assert.ifError(err);
 				db.sortedSetScore('tags:topic:count', 'emptytag', (err, score) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(score, 0);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(score, 0);
+					done();
 				});
 			});
 		});
@@ -1839,67 +1576,45 @@ describe('Topic\'s', () => {
 			assert.strictEqual(tags[0], 'plugins');
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return related topics', (done) => {
 			const meta = require('../src/meta');
 			meta.config.maximumRelatedTopics = 2;
 			const topicData = {
 				tags: [{ value: 'javascript' }],
 			};
 			topics.getRelatedTopics(topicData, 0, (err, data) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert(Array.isArray(data));
-					assert.equal(data[0].title, 'topic title 2');
-					meta.config.maximumRelatedTopics = 0;
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(Array.isArray(data));
+				assert.equal(data[0].title, 'topic title 2');
+				meta.config.maximumRelatedTopics = 0;
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return error with invalid data', (done) => {
 			socketAdmin.tags.deleteTags({ uid: adminUid }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should do nothing if arrays is empty', (done) => {
 			socketAdmin.tags.deleteTags({ uid: adminUid }, { tags: [] }, (err) => {
-				if (err) {
-					return reject(err);
-				}
-				resolve();
+				assert.ifError(err);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should delete tags', (done) => {
 			socketAdmin.tags.create({ uid: adminUid }, { tag: 'emptytag2' }, (err) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
 				socketAdmin.tags.deleteTags({ uid: adminUid }, { tags: ['emptytag', 'emptytag2', 'nodebb', 'nodejs'] }, (err) => {
-					if (err) {
-						return reject(err);
-					}
+					assert.ifError(err);
 					db.getObjects(['tag:emptytag', 'tag:emptytag2'], (err, data) => {
-						if (err) {
-							return reject(err);
-						}
-						try {
-							assert(!data[0]);
-							assert(!data[1]);
-							resolve();
-						} catch (error) {
-							reject(error);
-						}
+						assert.ifError(err);
+						assert(!data[0]);
+						assert(!data[1]);
+						done();
 					});
 				});
 			});
@@ -1913,25 +1628,16 @@ describe('Topic\'s', () => {
 			assert.deepStrictEqual(tags, ['deleteme1', 'deleteme3']);
 		});
 
-		new Promise((resolve, reject) => {
+		it('should delete tag', (done) => {
 			topics.deleteTag('javascript', (err) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
 				db.getObject('tag:javascript', (err, data) => {
-					if (err) {
-						return reject(err);
-					}
-					try {
-						assert(!data);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert(!data);
+					done();
 				});
 			});
 		});
-
 
 		it('should delete category tag as well', async () => {
 			const category = await categories.create({ name: 'delete category' });
@@ -2187,27 +1893,15 @@ describe('Topic\'s', () => {
 			}
 		});
 
-		new Promise((resolve, reject) => {
+		it('should follow topic', (done) => {
 			topics.toggleFollow(tid, followerUid, (err, isFollowing) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
+				assert.ifError(err);
+				assert(isFollowing);
+				socketTopics.isFollowed({ uid: followerUid }, tid, (err, isFollowing) => {
+					assert.ifError(err);
 					assert(isFollowing);
-					socketTopics.isFollowed({ uid: followerUid }, tid, (err, isFollowing) => {
-						if (err) {
-							return reject(err);
-						}
-						try {
-							assert(isFollowing);
-							resolve();
-						} catch (error) {
-							reject(error);
-						}
-					});
-				} catch (error) {
-					reject(error);
-				}
+					done();
+				});
 			});
 		});
 	});
@@ -2235,20 +1929,13 @@ describe('Topic\'s', () => {
 		});
 	});
 
-	new Promise((resolve, reject) => {
+	it('should check if user is moderator', (done) => {
 		socketTopics.isModerator({ uid: adminUid }, topic.tid, (err, isModerator) => {
-			if (err) {
-				return reject(err);
-			}
-			try {
-				assert(!isModerator);
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+			assert.ifError(err);
+			assert(!isModerator);
+			done();
 		});
 	});
-
 
 	describe('next post index', () => {
 		it('should error with invalid data', async () => {
@@ -2300,146 +1987,88 @@ describe('Topic\'s', () => {
 		});
 
 
-		new Promise((resolve, reject) => {
+		it('should return empty array if first param is empty', (done) => {
 			topics.getTeasers([], 1, (err, teasers) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert.equal(0, teasers.length);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(0, teasers.length);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should get teasers with 2 params', (done) => {
 			topics.getTeasers([topic1.topicData, topic2.topicData], 1, (err, teasers) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert.deepEqual([undefined, undefined], teasers);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.deepEqual([undefined, undefined], teasers);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should get teasers with first posts', (done) => {
 			meta.config.teaserPost = 'first';
 			topics.getTeasers([topic1.topicData, topic2.topicData], 1, (err, teasers) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
+				assert.ifError(err);
+				assert.equal(2, teasers.length);
+				assert(teasers[0]);
+				assert(teasers[1]);
+				assert(teasers[0].tid, topic1.topicData.tid);
+				assert(teasers[0].content, 'content 1');
+				assert(teasers[0].user.username, 'admin');
+				done();
+			});
+		});
+
+		it('should get teasers even if one topic is falsy', (done) => {
+			topics.getTeasers([null, topic2.topicData], 1, (err, teasers) => {
+				assert.ifError(err);
+				assert.equal(2, teasers.length);
+				assert.equal(undefined, teasers[0]);
+				assert(teasers[1]);
+				assert(teasers[1].tid, topic2.topicData.tid);
+				assert(teasers[1].content, 'content 2');
+				assert(teasers[1].user.username, 'admin');
+				done();
+			});
+		});
+
+		it('should get teasers with last posts', (done) => {
+			meta.config.teaserPost = 'last-post';
+			topics.reply({ uid: adminUid, content: 'reply 1 content', tid: topic1.topicData.tid }, (err, result) => {
+				assert.ifError(err);
+				topic1.topicData.teaserPid = result.pid;
+				topics.getTeasers([topic1.topicData, topic2.topicData], 1, (err, teasers) => {
 					assert.ifError(err);
-					assert.equal(2, teasers.length);
 					assert(teasers[0]);
 					assert(teasers[1]);
 					assert(teasers[0].tid, topic1.topicData.tid);
-					assert(teasers[0].content, 'content 1');
-					assert(teasers[0].user.username, 'admin');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
-			});
-		});
-
-		new Promise((resolve, reject) => {
-			topics.getTeasers([null, topic2.topicData], 1, (err, teasers) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert.equal(2, teasers.length);
-					assert.equal(undefined, teasers[0]);
-					assert(teasers[1]);
-					assert(teasers[1].tid, topic2.topicData.tid);
-					assert(teasers[1].content, 'content 2');
-					assert(teasers[1].user.username, 'admin');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
-			});
-		});
-
-		new Promise((resolve, reject) => {
-			meta.config.teaserPost = 'last-post';
-			topics.reply({ uid: adminUid, content: 'reply 1 content', tid: topic1.topicData.tid }, (err, result) => {
-				if (err) {
-					return reject(err);
-				}
-				topic1.topicData.teaserPid = result.pid;
-				topics.getTeasers([topic1.topicData, topic2.topicData], 1, (err, teasers) => {
-					if (err) {
-						return reject(err);
-					}
-					try {
-						assert.ifError(err);
-						assert(teasers[0]);
-						assert(teasers[1]);
-						assert(teasers[0].tid, topic1.topicData.tid);
-						assert(teasers[0].content, 'reply 1 content');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert(teasers[0].content, 'reply 1 content');
+					done();
 				});
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should get teasers by tids', (done) => {
 			topics.getTeasersByTids([topic2.topicData.tid, topic1.topicData.tid], 1, (err, teasers) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert(2, teasers.length);
-					assert.equal(teasers[1].content, 'reply 1 content');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(2, teasers.length);
+				assert.equal(teasers[1].content, 'reply 1 content');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return empty array ', (done) => {
 			topics.getTeasersByTids([], 1, (err, teasers) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert.equal(0, teasers.length);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(0, teasers.length);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should get teaser by tid', (done) => {
 			topics.getTeaser(topic2.topicData.tid, 1, (err, teaser) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert(teaser);
-					assert.equal(teaser.content, 'content 2');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(teaser);
+				assert.equal(teaser.content, 'content 2');
+				done();
 			});
 		});
 
@@ -2462,60 +2091,38 @@ describe('Topic\'s', () => {
 			cid = category.cid;
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail to post if user does not have tag privilege', (done) => {
 			privileges.categories.rescind(['groups:topics:tag'], cid, 'registered-users', (err) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
 				topics.post({ uid: uid, cid: cid, tags: ['tag1'], title: 'topic with tags', content: 'some content here' }, (err) => {
-					try {
-						assert.equal(err.message, '[[error:no-privileges]]');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.equal(err.message, '[[error:no-privileges]]');
+					done();
 				});
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail to edit if user does not have tag privilege', (done) => {
 			topics.post({ uid: uid, cid: cid, title: 'topic with tags', content: 'some content here' }, (err, result) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
 				const { pid } = result.postData;
 				posts.edit({ pid: pid, uid: uid, content: 'edited content', tags: ['tag2'] }, (err) => {
-					try {
-						assert.equal(err.message, '[[error:no-privileges]]');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.equal(err.message, '[[error:no-privileges]]');
+					done();
 				});
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should be able to edit topic and add tags if allowed', (done) => {
 			privileges.categories.give(['groups:topics:tag'], cid, 'registered-users', (err) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
 				topics.post({ uid: uid, cid: cid, tags: ['tag1'], title: 'topic with tags', content: 'some content here' }, (err, result) => {
-					if (err) {
-						return reject(err);
-					}
+					assert.ifError(err);
 					posts.edit({ pid: result.postData.pid, uid: uid, content: 'edited content', tags: ['tag1', 'tag2'] }, (err, result) => {
-						if (err) {
-							return reject(err);
-						}
-						try {
-							const tags = result.topic.tags.map(tag => tag.value);
-							assert(tags.includes('tag1'));
-							assert(tags.includes('tag2'));
-							resolve();
-						} catch (error) {
-							reject(error);
-						}
+						assert.ifError(err);
+						const tags = result.topic.tags.map(tag => tag.value);
+						assert(tags.includes('tag1'));
+						assert(tags.includes('tag2'));
+						done();
 					});
 				});
 			});
@@ -2542,28 +2149,19 @@ describe('Topic\'s', () => {
 			await topics.reply({ uid: uid, content: 'topic 2 reply', tid: topic2Data.tid });
 		});
 
-		new Promise((resolve, reject) => {
+		it('should error if data is not an array', (done) => {
 			socketTopics.merge({ uid: 0 }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should error if user does not have privileges', (done) => {
 			socketTopics.merge({ uid: 0 }, { tids: [topic2Data.tid, topic1Data.tid] }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:no-privileges]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:no-privileges]]');
+				done();
 			});
 		});
-
 
 		it('should merge 2 topics', async () => {
 			await socketTopics.merge({ uid: adminUid }, {
@@ -2908,7 +2506,7 @@ describe('Topic\'s', () => {
 	});
 });
 
-describe('Topics\'', () => {
+describe('Topics\'', async () => {
 	let files;
 
 	before(async () => {
@@ -2921,4 +2519,3 @@ describe('Topics\'', () => {
 		});
 	});
 });
-*/

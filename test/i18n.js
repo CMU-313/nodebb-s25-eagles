@@ -1,4 +1,4 @@
-/*
+'use strict';
 
 // For tests relating to the translator module, check translator.js
 
@@ -31,7 +31,7 @@ describe('i18n', () => {
 	});
 
 	// There has to be a better way to generate tests asynchronously...
-	it('should validate the source language file structure', async () => {
+	it('', async () => {
 		const sourcePath = path.resolve(__dirname, '../public/language/en-GB');
 		const fullPaths = await file.walk(sourcePath);
 		const sourceFiles = fullPaths.map(path => path.replace(sourcePath, ''));
@@ -55,7 +55,7 @@ describe('i18n', () => {
 				}
 			});
 
-			describe('should only contain lowercase or numeric language keys separated by either dashes or periods', () => {
+			describe('should only contain lowercase or numeric language keys separated by either dashes or periods', async () => {
 				describe('(regexp validation)', () => {
 					const valid = [
 						'foo.bar', 'foo.bar-baz', 'foo.bar.baz-quux-lorem-ipsum-dolor-sit-amet', 'foo.barBazQuux', // human generated
@@ -76,12 +76,12 @@ describe('i18n', () => {
 					];
 
 					valid.forEach((key) => {
-						it(`should validate key: ${key}`, () => {
+						it(key, () => {
 							assert(test.test(key));
 						});
 					});
 					invalid.forEach((key) => {
-						it(`${key}`, () => {
+						it(key, () => {
 							assert(!test.test(key));
 						});
 					});
@@ -96,7 +96,7 @@ describe('i18n', () => {
 					const keys = Object.keys(hash);
 
 					keys.forEach((key) => {
-						it('key', () => {
+						it(key, () => {
 							assert(test.test(key), `${key} contains invalid characters`);
 						});
 					});
@@ -170,4 +170,4 @@ describe('i18n', () => {
 			});
 		});
 	});
-});*/
+});

@@ -1,4 +1,4 @@
-
+'use strict';
 
 const express = require('express');
 const nconf = require('nconf');

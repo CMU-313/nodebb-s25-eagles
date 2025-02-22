@@ -1,4 +1,4 @@
-
+'use strict';
 
 const socketUser = require('./user');
 const socketGroup = require('./groups');

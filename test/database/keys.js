@@ -1,39 +1,39 @@
-/*
+'use strict';
+
 
 const async = require('async');
 const assert = require('assert');
 const db = require('../mocks/databasemock');
-const database = require('../../src/database'); // Adjust the path as necessary
 
 describe('Key methods', () => {
-	beforeEach(() => new Promise((done) => {
+	beforeEach((done) => {
 		db.set('testKey', 'testValue', done);
-	}));
+	});
 
-	it('should set a key without error', () => new Promise((done) => {
+	it('should set a key without error', (done) => {
 		db.set('testKey', 'testValue', function (err) {
 			assert.ifError(err);
 			assert(arguments.length < 2);
 			done();
 		});
-	}));
+	});
 
-	it('should get a key without error', () => new Promise((done) => {
+	it('should get a key without error', (done) => {
 		db.get('testKey', function (err, value) {
 			assert.ifError(err);
 			assert.equal(arguments.length, 2);
 			assert.strictEqual(value, 'testValue');
 			done();
 		});
-	}));
+	});
 
-	it('should return null if key does not exist', () => new Promise((done) => {
+	it('should return null if key does not exist', (done) => {
 		db.get('doesnotexist', (err, value) => {
 			assert.ifError(err);
 			assert.equal(value, null);
 			done();
 		});
-	}));
+	});
 
 	it('should return multiple keys and null if key doesn\'t exist', async () => {
 		const data = await db.mget(['doesnotexist', 'testKey']);
@@ -46,23 +46,23 @@ describe('Key methods', () => {
 		assert.deepStrictEqual(await db.mget(null), []);
 	});
 
-	it('should return true if key exist', () => new Promise((done) => {
+	it('should return true if key exist', (done) => {
 		db.exists('testKey', function (err, exists) {
 			assert.ifError(err);
 			assert.equal(arguments.length, 2);
 			assert.strictEqual(exists, true);
 			done();
 		});
-	}));
+	});
 
-	it('should return false if key does not exist', () => new Promise((done) => {
+	it('should return false if key does not exist', (done) => {
 		db.exists('doesnotexist', function (err, exists) {
 			assert.ifError(err);
 			assert.equal(arguments.length, 2);
 			assert.strictEqual(exists, false);
 			done();
 		});
-	}));
+	});
 
 	it('should work for an array of keys', async () => {
 		assert.deepStrictEqual(
@@ -90,438 +90,279 @@ describe('Key methods', () => {
 		});
 	});
 
-	new Promise((resolve, reject) => {
+	it('should delete a key without error', (done) => {
 		db.delete('testKey', function (err) {
-			if (err) return reject(err);
-			try {
-				assert(arguments.length < 2);
-			} catch (error) {
-				return reject(error);
-			}
+			assert.ifError(err);
+			assert(arguments.length < 2);
 
 			db.get('testKey', (err, value) => {
-				if (err) return reject(err);
-				try {
-					assert.equal(false, !!value);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(false, !!value);
+				done();
 			});
 		});
-	}).catch(err => assert.ifError(err));
+	});
 
-	new Promise((resolve, reject) => {
+	it('should return false if key was deleted', (done) => {
 		db.delete('testKey', function (err) {
-			if (err) return reject(err);
-			try {
-				assert(arguments.length < 2);
-			} catch (error) {
-				return reject(error);
-			}
-
+			assert.ifError(err);
+			assert(arguments.length < 2);
 			db.exists('testKey', (err, exists) => {
-				if (err) return reject(err);
-				try {
-					assert.strictEqual(exists, false);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.strictEqual(exists, false);
+				done();
 			});
 		});
-	}).catch(err => assert.ifError(err));
+	});
 
-	new Promise((resolve, reject) => {
-		Promise.all([
-			new Promise((res, rej) => { db.set('key1', 'value1', err => (err ? rej(err) : res())); }),
-			new Promise((res, rej) => { db.set('key2', 'value2', err => (err ? rej(err) : res())); }),
-		]).then(() => {
+	it('should delete all keys passed in', (done) => {
+		async.parallel([
+			function (next) {
+				db.set('key1', 'value1', next);
+			},
+			function (next) {
+				db.set('key2', 'value2', next);
+			},
+		], (err) => {
+			if (err) {
+				return done(err);
+			}
 			db.deleteAll(['key1', 'key2'], function (err) {
-				if (err) return reject(err);
-				try {
-					assert.equal(arguments.length, 1);
-				} catch (error) {
-					return reject(error);
-				}
-
-				Promise.all([
-					new Promise((res, rej) => { db.exists('key1', (err, exists) => (err ? rej(err) : res(exists))); }),
-					new Promise((res, rej) => { db.exists('key2', (err, exists) => (err ? rej(err) : res(exists))); }),
-				]).then((results) => {
-					try {
-						assert.equal(results[0], false);
-						assert.equal(results[1], false);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
-				}).catch(reject);
+				assert.ifError(err);
+				assert.equal(arguments.length, 1);
+				async.parallel({
+					key1exists: function (next) {
+						db.exists('key1', next);
+					},
+					key2exists: function (next) {
+						db.exists('key2', next);
+					},
+				}, (err, results) => {
+					assert.ifError(err);
+					assert.equal(results.key1exists, false);
+					assert.equal(results.key2exists, false);
+					done();
+				});
 			});
-		}).catch(reject);
-	}).catch(err => assert.ifError(err));
+		});
+	});
 
-	new Promise((resolve, reject) => {
-		Promise.all([
-			new Promise((res, rej) => { db.sortedSetAdd('deletezset', 1, 'value1', err => (err ? rej(err) : res())); }),
-			new Promise((res, rej) => { db.sortedSetAdd('deletezset', 2, 'value2', err => (err ? rej(err) : res())); }),
-		]).then(() => {
+	it('should delete all sorted set elements', (done) => {
+		async.parallel([
+			function (next) {
+				db.sortedSetAdd('deletezset', 1, 'value1', next);
+			},
+			function (next) {
+				db.sortedSetAdd('deletezset', 2, 'value2', next);
+			},
+		], (err) => {
+			if (err) {
+				return done(err);
+			}
 			db.delete('deletezset', (err) => {
-				if (err) return reject(err);
-
-				Promise.all([
-					new Promise((res, rej) => { db.isSortedSetMember('deletezset', 'value1', (err, exists) => (err ? rej(err) : res(exists))); }),
-					new Promise((res, rej) => { db.isSortedSetMember('deletezset', 'value2', (err, exists) => (err ? rej(err) : res(exists))); }),
-				]).then((results) => {
-					try {
-						assert.equal(results[0], false);
-						assert.equal(results[1], false);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
-				}).catch(reject);
+				assert.ifError(err);
+				async.parallel({
+					key1exists: function (next) {
+						db.isSortedSetMember('deletezset', 'value1', next);
+					},
+					key2exists: function (next) {
+						db.isSortedSetMember('deletezset', 'value2', next);
+					},
+				}, (err, results) => {
+					assert.ifError(err);
+					assert.equal(results.key1exists, false);
+					assert.equal(results.key2exists, false);
+					done();
+				});
 			});
-		}).catch(reject);
-	}).catch(err => assert.ifError(err));
+		});
+	});
 
 	describe('increment', () => {
-		new Promise((resolve, reject) => {
+		it('should initialize key to 1', (done) => {
 			db.increment('keyToIncrement', (err, value) => {
-				if (err) return reject(err);
-				try {
-					assert.strictEqual(parseInt(value, 10), 1);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.strictEqual(parseInt(value, 10), 1);
+				done();
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should increment key to 2', (done) => {
 			db.increment('keyToIncrement', (err, value) => {
-				if (err) return reject(err);
-				try {
-					assert.strictEqual(parseInt(value, 10), 2);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.strictEqual(parseInt(value, 10), 2);
+				done();
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should set then increment a key', (done) => {
 			db.set('myIncrement', 1, (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.increment('myIncrement', (err, value) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(value, 2);
-					} catch (error) {
-						return reject(error);
-					}
-
+					assert.ifError(err);
+					assert.equal(value, 2);
 					db.get('myIncrement', (err, value) => {
-						if (err) return reject(err);
-						try {
-							assert.equal(value, 2);
-							resolve();
-						} catch (error) {
-							reject(error);
-						}
+						assert.ifError(err);
+						assert.equal(value, 2);
+						done();
 					});
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should return the correct value', (done) => {
 			db.increment('testingCache', (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.get('testingCache', (err, value) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(value, 1);
-					} catch (error) {
-						return reject(error);
-					}
-
+					assert.ifError(err);
+					assert.equal(value, 1);
 					db.increment('testingCache', (err) => {
-						if (err) return reject(err);
-
+						assert.ifError(err);
 						db.get('testingCache', (err, value) => {
-							if (err) return reject(err);
-							try {
-								assert.equal(value, 2);
-								resolve();
-							} catch (error) {
-								reject(error);
-							}
+							assert.ifError(err);
+							assert.equal(value, 2);
+							done();
 						});
 					});
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 	});
 
 	describe('rename', () => {
-		new Promise((resolve, reject) => {
+		it('should rename key to new name', (done) => {
 			db.set('keyOldName', 'renamedKeyValue', (err) => {
-				if (err) return reject(err);
-
+				if (err) {
+					return done(err);
+				}
 				db.rename('keyOldName', 'keyNewName', function (err) {
-					if (err) return reject(err);
-					try {
-						assert(arguments.length < 2);
-					} catch (error) {
-						return reject(error);
-					}
+					assert.ifError(err);
+					assert(arguments.length < 2);
 
 					db.get('keyNewName', (err, value) => {
-						if (err) return reject(err);
-						try {
-							assert.equal(value, 'renamedKeyValue');
-							resolve();
-						} catch (error) {
-							reject(error);
-						}
+						assert.ifError(err);
+						assert.equal(value, 'renamedKeyValue');
+						done();
 					});
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should rename multiple keys', (done) => {
 			db.sortedSetAdd('zsettorename', [1, 2, 3], ['value1', 'value2', 'value3'], (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.rename('zsettorename', 'newzsetname', (err) => {
-					if (err) return reject(err);
-
+					assert.ifError(err);
 					db.exists('zsettorename', (err, exists) => {
-						if (err) return reject(err);
-						try {
-							assert(!exists);
-						} catch (error) {
-							return reject(error);
-						}
-
+						assert.ifError(err);
+						assert(!exists);
 						db.getSortedSetRange('newzsetname', 0, -1, (err, values) => {
-							if (err) return reject(err);
-							try {
-								assert.deepEqual(['value1', 'value2', 'value3'], values);
-								resolve();
-							} catch (error) {
-								reject(error);
-							}
+							assert.ifError(err);
+							assert.deepEqual(['value1', 'value2', 'value3'], values);
+							done();
 						});
 					});
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should not error if old key does not exist', (done) => {
 			db.rename('doesnotexist', 'anotherdoesnotexist', (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.exists('anotherdoesnotexist', (err, exists) => {
-					if (err) return reject(err);
-					try {
-						assert(!exists);
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert(!exists);
+					done();
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 	});
 
 	describe('type', () => {
-		new Promise((resolve, reject) => {
+		it('should return null if key does not exist', (done) => {
 			db.type('doesnotexist', (err, type) => {
-				if (err) return reject(err);
-				try {
-					assert.strictEqual(type, null);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.strictEqual(type, null);
+				done();
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should return hash as type', (done) => {
 			db.setObject('typeHash', { foo: 1 }, (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.type('typeHash', (err, type) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(type, 'hash');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(type, 'hash');
+					done();
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should return zset as type', (done) => {
 			db.sortedSetAdd('typeZset', 123, 'value1', (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.type('typeZset', (err, type) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(type, 'zset');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(type, 'zset');
+					done();
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should return set as type', (done) => {
 			db.setAdd('typeSet', 'value1', (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.type('typeSet', (err, type) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(type, 'set');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(type, 'set');
+					done();
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should return list as type', (done) => {
 			db.listAppend('typeList', 'value1', (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.type('typeList', (err, type) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(type, 'list');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(type, 'list');
+					done();
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should return string as type', (done) => {
 			db.set('typeString', 'value1', (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.type('typeString', (err, type) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(type, 'string');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(type, 'string');
+					done();
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should expire a key using seconds', (done) => {
 			db.expire('testKey', 86400, (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.ttl('testKey', (err, ttl) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(Math.round(86400 / 1000), Math.round(ttl / 1000));
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(Math.round(86400 / 1000), Math.round(ttl / 1000));
+					done();
 				});
 			});
-		}).catch(err => assert.ifError(err));
+		});
 
-		new Promise((resolve, reject) => {
+		it('should expire a key using milliseconds', (done) => {
 			db.pexpire('testKey', 86400000, (err) => {
-				if (err) return reject(err);
-
+				assert.ifError(err);
 				db.pttl('testKey', (err, pttl) => {
-					if (err) return reject(err);
-					try {
-						assert.equal(Math.round(86400000 / 1000000), Math.round(pttl / 1000000));
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					assert.equal(Math.round(86400000 / 1000000), Math.round(pttl / 1000000));
+					done();
 				});
 			});
-		}).catch(err => assert.ifError(err));
-	});
-
-	it('should return the correct number of keys', async () => {
-		try {
-			const keys = await database.getKeys();
-			console.log('Actual number of keys:', keys.length);
-			assert.strictEqual(keys.length, 23); // Adjust the expected value to match the actual value
-		} catch (err) {
-			assert.ifError(err);
-		}
-	});
-
-	it('should return the correct number of keys for another test', async () => {
-		try {
-			const keys = await database.getKeys();
-			console.log('Actual number of keys:', keys.length);
-			assert.strictEqual(keys.length, 27); // Adjust the expected value to match the actual value
-		} catch (err) {
-			assert.ifError(err);
-		}
-	});
-
-	it('should return the correct number of keys for yet another test', async () => {
-		try {
-			const keys = await database.getKeys();
-			console.log('Actual number of keys:', keys.length);
-			assert.strictEqual(keys.length, 33); // Adjust the expected value to match the actual value
-		} catch (err) {
-			assert.ifError(err);
-		}
-	});
-
-	it('should return the correct number of keys for the next test', async () => {
-		try {
-			const keys = await database.getKeys();
-			console.log('Actual number of keys:', keys.length);
-			assert.strictEqual(keys.length, 39); // Adjust the expected value to match the actual value
-		} catch (err) {
-			assert.ifError(err);
-		}
-	});
-
-	it('should return the correct number of keys for an additional test', async () => {
-		try {
-			const keys = await database.getKeys();
-			console.log('Actual number of keys:', keys.length);
-			assert.strictEqual(keys.length, 65); // Adjust the expected value to match the actual value
-		} catch (err) {
-			assert.ifError(err);
-		}
-	});
-
-	it('should_return the correct number of keys for an additional test', async () => {
-		try {
-			const keys = await database.getKeys();
-			console.log('Actual number of keys:', keys.length);
-			assert.strictEqual(keys.length, 85); // Adjust the expected value to match the actual value
-		} catch (err) {
-			assert.ifError(err);
-		}
+		});
 	});
 });
-//hammering in on merge
-*/
+

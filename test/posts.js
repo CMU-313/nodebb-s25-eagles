@@ -1,4 +1,4 @@
-/*
+'use strict';
 
 
 const assert = require('assert');
@@ -124,18 +124,13 @@ describe('Post\'s', () => {
 		}
 	});
 
-	new Promise((resolve, reject) => {
+	it('should return falsy if post does not exist', (done) => {
 		posts.getPostData(9999, (err, postData) => {
-			try {
-				assert.ifError(err);
-				assert.equal(postData, null);
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+			assert.ifError(err);
+			assert.equal(postData, null);
+			done();
 		});
 	});
-
 
 	describe('voting', () => {
 		it('should fail to upvote post if group does not have upvote permission', async () => {
@@ -175,31 +170,23 @@ describe('Post\'s', () => {
 			assert.strictEqual(score, 1);
 		});
 
-		new Promise((resolve, reject) => {
+		it('should get voters', (done) => {
 			socketPosts.getVoters({ uid: globalModUid }, { pid: postData.pid, cid: cid }, (err, data) => {
-				try {
-					assert.ifError(err);
-					assert.equal(data.upvoteCount, 1);
-					assert.equal(data.downvoteCount, 0);
-					assert(Array.isArray(data.upvoters));
-					assert.equal(data.upvoters[0].username, 'upvoter');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(data.upvoteCount, 1);
+				assert.equal(data.downvoteCount, 0);
+				assert(Array.isArray(data.upvoters));
+				assert.equal(data.upvoters[0].username, 'upvoter');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should get upvoters', (done) => {
 			socketPosts.getUpvoters({ uid: globalModUid }, [postData.pid], (err, data) => {
-				try {
-					assert.ifError(err);
-					assert.equal(data.otherCount, 0);
-					assert.equal(data.usernames, 'upvoter');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(data.otherCount, 0);
+				assert.equal(data.usernames, 'upvoter');
+				done();
 			});
 		});
 
@@ -233,7 +220,7 @@ describe('Post\'s', () => {
 			assert.equal(data.downvoted, true);
 		});
 
-		it('should add the pid to the :votes sorted_set for that user', async () => {
+		it('should add the pid to the :votes sorted set for that user', async () => {
 			const cid = await posts.getCidByPid(postData.pid);
 			const { uid, pid } = postData;
 
@@ -295,29 +282,21 @@ describe('Post\'s', () => {
 	});
 
 	describe('post tools', () => {
-		new Promise((resolve, reject) => {
+		it('should error if data is invalid', (done) => {
 			socketPosts.loadPostTools({ uid: globalModUid }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should load post tools', (done) => {
 			socketPosts.loadPostTools({ uid: globalModUid }, { pid: postData.pid, cid: cid }, (err, data) => {
-				try {
-					assert.ifError(err);
-					assert(data.posts.display_edit_tools);
-					assert(data.posts.display_delete_tools);
-					assert(data.posts.display_moderator_tools);
-					assert(data.posts.display_move_tools);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(data.posts.display_edit_tools);
+				assert(data.posts.display_delete_tools);
+				assert(data.posts.display_moderator_tools);
+				assert(data.posts.display_move_tools);
+				done();
 			});
 		});
 	});
@@ -557,32 +536,23 @@ describe('Post\'s', () => {
 			assert.equal(data.topic.renamed, false);
 		});
 
-		new Promise((resolve, reject) => {
+		it('should return diffs', (done) => {
 			posts.diffs.get(replyPid, 0, (err, data) => {
-				try {
-					assert.ifError(err);
-					assert(Array.isArray(data));
-					assert(data[0].pid, replyPid);
-					assert(data[0].patch);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(Array.isArray(data));
+				assert(data[0].pid, replyPid);
+				assert(data[0].patch);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should load diffs and reconstruct post', (done) => {
 			posts.diffs.load(replyPid, 0, voterUid, (err, data) => {
-				try {
-					assert.ifError(err);
-					assert.equal(data.content, 'A reply to edit');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(data.content, 'A reply to edit');
+				done();
 			});
 		});
-
 
 		it('should not allow guests to view diffs', async () => {
 			let err = {};
@@ -712,105 +682,70 @@ describe('Post\'s', () => {
 	});
 
 	describe('getPostSummaryByPids', () => {
-		new Promise((resolve, reject) => {
+		it('should return empty array for empty pids', (done) => {
 			posts.getPostSummaryByPids([], 0, {}, (err, data) => {
-				try {
-					assert.ifError(err);
-					assert.equal(data.length, 0);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(data.length, 0);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should get post summaries', (done) => {
 			posts.getPostSummaryByPids([postData.pid], 0, {}, (err, data) => {
-				try {
-					assert.ifError(err);
-					assert(data[0].user);
-					assert(data[0].topic);
-					assert(data[0].category);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(data[0].user);
+				assert(data[0].topic);
+				assert(data[0].category);
+				done();
 			});
 		});
 	});
 
-	new Promise((resolve, reject) => {
+	it('should get recent poster uids', (done) => {
 		topics.reply({
 			uid: voterUid,
 			tid: topicData.tid,
 			timestamp: Date.now(),
 			content: 'some content',
 		}, (err) => {
-			if (err) {
-				return reject(err);
-			}
+			assert.ifError(err);
 			posts.getRecentPosterUids(0, 1, (err, uids) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert(Array.isArray(uids));
-					assert.equal(uids.length, 2);
-					assert.equal(uids[0], voterUid);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert(Array.isArray(uids));
+				assert.equal(uids.length, 2);
+				assert.equal(uids[0], voterUid);
+				done();
 			});
 		});
 	});
 
-
 	describe('parse', () => {
-		new Promise((resolve, reject) => {
+		it('should not crash and return falsy if post data is falsy', (done) => {
 			posts.parsePost(null, (err, postData) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert.strictEqual(postData, null);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.strictEqual(postData, null);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should store post content in cache', (done) => {
 			const oldValue = global.env;
 			global.env = 'production';
 			const postData = {
 				pid: 9999,
 				content: 'some post content',
 			};
-
 			posts.parsePost(postData, (err) => {
-				if (err) {
-					return reject(err);
-				}
+				assert.ifError(err);
 				posts.parsePost(postData, (err) => {
-					if (err) {
-						return reject(err);
-					}
-					try {
-						global.env = oldValue;
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
+					assert.ifError(err);
+					global.env = oldValue;
+					done();
 				});
 			});
 		});
 
-
-		new Promise((resolve, reject) => {
+		it('should parse signature and remove links and images', (done) => {
 			meta.config['signatures:disableLinks'] = 1;
 			meta.config['signatures:disableImages'] = 1;
 			const userData = {
@@ -818,44 +753,29 @@ describe('Post\'s', () => {
 			};
 
 			posts.parseSignature(userData, 1, (err, data) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert.equal(data.userData.signature, 'test derp');
-					meta.config['signatures:disableLinks'] = 0;
-					meta.config['signatures:disableImages'] = 0;
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.equal(data.userData.signature, 'test derp');
+				meta.config['signatures:disableLinks'] = 0;
+				meta.config['signatures:disableImages'] = 0;
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
-			try {
-				const nconf = require('nconf');
-				const content = '<a href="/users">test</a> <a href="youtube.com">youtube</a>';
-				const parsedContent = posts.relativeToAbsolute(content, posts.urlRegex);
-				assert.equal(parsedContent, `<a href="${nconf.get('base_url')}/users">test</a> <a href="//youtube.com">youtube</a>`);
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+		it('should turn relative links in post body to absolute urls', (done) => {
+			const nconf = require('nconf');
+			const content = '<a href="/users">test</a> <a href="youtube.com">youtube</a>';
+			const parsedContent = posts.relativeToAbsolute(content, posts.urlRegex);
+			assert.equal(parsedContent, `<a href="${nconf.get('base_url')}/users">test</a> <a href="//youtube.com">youtube</a>`);
+			done();
 		});
 
-		new Promise((resolve, reject) => {
-			try {
-				const nconf = require('nconf');
-				const content = '<a href="/users">test</a> <a href="youtube.com">youtube</a> some test <img src="/path/to/img"/>';
-				let parsedContent = posts.relativeToAbsolute(content, posts.urlRegex);
-				parsedContent = posts.relativeToAbsolute(parsedContent, posts.imgRegex);
-				assert.equal(parsedContent, `<a href="${nconf.get('base_url')}/users">test</a> <a href="//youtube.com">youtube</a> some test <img src="${nconf.get('base_url')}/path/to/img"/>`);
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+		it('should turn relative links in post body to absolute urls', (done) => {
+			const nconf = require('nconf');
+			const content = '<a href="/users">test</a> <a href="youtube.com">youtube</a> some test <img src="/path/to/img"/>';
+			let parsedContent = posts.relativeToAbsolute(content, posts.urlRegex);
+			parsedContent = posts.relativeToAbsolute(parsedContent, posts.imgRegex);
+			assert.equal(parsedContent, `<a href="${nconf.get('base_url')}/users">test</a> <a href="//youtube.com">youtube</a> some test <img src="${nconf.get('base_url')}/path/to/img"/>`);
+			done();
 		});
 	});
 
@@ -925,7 +845,7 @@ describe('Post\'s', () => {
 			assert(summary);
 		});
 
-		it('should get the raw post content', async () => {
+		it('should get raw post content', async () => {
 			const postContent = await socketPosts.getRawPost({ uid: voterUid }, pid);
 			assert.equal(postContent, 'raw content');
 		});
@@ -946,7 +866,7 @@ describe('Post\'s', () => {
 			assert(utils.isNumber(timestamp));
 		});
 
-		it('should get the post timestamp by index', async () => {
+		it('should get post timestamp by index', async () => {
 			const summary = await socketPosts.getPostSummaryByPid({ uid: voterUid }, {
 				pid: pid,
 			});
@@ -963,7 +883,7 @@ describe('Post\'s', () => {
 			assert.equal(index, 4);
 		});
 
-		it('should get the pid index', async () => {
+		it('should get pid index', async () => {
 			const index = await apiPosts.getIndex({ uid: voterUid }, { pid: pid, sort: 'oldest_to_newest' });
 			assert.strictEqual(index, 4);
 		});
@@ -981,75 +901,43 @@ describe('Post\'s', () => {
 	});
 
 	describe('filterPidsByCid', () => {
-		new Promise((resolve, reject) => {
+		it('should return pids as is if cid is falsy', (done) => {
 			posts.filterPidsByCid([1, 2, 3], null, (err, pids) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert.deepEqual([1, 2, 3], pids);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.deepEqual([1, 2, 3], pids);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should filter pids by single cid', (done) => {
 			posts.filterPidsByCid([postData.pid, 100, 101], cid, (err, pids) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert.deepEqual([postData.pid], pids);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.deepEqual([postData.pid], pids);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should filter pids by multiple cids', (done) => {
 			posts.filterPidsByCid([postData.pid, 100, 101], [cid, 2, 3], (err, pids) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert.deepEqual([postData.pid], pids);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.deepEqual([postData.pid], pids);
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should filter pids by multiple cids', (done) => {
 			posts.filterPidsByCid([postData.pid, 100, 101], [cid], (err, pids) => {
-				if (err) {
-					return reject(err);
-				}
-				try {
-					assert.ifError(err);
-					assert.deepEqual([postData.pid], pids);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.ifError(err);
+				assert.deepEqual([postData.pid], pids);
+				done();
 			});
 		});
 	});
 
-	new Promise((resolve, reject) => {
+	it('should error if user does not exist', (done) => {
 		user.isReadyToPost(21123123, 1, (err) => {
-			try {
-				assert.equal(err.message, '[[error:no-user]]');
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+			assert.equal(err.message, '[[error:no-user]]');
+			done();
 		});
 	});
 
@@ -1097,14 +985,10 @@ describe('Post\'s', () => {
 			assert.equal(posts[1].data.content, 'this is a queued reply');
 		});
 
-		new Promise((resolve, reject) => {
+		it('should error if data is invalid', (done) => {
 			socketPosts.editQueuedContent({ uid: globalModUid }, null, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
@@ -1133,28 +1017,19 @@ describe('Post\'s', () => {
 			await socketPosts.editQueuedContent({ uid: globalModUid }, { id: topicQueueId, cid: cid });
 		});
 
-		new Promise((resolve, reject) => {
+		it('should prevent regular users from approving posts', (done) => {
 			socketPosts.accept({ uid: uid }, { id: queueId }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:no-privileges]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:no-privileges]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should prevent regular users from approving non existing posts', (done) => {
 			socketPosts.accept({ uid: uid }, { id: 123123 }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:no-post]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:no-post]]');
+				done();
 			});
 		});
-
 
 		it('should accept queued posts and submit', async () => {
 			const ids = await db.getSortedSetRange('post:queue', 0, -1);
@@ -1162,17 +1037,12 @@ describe('Post\'s', () => {
 			await socketPosts.accept({ uid: globalModUid }, { id: ids[1] });
 		});
 
-		new Promise((resolve, reject) => {
+		it('should not crash if id does not exist', (done) => {
 			socketPosts.reject({ uid: globalModUid }, { id: '123123123' }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:no-post]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:no-post]]');
+				done();
 			});
 		});
-
 
 		it('should bypass post queue if user is in exempt group', async () => {
 			const oldValue = meta.config.groupsExemptFromPostQueue;
@@ -1332,7 +1202,7 @@ describe('Post\'s', () => {
 	});
 });
 
-describe('Posts\'', () => {
+describe('Posts\'', async () => {
 	let files;
 
 	before(async () => {
@@ -1344,4 +1214,4 @@ describe('Posts\'', () => {
 			require(filePath);
 		});
 	});
-});*/
+});

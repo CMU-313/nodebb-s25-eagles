@@ -1,5 +1,5 @@
 
-
+'use strict';
 
 module.exports = function (module) {
 	const helpers = require('../helpers');

@@ -1,4 +1,4 @@
-
+'use strict';
 
 const categories = require('../../categories');
 const meta = require('../../meta');

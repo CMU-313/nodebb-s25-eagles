@@ -1,4 +1,4 @@
-
+'use strict';
 
 const sitemap = require('../sitemap');
 const meta = require('../meta');

@@ -1,4 +1,4 @@
-/*
+'use strict';
 
 const assert = require('assert');
 const nconf = require('nconf');
@@ -10,84 +10,50 @@ describe('settings v3', () => {
 	let settings1;
 	let settings2;
 
-	new Promise((resolve, reject) => {
-		settings1 = new settings('my-plugin', '1.0', { foo: 1, bar: { derp: 2 } }, (err) => {
-			if (err) {
-				return reject(err);
-			}
-			resolve();
-		});
+	it('should create a new settings object', (done) => {
+		settings1 = new settings('my-plugin', '1.0', { foo: 1, bar: { derp: 2 } }, done);
 	});
 
-	new Promise((resolve, reject) => {
-		try {
-			assert.equal(settings1.get('foo'), 1);
-			assert.equal(settings1.get('bar.derp'), 2);
-			resolve();
-		} catch (error) {
-			reject(error);
-		}
+	it('should get the saved settings ', (done) => {
+		assert.equal(settings1.get('foo'), 1);
+		assert.equal(settings1.get('bar.derp'), 2);
+		done();
 	});
 
-	new Promise((resolve, reject) => {
-		settings2 = new settings('my-plugin', '1.0', { foo: 1, bar: { derp: 2 } }, (err) => {
-			if (err) {
-				return reject(err);
-			}
-			resolve();
-		});
+	it('should create a new settings instance for same key', (done) => {
+		settings2 = new settings('my-plugin', '1.0', { foo: 1, bar: { derp: 2 } }, done);
 	});
 
-	new Promise((resolve, reject) => {
+	it('should pass change between settings object over pubsub', (done) => {
 		settings1.set('foo', 3);
 		settings1.persist((err) => {
-			if (err) {
-				return reject(err);
-			}
+			assert.ifError(err);
 			// give pubsub time to complete
 			setTimeout(() => {
-				try {
-					assert.equal(settings2.get('foo'), 3);
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(settings2.get('foo'), 3);
+				done();
 			}, 500);
 		});
 	});
 
-	new Promise((resolve, reject) => {
-		try {
-			settings1.set('bar.derp', 5);
-			assert.equal(settings1.get('bar.derp'), 5);
-			resolve();
-		} catch (error) {
-			reject(error);
-		}
+	it('should set a nested value', (done) => {
+		settings1.set('bar.derp', 5);
+		assert.equal(settings1.get('bar.derp'), 5);
+		done();
 	});
 
-	new Promise((resolve, reject) => {
+	it('should reset the settings to default', (done) => {
 		settings1.reset((err) => {
-			if (err) {
-				return reject(err);
-			}
-			try {
-				assert.equal(settings1.get('foo'), 1);
-				assert.equal(settings1.get('bar.derp'), 2);
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
+			assert.ifError(err);
+			assert.equal(settings1.get('foo'), 1);
+			assert.equal(settings1.get('bar.derp'), 2);
+			done();
 		});
 	});
 
-	new Promise((resolve, reject) => {
-		try {
-			const newSettings = new settings('some-plugin', '1.0', { default: { value: 1 } });
-			assert.equal(newSettings.get('default.value'), 1);
-			resolve();
-		} catch (error) {
-			reject(error);
-		}
+	it('should get value from default value', (done) => {
+		const newSettings = new settings('some-plugin', '1.0', { default: { value: 1 } });
+		assert.equal(newSettings.get('default.value'), 1);
+		done();
 	});
-});*/
+});

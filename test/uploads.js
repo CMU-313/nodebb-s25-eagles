@@ -1,6 +1,4 @@
-/*/* eslint-disable max-len */
-/* eslint-disable jest/no-commented-out-tests */
-/*
+'use strict';
 
 const async = require('async');
 const assert = require('assert');
@@ -8,7 +6,7 @@ const nconf = require('nconf');
 const path = require('path');
 const fs = require('fs').promises;
 
-// const db = require('./mocks/databasemock');
+const db = require('./mocks/databasemock');
 const categories = require('../src/categories');
 const topics = require('../src/topics');
 const posts = require('../src/posts');
@@ -133,40 +131,23 @@ describe('Upload Controllers', () => {
 			const name = body.response.images[0].url.replace(`${nconf.get('relative_path') + nconf.get('upload_url')}/`, '');
 			await socketUser.deleteUpload({ uid: regularUid }, { uid: regularUid, name: name });
 
-			// const uploads = await db.getSortedSetRange(`uid:${regularUid}:uploads`, 0, -1);
-			// assert.equal(uploads.includes(name), false);
+			const uploads = await db.getSortedSetRange(`uid:${regularUid}:uploads`, 0, -1);
+			assert.equal(uploads.includes(name), false);
 		});
 
-		new Promise((resolve, reject) => {
-			socketUser.deleteUpload(
-				{ uid: adminUid },
-				{ uid: regularUid, name: '../../bkconfig.json' },
-				(err) => {
-					try {
-						assert.equal(err.message, '[[error:invalid-path]]');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
-				}
-			);
+		it('should not allow deleting if path is not correct', (done) => {
+			socketUser.deleteUpload({ uid: adminUid }, { uid: regularUid, name: '../../bkconfig.json' }, (err) => {
+				assert.equal(err.message, '[[error:invalid-path]]');
+				done();
+			});
 		});
 
-		new Promise((resolve, reject) => {
-			socketUser.deleteUpload(
-				{ uid: adminUid },
-				{ uid: regularUid, name: '/files/../../bkconfig.json' },
-				(err) => {
-					try {
-						assert.equal(err.message, '[[error:invalid-path]]');
-						resolve();
-					} catch (error) {
-						reject(error);
-					}
-				}
-			);
+		it('should not allow deleting if path is not correct', (done) => {
+			socketUser.deleteUpload({ uid: adminUid }, { uid: regularUid, name: '/files/../../bkconfig.json' }, (err) => {
+				assert.equal(err.message, '[[error:invalid-path]]');
+				done();
+			});
 		});
-
 
 		it('should resize and upload an image to a post', async () => {
 			const oldValue = meta.config.resizeImageWidth;
@@ -209,113 +190,73 @@ describe('Upload Controllers', () => {
 			assert.strictEqual(body.status.message, 'Input file contains unsupported image format');
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail if file is not an image', (done) => {
 			image.isFileTypeAllowed(path.join(__dirname, '../test/files/notanimage.png'), (err) => {
-				try {
-					assert.strictEqual(err.message, 'Input file contains unsupported image format');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.strictEqual(err.message, 'Input file contains unsupported image format');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail if file is not an image', (done) => {
 			image.isFileTypeAllowed(path.join(__dirname, '../test/files/notanimage.png'), (err) => {
-				try {
-					assert.strictEqual(err.message, 'Input file contains unsupported image format');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.strictEqual(err.message, 'Input file contains unsupported image format');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail if file is not an image', (done) => {
 			image.size(path.join(__dirname, '../test/files/notanimage.png'), (err) => {
-				try {
-					assert.strictEqual(err.message, 'Input file contains unsupported image format');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.strictEqual(err.message, 'Input file contains unsupported image format');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should fail if file is missing', (done) => {
 			image.size(path.join(__dirname, '../test/files/doesnotexist.png'), (err) => {
-				try {
-					assert(err.message.startsWith('Input file is missing'));
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert(err.message.startsWith('Input file is missing'));
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should not allow non image uploads', (done) => {
 			socketUser.updateCover({ uid: 1 }, { uid: 1, file: { path: '../../text.txt' } }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should not allow non image uploads', (done) => {
 			socketUser.updateCover({ uid: 1 }, { uid: 1, imageData: 'data:text/html;base64,PHN2Zy9vbmxvYWQ9YWxlcnQoMik+' }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-image]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-image]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should not allow svg uploads', (done) => {
 			socketUser.updateCover({ uid: 1 }, { uid: 1, imageData: 'data:image/svg;base64,PHN2Zy9vbmxvYWQ9YWxlcnQoMik+' }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-image]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-image]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should not allow non image uploads', (done) => {
 			socketUser.uploadCroppedPicture({ uid: 1 }, { uid: 1, file: { path: '../../text.txt' } }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-data]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-data]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should not allow non image uploads', (done) => {
 			socketUser.uploadCroppedPicture({ uid: 1 }, { uid: 1, imageData: 'data:text/html;base64,PHN2Zy9vbmxvYWQ9YWxlcnQoMik+' }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-image]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-image]]');
+				done();
 			});
 		});
 
-		new Promise((resolve, reject) => {
+		it('should not allow svg uploads', (done) => {
 			socketUser.uploadCroppedPicture({ uid: 1 }, { uid: 1, imageData: 'data:image/svg;base64,PHN2Zy9vbmxvYWQ9YWxlcnQoMik+' }, (err) => {
-				try {
-					assert.equal(err.message, '[[error:invalid-image]]');
-					resolve();
-				} catch (error) {
-					reject(error);
-				}
+				assert.equal(err.message, '[[error:invalid-image]]');
+				done();
 			});
 		});
 
@@ -570,4 +511,3 @@ describe('Upload Controllers', () => {
 		});
 	});
 });
-*/

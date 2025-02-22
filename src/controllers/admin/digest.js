@@ -1,4 +1,4 @@
-
+'use strict';
 
 const meta = require('../../meta');
 const digest = require('../../user/digest');

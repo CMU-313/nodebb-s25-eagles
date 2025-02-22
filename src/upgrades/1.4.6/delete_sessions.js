@@ -1,4 +1,4 @@
-
+'use strict';
 
 const nconf = require('nconf');
 const db = require('../../database');
@@ -10,8 +10,7 @@ module.exports = {
 	method: async function () {
 		let configJSON;
 		try {
-			const path = require('path');
-			configJSON = require(path.join(__dirname, '../../../config.json')) || { [process.env.database]: true };
+			configJSON = require('../../../config.json') || { [process.env.database]: true };
 		} catch (err) {
 			configJSON = { [process.env.database]: true };
 		}

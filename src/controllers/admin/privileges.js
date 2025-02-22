@@ -1,4 +1,4 @@
-
+'use strict';
 
 const categories = require('../../categories');
 const privileges = require('../../privileges');

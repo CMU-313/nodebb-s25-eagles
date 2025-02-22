@@ -37,7 +37,10 @@ jobs:
 
     steps:
       - name: Enable memory overcommit
-        run: sudo sysctl -w vm.overcommit_memory=1  # Added the -w flag to write the setting immediately
+        run: |
+        sudo sysctl -w vm.overcommit_memory=1  # Added the -w flag to write the setting immediately
+        sudo sysctl -a | grep vm.overcommit_memory 
+        docker logs $(docker ps -q -f ancestor=redis:7.2.4) | grep "Memory overcommit"
 
       - uses: actions/checkout@v4
         with:

@@ -1,5 +1,5 @@
 
-'use strict';
+
 
 const nconf = require('nconf');
 const winston = require('winston');

@@ -1,4 +1,4 @@
-'use strict';
+
 
 const privileges = require('../../privileges');
 

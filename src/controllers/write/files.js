@@ -1,4 +1,4 @@
-'use strict';
+
 
 const helpers = require('../helpers');
 const api = require('../../api');

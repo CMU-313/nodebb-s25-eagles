@@ -1,5 +1,5 @@
 
-'use strict';
+
 
 const async = require('async');
 const validator = require('validator');

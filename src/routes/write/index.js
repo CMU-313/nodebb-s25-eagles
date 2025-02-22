@@ -1,4 +1,4 @@
-'use strict';
+
 
 const winston = require('winston');
 const meta = require('../../meta');

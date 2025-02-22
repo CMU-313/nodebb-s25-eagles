@@ -1,4 +1,4 @@
-'use strict';
+
 
 const cronJob = require('cron').CronJob;
 const winston = require('winston');

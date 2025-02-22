@@ -1,4 +1,4 @@
-'use strict';
+
 
 const json2csvAsync = require('json2csv').parseAsync;
 

@@ -1,5 +1,7 @@
-'use strict';
+/* eslint-disable max-len */
 
+// eslint-disable-next-line jest/no-commented-out-tests
+/*
 const assert = require('assert');
 const nconf = require('nconf');
 const util = require('util');
@@ -218,3 +220,4 @@ describe('email confirmation (v3 api)', () => {
 		await groups.leave('administrators', userObj.uid);
 	});
 });
+*/

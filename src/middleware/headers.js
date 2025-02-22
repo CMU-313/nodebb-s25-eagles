@@ -1,4 +1,4 @@
-'use strict';
+
 
 const os = require('os');
 const winston = require('winston');

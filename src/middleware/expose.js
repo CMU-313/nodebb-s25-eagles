@@ -1,4 +1,4 @@
-'use strict';
+
 
 /**
  * The middlewares here strictly act to "expose" certain values from the database,

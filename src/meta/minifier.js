@@ -1,4 +1,4 @@
-'use strict';
+
 
 const fs = require('fs');
 const os = require('os');
@@ -8,9 +8,93 @@ const postcss = require('postcss');
 const autoprefixer = require('autoprefixer');
 const clean = require('postcss-clean');
 const rtlcss = require('rtlcss');
+
+const { fork } = require('child_process');
+const path = require('path');
 const sass = require('../utils').getSass();
 
-const fork = require('./debugFork');
+let minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
+let retryCount = 0;
+const maxRetries = 5;
+const retryDelay = 5000; // Increase delay to 5 seconds
+
+function restartMinifierProcess() {
+	if (retryCount >= maxRetries) {
+		console.error('Max retries reached. Minifier process will not be restarted.');
+		return;
+	}
+
+	if (minifierProcess) {
+		minifierProcess.removeAllListeners();
+		minifierProcess.kill();
+	}
+
+	setTimeout(() => {
+		console.log(`Restarting minifier process (attempt ${retryCount + 1}/${maxRetries})`);
+		minifierProcess = fork(path.join(__dirname, 'minifierWorker.js'));
+		retryCount += 1;
+
+		minifierProcess.on('error', (err) => {
+			console.error('Minifier process error:', err);
+		});
+
+		minifierProcess.on('exit', (code, signal) => {
+			if (code !== 0) {
+				console.error(`Minifier process exited with code ${code} and signal ${signal}`);
+			}
+		});
+
+		minifierProcess.on('disconnect', () => {
+			console.error('Minifier process disconnected');
+			restartMinifierProcess();
+		});
+	}, retryDelay);
+}
+
+minifierProcess.on('error', (err) => {
+	console.error('Minifier process error:', err);
+});
+
+minifierProcess.on('exit', (code, signal) => {
+	if (code !== 0) {
+		console.error(`Minifier process exited with code ${code} and signal ${signal}`);
+	}
+});
+
+minifierProcess.on('disconnect', () => {
+	console.error('Minifier process disconnected');
+	restartMinifierProcess();
+});
+
+function sendToMinifier(data) {
+	if (minifierProcess.connected) {
+		minifierProcess.send(data);
+	} else {
+		console.error('Cannot send data to minifier process: IPC channel is closed');
+		restartMinifierProcess();
+	}
+}
+
+process.on('message', (msg) => {
+	try {
+		sendToMinifier(msg);
+	} catch (err) {
+		console.error('Failed to send message to minifier process:', err);
+		restartMinifierProcess();
+	}
+});
+
+process.on('error', (err) => {
+	if (err.code === 'ERR_IPC_CHANNEL_CLOSED') {
+		console.error('Minifier process disconnected:', err);
+		restartMinifierProcess();
+	} else {
+		// If it's not the specific error we're looking for, rethrow it
+		throw err;
+	}
+});
+
+// const fork = require('./debugFork');
 require('../file'); // for graceful-fs
 
 const Minifier = module.exports;
@@ -91,6 +175,10 @@ function forkAction(action) {
 			proc.kill();
 			removeChild(proc);
 			reject(err);
+		});
+		proc.on('disconnect', () => {
+			removeChild(proc);
+			reject(new Error('IPC channel closed'));
 		});
 
 		proc.send({

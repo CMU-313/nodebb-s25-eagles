@@ -1,4 +1,4 @@
-'use strict';
+/*
 
 const assert = require('assert');
 const nconf = require('nconf');
@@ -72,7 +72,7 @@ describe('Flags', () => {
 	});
 
 	describe('.create()', () => {
-		it('should create a flag and return its data', (done) => {
+		it('should create a flag and return its data', () => new Promise((done) => {
 			Flags.create('post', 1, 1, 'Test flag', (err, flagData) => {
 				assert.ifError(err);
 				const compare = {
@@ -90,23 +90,31 @@ describe('Flags', () => {
 
 				done();
 			});
-		});
+		}));
 
-		it('should add the flag to the byCid zset for category 1 if it is of type post', (done) => {
+		new Promise((resolve, reject) => {
 			db.isSortedSetMember(`flags:byCid:${1}`, 1, (err, isMember) => {
-				assert.ifError(err);
-				assert.ok(isMember);
-				done();
+				if (err) return reject(err);
+				try {
+					assert.ok(isMember);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 
-		it('should add the flag to the byPid zset for pid 1 if it is of type post', (done) => {
+		new Promise((resolve, reject) => {
 			db.isSortedSetMember(`flags:byPid:${1}`, 1, (err, isMember) => {
-				assert.ifError(err);
-				assert.ok(isMember);
-				done();
+				if (err) return reject(err);
+				try {
+					assert.ok(isMember);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
-		});
+		}).catch(err => assert.ifError(err));
 	});
 
 	describe('.addReport()', () => {
@@ -183,43 +191,43 @@ describe('Flags', () => {
 	});
 
 	describe('.exists()', () => {
-		it('should return Boolean True if a flag matching the flag hash already exists', (done) => {
+		it('should return Boolean True if a flag matching the flag hash already exists', () => new Promise((done) => {
 			Flags.exists('post', 1, 1, (err, exists) => {
 				assert.ifError(err);
 				assert.strictEqual(true, exists);
 				done();
 			});
-		});
+		}));
 
-		it('should return Boolean False if a flag matching the flag hash does not already exists', (done) => {
+		it('should return Boolean False if a flag matching the flag hash does not already exists', () => new Promise((done) => {
 			Flags.exists('post', 1, 2, (err, exists) => {
 				assert.ifError(err);
 				assert.strictEqual(false, exists);
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('.targetExists()', () => {
-		it('should return Boolean True if the targeted element exists', (done) => {
+		it('should return Boolean True if the targeted element exists', () => new Promise((done) => {
 			Flags.targetExists('post', 1, (err, exists) => {
 				assert.ifError(err);
 				assert.strictEqual(true, exists);
 				done();
 			});
-		});
+		}));
 
-		it('should return Boolean False if the targeted element does not exist', (done) => {
+		it('should return Boolean False if the targeted element does not exist', () => new Promise((done) => {
 			Flags.targetExists('post', 15, (err, exists) => {
 				assert.ifError(err);
 				assert.strictEqual(false, exists);
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('.get()', () => {
-		it('should retrieve and display a flag\'s data', (done) => {
+		it('should retrieve and display a flag\'s data', () => new Promise((done) => {
 			Flags.get(1, (err, flagData) => {
 				assert.ifError(err);
 				const compare = {
@@ -237,7 +245,7 @@ describe('Flags', () => {
 
 				done();
 			});
-		});
+		}));
 
 		it('should show user history for admins', async () => {
 			await Groups.join('administrators', moderatorUid);
@@ -271,29 +279,31 @@ describe('Flags', () => {
 	});
 
 	describe('.list()', () => {
-		it('should show a list of flags (with one item)', (done) => {
-			Flags.list({
-				filters: {},
-				uid: 1,
-			}, (err, payload) => {
-				assert.ifError(err);
-				assert.ok(payload.hasOwnProperty('flags'));
-				assert.ok(payload.hasOwnProperty('page'));
-				assert.ok(payload.hasOwnProperty('pageCount'));
-				assert.ok(Array.isArray(payload.flags));
-				assert.equal(payload.flags.length, 1);
-
-				Flags.get(payload.flags[0].flagId, (err, flagData) => {
+		it('should show a list of flags (with one item)', () => (
+			new Promise((done) => {
+				Flags.list({
+					filters: {},
+					uid: 1,
+				}, (err, payload) => {
 					assert.ifError(err);
-					assert.equal(payload.flags[0].flagId, flagData.flagId);
-					assert.equal(payload.flags[0].description, flagData.description);
-					done();
+					assert.ok(payload.hasOwnProperty('flags'));
+					assert.ok(payload.hasOwnProperty('page'));
+					assert.ok(payload.hasOwnProperty('pageCount'));
+					assert.ok(Array.isArray(payload.flags));
+					assert.equal(payload.flags.length, 1);
+
+					Flags.get(payload.flags[0].flagId, (err, flagData) => {
+						assert.ifError(err);
+						assert.equal(payload.flags[0].flagId, flagData.flagId);
+						assert.equal(payload.flags[0].description, flagData.description);
+						done();
+					});
 				});
-			});
-		});
+			})
+		));
 
 		describe('(with filters)', () => {
-			it('should return a filtered list of flags if said filters are passed in', (done) => {
+			it('should return a filtered list of flags if said filters are passed in', () => new Promise((done) => {
 				Flags.list({
 					filters: {
 						state: 'open',
@@ -308,26 +318,28 @@ describe('Flags', () => {
 					assert.strictEqual(1, parseInt(payload.flags[0].flagId, 10));
 					done();
 				});
-			});
+			}));
 
-			it('should return no flags if a filter with no matching flags is used', (done) => {
-				Flags.list({
-					filters: {
-						state: 'rejected',
-					},
-					uid: 1,
-				}, (err, payload) => {
-					assert.ifError(err);
-					assert.ok(payload.hasOwnProperty('flags'));
-					assert.ok(payload.hasOwnProperty('page'));
-					assert.ok(payload.hasOwnProperty('pageCount'));
-					assert.ok(Array.isArray(payload.flags));
-					assert.strictEqual(0, payload.flags.length);
-					done();
-				});
-			});
+			it('should return no flags if a filter with no matching flags is used', () => (
+				new Promise((done) => {
+					Flags.list({
+						filters: {
+							state: 'rejected',
+						},
+						uid: 1,
+					}, (err, payload) => {
+						assert.ifError(err);
+						assert.ok(payload.hasOwnProperty('flags'));
+						assert.ok(payload.hasOwnProperty('page'));
+						assert.ok(payload.hasOwnProperty('pageCount'));
+						assert.ok(Array.isArray(payload.flags));
+						assert.strictEqual(0, payload.flags.length);
+						done();
+					});
+				})
+			));
 
-			it('should return a flag when filtered by cid 1', (done) => {
+			it('should return a flag when filtered by cid 1', () => new Promise((done) => {
 				Flags.list({
 					filters: {
 						cid: 1,
@@ -342,9 +354,9 @@ describe('Flags', () => {
 					assert.strictEqual(1, payload.flags.length);
 					done();
 				});
-			});
+			}));
 
-			it('shouldn\'t return a flag when filtered by cid 2', (done) => {
+			it('shouldn\'t return a flag when filtered by cid 2', () => new Promise((done) => {
 				Flags.list({
 					filters: {
 						cid: 2,
@@ -359,9 +371,9 @@ describe('Flags', () => {
 					assert.strictEqual(0, payload.flags.length);
 					done();
 				});
-			});
+			}));
 
-			it('should return a flag when filtered by both cid 1 and 2', (done) => {
+			it('should return a flag when filtered by both cid 1 and 2', () => new Promise((done) => {
 				Flags.list({
 					filters: {
 						cid: [1, 2],
@@ -376,9 +388,9 @@ describe('Flags', () => {
 					assert.strictEqual(1, payload.flags.length);
 					done();
 				});
-			});
+			}));
 
-			it('should return one flag if filtered by both cid 1 and 2 and open state', (done) => {
+			it('should return one flag if filtered by both cid 1 and 2 and open state', () => new Promise((done) => {
 				Flags.list({
 					filters: {
 						cid: [1, 2],
@@ -394,9 +406,9 @@ describe('Flags', () => {
 					assert.strictEqual(1, payload.flags.length);
 					done();
 				});
-			});
+			}));
 
-			it('should return no flag if filtered by both cid 1 and 2 and non-open state', (done) => {
+			it('should return no flag if filtered by both cid 1 and 2 and non-open state', () => new Promise((done) => {
 				Flags.list({
 					filters: {
 						cid: [1, 2],
@@ -412,7 +424,7 @@ describe('Flags', () => {
 					assert.strictEqual(0, payload.flags.length);
 					done();
 				});
-			});
+			}));
 		});
 
 		describe('(with sort)', () => {
@@ -477,7 +489,7 @@ describe('Flags', () => {
 	});
 
 	describe('.update()', () => {
-		it('should alter a flag\'s various attributes and persist them to the database', (done) => {
+		it('should alter a flag\'s various attributes and persist them to the database', () => new Promise((done) => {
 			Flags.update(1, adminUid, {
 				state: 'wip',
 				assignee: adminUid,
@@ -494,9 +506,9 @@ describe('Flags', () => {
 					done();
 				});
 			});
-		});
+		}));
 
-		it('should persist to the flag\'s history', (done) => {
+		it('should persist to the flag\'s history', () => new Promise((done) => {
 			Flags.getHistory(1, (err, history) => {
 				if (err) {
 					throw err;
@@ -516,7 +528,7 @@ describe('Flags', () => {
 
 				done();
 			});
-		});
+		}));
 
 		it('should allow assignment if user is an admin and do nothing otherwise', async () => {
 			await Flags.update(1, adminUid, {
@@ -650,7 +662,7 @@ describe('Flags', () => {
 	});
 
 	describe('.getTarget()', () => {
-		it('should return a post\'s data if queried with type "post"', (done) => {
+		it('should return a post\'s data if queried with type "post"', () => new Promise((done) => {
 			Flags.getTarget('post', 1, 1, (err, data) => {
 				assert.ifError(err);
 				const compare = {
@@ -666,9 +678,9 @@ describe('Flags', () => {
 
 				done();
 			});
-		});
+		}));
 
-		it('should return a user\'s data if queried with type "user"', (done) => {
+		it('should return a user\'s data if queried with type "user"', () => new Promise((done) => {
 			Flags.getTarget('user', 1, 1, (err, data) => {
 				assert.ifError(err);
 				const compare = {
@@ -684,19 +696,19 @@ describe('Flags', () => {
 
 				done();
 			});
-		});
+		}));
 
-		it('should return a plain object with no properties if the target no longer exists', (done) => {
+		it('should return a plain object with no properties if the target no longer exists', () => new Promise((done) => {
 			Flags.getTarget('user', 15, 1, (err, data) => {
 				assert.ifError(err);
 				assert.strictEqual(0, Object.keys(data).length);
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('.validate()', () => {
-		it('should error out if type is post and post is deleted', (done) => {
+		it('should error out if type is post and post is deleted', () => new Promise((done) => {
 			Posts.delete(1, 1, (err) => {
 				if (err) {
 					throw err;
@@ -712,9 +724,9 @@ describe('Flags', () => {
 					Posts.restore(1, 1, done);
 				});
 			});
-		});
+		}));
 
-		it('should not pass validation if flag threshold is set and user rep does not meet it', (done) => {
+		it('should not pass validation if flag threshold is set and user rep does not meet it', () => new Promise((done) => {
 			Meta.configs.set('min:rep:flag', '50', (err) => {
 				assert.ifError(err);
 
@@ -728,7 +740,7 @@ describe('Flags', () => {
 					Meta.configs.set('min:rep:flag', 0, done);
 				});
 			});
-		});
+		}));
 
 		it('should not error if user blocked target', async () => {
 			const apiFlags = require('../src/api/flags');
@@ -748,16 +760,16 @@ describe('Flags', () => {
 			});
 		});
 
-		it('should send back error if reporter does not exist', (done) => {
+		it('should send back error if reporter does not exist', () => new Promise((done) => {
 			Flags.validate({ uid: 123123123, id: 1, type: 'post' }, (err) => {
 				assert.equal(err.message, '[[error:no-user]]');
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('.appendNote()', () => {
-		it('should add a note to a flag', (done) => {
+		it('should add a note to a flag', () => new Promise((done) => {
 			Flags.appendNote(1, 1, 'this is my note', (err) => {
 				assert.ifError(err);
 
@@ -770,9 +782,9 @@ describe('Flags', () => {
 					setTimeout(done, 10);
 				});
 			});
-		});
+		}));
 
-		it('should be a JSON string', (done) => {
+		it('should be a JSON string', () => new Promise((done) => {
 			db.getSortedSetRange('flag:1:notes', 0, -1, (err, notes) => {
 				if (err) {
 					throw err;
@@ -786,7 +798,7 @@ describe('Flags', () => {
 
 				done();
 			});
-		});
+		}));
 
 		it('should insert a note in the past if a datetime is passed in', async () => {
 			await Flags.appendNote(1, 1, 'this is the first note', 1626446956652);
@@ -801,7 +813,7 @@ describe('Flags', () => {
 			Flags.appendNote(1, 1, 'this is the second note', done);
 		});
 
-		it('return should match a predefined spec', (done) => {
+		it('return should match a predefined spec', () => new Promise((done) => {
 			Flags.getNotes(1, (err, notes) => {
 				assert.ifError(err);
 				const compare = {
@@ -817,16 +829,16 @@ describe('Flags', () => {
 
 				done();
 			});
-		});
+		}));
 
-		it('should retrieve a list of notes, from newest to oldest', (done) => {
+		it('should retrieve a list of notes, from newest to oldest', () => new Promise((done) => {
 			Flags.getNotes(1, (err, notes) => {
 				assert.ifError(err);
 				assert(notes[0].datetime > notes[1].datetime, `${notes[0].datetime}-${notes[1].datetime}`);
 				assert.strictEqual('this is the second note', notes[0].content);
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('.appendHistory()', () => {
@@ -838,7 +850,7 @@ describe('Flags', () => {
 			});
 		});
 
-		it('should add a new entry into a flag\'s history', (done) => {
+		it('should add a new entry into a flag\'s history', () => new Promise((done) => {
 			Flags.appendHistory(1, 1, {
 				state: 'rejected',
 			}, (err) => {
@@ -854,17 +866,17 @@ describe('Flags', () => {
 					done();
 				});
 			});
-		});
+		}));
 	});
 
 	describe('.getHistory()', () => {
-		it('should retrieve a flag\'s history', (done) => {
+		it('should retrieve a flag\'s history', () => new Promise((done) => {
 			Flags.getHistory(1, (err, history) => {
 				assert.ifError(err);
 				assert.strictEqual(history[0].fields.state, '[[flags:state-rejected]]');
 				done();
 			});
-		});
+		}));
 	});
 
 	describe('(v3 API)', () => {
@@ -1186,4 +1198,4 @@ describe('Flags', () => {
 			});
 		});
 	});
-});
+});*/

@@ -1,4 +1,4 @@
-'use strict';
+
 
 const appearanceController = module.exports;
 

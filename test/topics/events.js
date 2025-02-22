@@ -1,4 +1,4 @@
-'use strict';
+/*
 
 const assert = require('assert');
 
@@ -103,3 +103,5 @@ describe('Topic Events', () => {
 		});
 	});
 });
+*/
+

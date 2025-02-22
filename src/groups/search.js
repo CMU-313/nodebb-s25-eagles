@@ -1,4 +1,4 @@
-'use strict';
+
 
 const user = require('../user');
 const db = require('../database');

@@ -1,4 +1,4 @@
-'use strict';
+
 
 
 const batch = require('../../batch');

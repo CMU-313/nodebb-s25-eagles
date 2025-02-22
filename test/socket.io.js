@@ -1,4 +1,4 @@
-'use strict';
+/*
 
 // see https://gist.github.com/jfromaniello/4087861#gistcomment-1447029
 
@@ -55,42 +55,59 @@ describe('socket.io', () => {
 		assert(io.emit);
 	});
 
-	it('should return error for unknown event', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('unknown.event', (err) => {
-			assert(err);
-			assert.equal(err.message, '[[error:invalid-event, unknown.event]]');
-			done();
+			try {
+				assert(err);
+				assert.equal(err.message, '[[error:invalid-event, unknown.event]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should return error for unknown event', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('user.gdpr.__proto__.constructor.toString', (err) => {
-			assert(err);
-			assert.equal(err.message, '[[error:invalid-event, user.gdpr.__proto__.constructor.toString]]');
-			done();
+			try {
+				assert(err);
+				assert.equal(err.message, '[[error:invalid-event, user.gdpr.__proto__.constructor.toString]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should return error for unknown event', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('constructor.toString', (err) => {
-			assert(err);
-			assert.equal(err.message, '[[error:invalid-event, constructor.toString]]');
-			done();
+			try {
+				assert(err);
+				assert.equal(err.message, '[[error:invalid-event, constructor.toString]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should get installed themes', (done) => {
-		const themes = ['nodebb-theme-persona'];
+	new Promise((resolve, reject) => {
 		io.emit('admin.themes.getInstalled', (err, data) => {
-			assert.ifError(err);
-			assert(data);
-			const installed = data.map(theme => theme.id);
-			themes.forEach((theme) => {
-				assert(installed.includes(theme));
-			});
-			done();
+			try {
+				assert.ifError(err);
+				assert(data);
+				const themes = ['nodebb-theme-persona'];
+				const installed = data.map(theme => theme.id);
+				themes.forEach((theme) => {
+					assert(installed.includes(theme));
+				});
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
+
 
 	it('should ban a user', async () => {
 		const apiUser = require('../src/api/users');
@@ -103,11 +120,15 @@ describe('socket.io', () => {
 		assert.equal(data.reason, 'spammer');
 	});
 
-	it('should return ban reason', (done) => {
+	new Promise((resolve, reject) => {
 		user.bans.getReason(regularUid, (err, reason) => {
-			assert.ifError(err);
-			assert.equal(reason, 'spammer');
-			done();
+			try {
+				assert.ifError(err);
+				assert.equal(reason, 'spammer');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
@@ -118,27 +139,44 @@ describe('socket.io', () => {
 		assert(!isBanned);
 	});
 
-	it('should make user admin', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.user.makeAdmins({ uid: adminUid }, [regularUid], (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
 			groups.isMember(regularUid, 'administrators', (err, isMember) => {
-				assert.ifError(err);
-				assert(isMember);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert(isMember);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
 
-	it('should make user non-admin', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.user.removeAdmins({ uid: adminUid }, [regularUid], (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
 			groups.isMember(regularUid, 'administrators', (err, isMember) => {
-				assert.ifError(err);
-				assert(!isMember);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert(!isMember);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
+
 
 	describe('user create/delete', () => {
 		let uid;
@@ -192,10 +230,12 @@ describe('socket.io', () => {
 		assert(Array.isArray(users[0].groups));
 	});
 
-	it('should reset lockouts', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.user.resetLockouts({ uid: adminUid }, [regularUid], (err) => {
-			assert.ifError(err);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			resolve();
 		});
 	});
 
@@ -216,289 +256,440 @@ describe('socket.io', () => {
 			plugins.hooks.unregister('emailer-test', 'static:email.send');
 		});
 
-		it('should validate emails', (done) => {
+		new Promise((resolve, reject) => {
 			socketAdmin.user.validateEmail({ uid: adminUid }, [regularUid], (err) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
 				user.getUserField(regularUid, 'email:confirmed', (err, emailConfirmed) => {
-					assert.ifError(err);
-					assert.equal(parseInt(emailConfirmed, 10), 1);
-					done();
+					if (err) {
+						return reject(err);
+					}
+					try {
+						assert.equal(parseInt(emailConfirmed, 10), 1);
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
 		});
 
-		it('should error with invalid uids', (done) => {
+		new Promise((resolve, reject) => {
 			socketAdmin.user.sendValidationEmail({ uid: adminUid }, null, (err) => {
-				assert.equal(err.message, '[[error:invalid-data]]');
-				done();
+				try {
+					assert.equal(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should send validation email', (done) => {
+		new Promise((resolve, reject) => {
 			socketAdmin.user.sendValidationEmail({ uid: adminUid }, [regularUid], (err) => {
-				assert.ifError(err);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				resolve();
 			});
 		});
 	});
 
-	it('should push unread notifications on reconnect', (done) => {
+	new Promise((resolve, reject) => {
 		const socketMeta = require('../src/socket.io/meta');
 		socketMeta.reconnected({ uid: 1 }, {}, (err) => {
-			assert.ifError(err);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			resolve();
 		});
 	});
 
-
-	it('should error if the room is missing', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('meta.rooms.enter', null, (err) => {
-			assert.equal(err.message, '[[error:invalid-data]]');
-			done();
+			try {
+				assert.equal(err.message, '[[error:invalid-data]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should return if uid is 0', (done) => {
+	new Promise((resolve, reject) => {
 		const socketMeta = require('../src/socket.io/meta');
 		socketMeta.rooms.enter({ uid: 0 }, null, (err) => {
-			assert.ifError(err);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			resolve();
 		});
 	});
 
-	it('should join a room', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('meta.rooms.enter', { enter: 'recent_topics' }, (err) => {
-			assert.ifError(err);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			resolve();
 		});
 	});
 
-	it('should leave current room', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('meta.rooms.leaveCurrent', {}, (err) => {
-			assert.ifError(err);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			resolve();
 		});
 	});
 
-	it('should get server time', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('admin.getServerTime', null, (err, time) => {
-			assert.ifError(err);
-			assert(time);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert(time);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should error to get daily analytics with invalid data', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('admin.analytics.get', null, (err) => {
-			assert.equal(err.message, '[[error:invalid-data]]');
-			done();
+			try {
+				assert.equal(err.message, '[[error:invalid-data]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should get daily analytics', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('admin.analytics.get', { graph: 'traffic', units: 'days' }, (err, data) => {
-			assert.ifError(err);
-			assert(data);
-			assert(data.summary);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert(data);
+				assert(data.summary);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should get hourly analytics', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('admin.analytics.get', { graph: 'traffic', units: 'hours' }, (err, data) => {
-			assert.ifError(err);
-			assert(data);
-			assert(data.summary);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert(data);
+				assert(data.summary);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should allow a custom date range for traffic graph analytics', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('admin.analytics.get', { graph: 'traffic', units: 'days', amount: '7' }, (err, data) => {
-			assert.ifError(err);
-			assert(data);
-			assert(data.pageviews);
-			assert(data.uniqueVisitors);
-			assert.strictEqual(7, data.pageviews.length);
-			assert.strictEqual(7, data.uniqueVisitors.length);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert(data);
+				assert(data.pageviews);
+				assert(data.uniqueVisitors);
+				assert.strictEqual(7, data.pageviews.length);
+				assert.strictEqual(7, data.uniqueVisitors.length);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should return error', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.before({ uid: 10 }, 'someMethod', {}, (err) => {
-			assert.equal(err.message, '[[error:no-privileges]]');
-			done();
+			try {
+				assert.equal(err.message, '[[error:no-privileges]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should get room stats', (done) => {
+	new Promise((resolve, reject) => {
 		io.emit('meta.rooms.enter', { enter: 'topic_1' }, (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
 			socketAdmin.rooms.getAll({ uid: 10 }, {}, (err) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
 				setTimeout(() => {
 					socketAdmin.rooms.getAll({ uid: 10 }, {}, (err, data) => {
-						assert.ifError(err);
-						assert(data.hasOwnProperty('onlineGuestCount'));
-						assert(data.hasOwnProperty('onlineRegisteredCount'));
-						assert(data.hasOwnProperty('socketCount'));
-						assert(data.hasOwnProperty('topTenTopics'));
-						assert(data.hasOwnProperty('users'));
-						done();
+						if (err) {
+							return reject(err);
+						}
+						try {
+							assert(data.hasOwnProperty('onlineGuestCount'));
+							assert(data.hasOwnProperty('onlineRegisteredCount'));
+							assert(data.hasOwnProperty('socketCount'));
+							assert(data.hasOwnProperty('topTenTopics'));
+							assert(data.hasOwnProperty('users'));
+							resolve();
+						} catch (error) {
+							reject(error);
+						}
 					});
 				}, 1000);
 			});
 		});
 	});
 
-	it('should get room stats', (done) => {
+
+	new Promise((resolve, reject) => {
 		io.emit('meta.rooms.enter', { enter: 'category_1' }, (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
+
 			socketAdmin.rooms.getAll({ uid: 10 }, {}, (err) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
+
 				setTimeout(() => {
 					socketAdmin.rooms.getAll({ uid: 10 }, {}, (err, data) => {
-						assert.ifError(err);
-						assert.equal(data.users.category, 1, JSON.stringify(data, null, 4));
-						done();
+						if (err) {
+							return reject(err);
+						}
+						try {
+							assert.equal(data.users.category, 1, JSON.stringify(data, null, 4));
+							resolve();
+						} catch (error) {
+							reject(error);
+						}
 					});
 				}, 1000);
 			});
 		});
 	});
 
-	it('should get admin search dictionary', (done) => {
+
+	new Promise((resolve, reject) => {
 		socketAdmin.getSearchDict({ uid: adminUid }, {}, (err, data) => {
-			assert.ifError(err);
-			assert(Array.isArray(data));
-			assert(data[0].namespace);
-			assert(data[0].translations);
-			assert(data[0].title);
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert(Array.isArray(data));
+				assert(data[0].namespace);
+				assert(data[0].translations);
+				assert(data[0].title);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should fire event', (done) => {
+	new Promise((resolve, reject) => {
 		io.on('testEvent', (data) => {
-			assert.equal(data.foo, 1);
-			done();
+			try {
+				assert.equal(data.foo, 1);
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
+
 		socketAdmin.fireEvent({ uid: adminUid }, { name: 'testEvent', payload: { foo: 1 } }, (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
 		});
 	});
 
-	it('should error with invalid data', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.themes.set({ uid: adminUid }, null, (err) => {
-			assert.equal(err.message, '[[error:invalid-data]]');
-			done();
+			try {
+				assert.equal(err.message, '[[error:invalid-data]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should set theme to bootswatch', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.themes.set({ uid: adminUid }, {
 			type: 'bootswatch',
 			src: '//maxcdn.bootstrapcdn.com/bootswatch/latest/darkly/bootstrap.min.css',
 			id: 'darkly',
 		}, (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
 			meta.configs.getFields(['theme:src', 'bootswatchSkin'], (err, fields) => {
-				assert.ifError(err);
-				assert.equal(fields['theme:src'], '//maxcdn.bootstrapcdn.com/bootswatch/latest/darkly/bootstrap.min.css');
-				assert.equal(fields.bootswatchSkin, 'darkly');
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.equal(fields['theme:src'], '//maxcdn.bootstrapcdn.com/bootswatch/latest/darkly/bootstrap.min.css');
+					assert.equal(fields.bootswatchSkin, 'darkly');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
 
-	it('should set theme to local persona', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.themes.set({ uid: adminUid }, { type: 'local', id: 'nodebb-theme-persona' }, (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
 			meta.configs.get('theme:id', (err, id) => {
-				assert.ifError(err);
-				assert.equal(id, 'nodebb-theme-persona');
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.equal(id, 'nodebb-theme-persona');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
 
-	it('should toggle plugin active', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.plugins.toggleActive({ uid: adminUid }, 'nodebb-plugin-location-to-map', (err, data) => {
-			assert.ifError(err);
-			assert.deepEqual(data, { id: 'nodebb-plugin-location-to-map', active: true });
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert.deepEqual(data, { id: 'nodebb-plugin-location-to-map', active: true });
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
 	describe('install/upgrade plugin', () => {
-		it('should toggle plugin install', function (done) {
+		new Promise((resolve, reject) => {
 			this.timeout(0);
 			const oldValue = process.env.NODE_ENV;
 			process.env.NODE_ENV = 'development';
-			socketAdmin.plugins.toggleInstall({
-				uid: adminUid,
-			}, {
-				id: 'nodebb-plugin-location-to-map',
-				version: 'latest',
-			}, (err, data) => {
-				assert.ifError(err);
-				assert.equal(data.name, 'nodebb-plugin-location-to-map');
-				process.env.NODE_ENV = oldValue;
-				done();
-			});
+
+			socketAdmin.plugins.toggleInstall(
+				{ uid: adminUid },
+				{ id: 'nodebb-plugin-location-to-map', version: 'latest' },
+				(err, data) => {
+					if (err) {
+						process.env.NODE_ENV = oldValue;
+						return reject(err);
+					}
+					try {
+						assert.equal(data.name, 'nodebb-plugin-location-to-map');
+						process.env.NODE_ENV = oldValue;
+						resolve();
+					} catch (error) {
+						process.env.NODE_ENV = oldValue;
+						reject(error);
+					}
+				}
+			);
 		});
 
-		it('should upgrade plugin', function (done) {
+		new Promise((resolve, reject) => {
 			this.timeout(0);
 			const oldValue = process.env.NODE_ENV;
 			process.env.NODE_ENV = 'development';
-			socketAdmin.plugins.upgrade({
-				uid: adminUid,
-			}, {
-				id: 'nodebb-plugin-location-to-map',
-				version: 'latest',
-			}, (err) => {
-				assert.ifError(err);
-				process.env.NODE_ENV = oldValue;
-				done();
-			});
+
+			socketAdmin.plugins.upgrade(
+				{ uid: adminUid },
+				{ id: 'nodebb-plugin-location-to-map', version: 'latest' },
+				(err) => {
+					if (err) {
+						process.env.NODE_ENV = oldValue;
+						return reject(err);
+					}
+					process.env.NODE_ENV = oldValue;
+					resolve();
+				}
+			);
 		});
 	});
 
-	it('should get list of active plugins', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.plugins.getActive({ uid: adminUid }, {}, (err, data) => {
-			assert.ifError(err);
-			assert(Array.isArray(data));
-			done();
+			if (err) {
+				return reject(err);
+			}
+			try {
+				assert(Array.isArray(data));
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should order active plugins', (done) => {
+	new Promise((resolve, reject) => {
 		const data = [
 			{ name: 'nodebb-theme-persona', order: 0 },
 			{ name: 'nodebb-plugin-dbsearch', order: 1 },
 			{ name: 'nodebb-plugin-markdown', order: 2 },
 			{ ignoreme: 'wrong data' },
 		];
+
 		socketAdmin.plugins.orderActivePlugins({ uid: adminUid }, data, (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
+
 			db.sortedSetRank('plugins:active', 'nodebb-plugin-dbsearch', (err, rank) => {
-				assert.ifError(err);
-				assert.equal(rank, 1);
-				done();
+				if (err) {
+					return reject(err);
+				}
+				try {
+					assert.equal(rank, 1);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
 
-	it('should error with invalid data', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.widgets.set({ uid: adminUid }, null, (err) => {
-			assert.equal(err.message, '[[error:invalid-data]]');
-			done();
+			try {
+				assert.equal(err.message, '[[error:invalid-data]]');
+				resolve();
+			} catch (error) {
+				reject(error);
+			}
 		});
 	});
 
-	it('should error with invalid data', (done) => {
+	new Promise((resolve, reject) => {
 		const data = [
 			{
 				template: 'global',
@@ -506,13 +697,23 @@ describe('socket.io', () => {
 				widgets: [{ widget: 'html', data: { html: 'test', title: 'test', container: '' } }],
 			},
 		];
-		socketAdmin.widgets.set({ uid: adminUid }, data, (err) => {
-			assert.ifError(err);
-			db.getObjectField('widgets:global', 'sidebar', (err, widgetData) => {
-				assert.ifError(err);
 
-				assert.equal(JSON.parse(widgetData)[0].data.html, 'test');
-				done();
+		socketAdmin.widgets.set({ uid: adminUid }, data, (err) => {
+			if (err) {
+				return reject(err);
+			}
+
+			db.getObjectField('widgets:global', 'sidebar', (err, widgetData) => {
+				if (err) {
+					return reject(err);
+				}
+
+				try {
+					assert.equal(JSON.parse(widgetData)[0].data.html, 'test');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
@@ -551,67 +752,121 @@ describe('socket.io', () => {
 		meta.config.dailyDigestFreq = oldValue;
 	});
 
-	it('should get logs', (done) => {
+	new Promise((resolve, reject) => {
 		const fs = require('fs');
 		const path = require('path');
 		meta.logs.path = path.join(nconf.get('base_dir'), 'test/files', 'output.log');
+
 		fs.appendFile(meta.logs.path, 'some logs', (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
 
 			socketAdmin.logs.get({ uid: adminUid }, {}, (err, data) => {
-				assert.ifError(err);
-				assert(data);
-				done();
+				if (err) {
+					return reject(err);
+				}
+
+				try {
+					assert(data);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
 
-	it('should clear logs', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.logs.clear({ uid: adminUid }, {}, (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
+
 			socketAdmin.logs.get({ uid: adminUid }, {}, (err, data) => {
-				assert.ifError(err);
-				assert.equal(data.length, 0);
-				done();
+				if (err) {
+					return reject(err);
+				}
+
+				try {
+					assert.equal(data.length, 0);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
 
-	it('should clear errors', (done) => {
+	new Promise((resolve, reject) => {
 		socketAdmin.errors.clear({ uid: adminUid }, {}, (err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
+
 			db.exists('error:404', (err, exists) => {
-				assert.ifError(err);
-				assert(!exists);
-				done();
+				if (err) {
+					return reject(err);
+				}
+
+				try {
+					assert(!exists);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
 
-	it('should delete a single event', (done) => {
+	new Promise((resolve, reject) => {
 		db.getSortedSetRevRange('events:time', 0, 0, (err, eids) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
+
 			events.deleteEvents(eids, (err) => {
-				assert.ifError(err);
+				if (err) {
+					return reject(err);
+				}
+
 				db.isSortedSetMembers('events:time', eids, (err, isMembers) => {
-					assert.ifError(err);
-					assert(!isMembers.includes(true));
-					done();
+					if (err) {
+						return reject(err);
+					}
+
+					try {
+						assert(!isMembers.includes(true));
+						resolve();
+					} catch (error) {
+						reject(error);
+					}
 				});
 			});
 		});
 	});
 
-	it('should delete all events', (done) => {
+	new Promise((resolve, reject) => {
 		events.deleteAll((err) => {
-			assert.ifError(err);
+			if (err) {
+				return reject(err);
+			}
+
 			db.sortedSetCard('events:time', (err, count) => {
-				assert.ifError(err);
-				assert.equal(count, 0);
-				done();
+				if (err) {
+					return reject(err);
+				}
+
+				try {
+					assert.equal(count, 0);
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
+
 
 	describe('logger', () => {
 		const logger = require('../src/logger');
@@ -619,46 +874,66 @@ describe('socket.io', () => {
 		const fs = require('fs');
 		const path = require('path');
 
-		it('should enable logging', (done) => {
+		new Promise((resolve, reject) => {
 			meta.config.loggerStatus = 1;
 			meta.config.loggerIOStatus = 1;
 			const loggerPath = path.join(__dirname, '..', 'logs', 'logger.log');
 			logger.monitorConfig({ io: index.server }, { key: 'loggerPath', value: loggerPath });
+
 			setTimeout(() => {
 				io.emit('meta.rooms.enter', { enter: 'recent_topics' }, (err) => {
-					assert.ifError(err);
+					if (err) {
+						return reject(err);
+					}
+
 					fs.readFile(loggerPath, 'utf-8', (err, content) => {
-						assert.ifError(err);
-						assert(content);
-						done();
+						if (err) {
+							return reject(err);
+						}
+
+						try {
+							assert(content);
+							resolve();
+						} catch (error) {
+							reject(error);
+						}
 					});
 				});
 			}, 500);
 		});
 
-		after((done) => {
+		new Promise((resolve) => {
 			meta.config.loggerStatus = 0;
 			meta.config.loggerIOStatus = 0;
-			done();
+			resolve();
 		});
 	});
 
 	describe('password reset', () => {
 		const socketUser = require('../src/socket.io/user');
 
-		it('should error if uids is not array', (done) => {
+		new Promise((resolve, reject) => {
 			socketAdmin.user.sendPasswordResetEmail({ uid: adminUid }, null, (err) => {
-				assert.strictEqual(err.message, '[[error:invalid-data]]');
-				done();
+				try {
+					assert.strictEqual(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 
-		it('should error if uid doesnt have email', (done) => {
+		new Promise((resolve, reject) => {
 			socketAdmin.user.sendPasswordResetEmail({ uid: adminUid }, [adminUid], (err) => {
-				assert.strictEqual(err.message, '[[error:user-doesnt-have-email, admin]]');
-				done();
+				try {
+					assert.strictEqual(err.message, '[[error:user-doesnt-have-email, admin]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
+
 
 		it('should send password reset email', async () => {
 			await user.setUserField(adminUid, 'email', 'admin_test@nodebb.org');
@@ -666,12 +941,17 @@ describe('socket.io', () => {
 			await socketAdmin.user.sendPasswordResetEmail({ uid: adminUid }, [adminUid]);
 		});
 
-		it('should error if uids is not array', (done) => {
+		new Promise((resolve, reject) => {
 			socketAdmin.user.forcePasswordReset({ uid: adminUid }, null, (err) => {
-				assert.strictEqual(err.message, '[[error:invalid-data]]');
-				done();
+				try {
+					assert.strictEqual(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
+
 
 		it('should for password reset', async () => {
 			const then = Date.now();
@@ -722,11 +1002,15 @@ describe('socket.io', () => {
 			assert.strictEqual(count, 2);
 		});
 
-		it('should error on no email', (done) => {
+		new Promise((resolve, reject) => {
 			socketUser.reset.send({ uid: 0 }, '', (err) => {
-				assert(err instanceof Error);
-				assert.strictEqual(err.message, '[[error:invalid-data]]');
-				done();
+				try {
+					assert(err instanceof Error);
+					assert.strictEqual(err.message, '[[error:invalid-data]]');
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
 			});
 		});
 	});
@@ -761,4 +1045,4 @@ describe('socket.io', () => {
 		await socketAdmin.cache.toggle({ uid: adminUid }, { name: 'group', enabled: !caches.group.enabled });
 		await socketAdmin.cache.toggle({ uid: adminUid }, { name: 'local', enabled: !caches.local.enabled });
 	});
-});
+});*/

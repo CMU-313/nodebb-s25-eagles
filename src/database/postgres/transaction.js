@@ -1,4 +1,4 @@
-'use strict';
+
 
 module.exports = function (module) {
 	module.transaction = async function (perform, txClient) {

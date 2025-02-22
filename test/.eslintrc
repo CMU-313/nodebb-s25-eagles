@@ -1,8 +1,19 @@
 {
 	"env": {
-		"mocha": true
+		"mocha": true,
+		"jest": true 
 	},
+	"extends": ["plugin:jest/recommended"],
+  	"plugins": ["jest"],
 	"rules": {
-		"no-unused-vars": "off"
+		"jest/expect-expect": "off",
+		"no-unused-vars": "off",
+		"jest/no-commented-out-tests": "off",
+    	"max-len": "off"
+	},
+	"settings": {
+		"jest": {
+			"version": 29  // Current Jest version
+		}
 	}
 }

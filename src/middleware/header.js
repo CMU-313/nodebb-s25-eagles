@@ -1,4 +1,4 @@
-'use strict';
+
 
 const plugins = require('../plugins');
 const helpers = require('./helpers');

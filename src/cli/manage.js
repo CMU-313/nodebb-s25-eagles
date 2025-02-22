@@ -1,4 +1,4 @@
-'use strict';
+
 
 const winston = require('winston');
 const childProcess = require('child_process');
@@ -144,7 +144,8 @@ async function listEvents(count = 10) {
 
 async function info() {
 	console.log('');
-	const { version } = require('../../package.json');
+	const path = require('path');
+	const { version } = require(path.join(__dirname, '../../../package.json'));
 	console.log(`  version:  ${version}`);
 
 	console.log(`  Node ver: ${process.version}`);

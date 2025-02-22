@@ -1,4 +1,4 @@
-'use strict';
+
 
 const navigationAdmin = require('../../navigation/admin');
 

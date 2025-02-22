@@ -36,6 +36,8 @@ jobs:
           - 6379:6379
 
     steps:
+      - name: Enable memory overcommit
+        run: sudo sysctl vm.overcommit_memory=1       
       - uses: actions/checkout@v4
         with:
           submodules: recursive

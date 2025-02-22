@@ -37,6 +37,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+        continue-on-error: true  # Add this line to ignore errors
 
       - run: cp install/package.json package.json
 

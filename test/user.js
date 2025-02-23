@@ -937,6 +937,14 @@ describe('User', () => {
 			});
 		});
 
+		it('should return invalid status error', (done) => {
+			meta.config.enableAnonymousPosting = false;
+			socketUser.setStatus({ uid: uid }, 'anonymous', (err) => {
+				assert.equal(err.message, '[[error:invalid-user-status]]');
+				done();
+			});
+		});
+
 		it('should fail for invalid status', (done) => {
 			socketUser.setStatus({ uid: uid }, '12345', (err) => {
 				assert.equal(err.message, '[[error:invalid-user-status]]');

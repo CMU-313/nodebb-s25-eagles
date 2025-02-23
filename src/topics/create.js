@@ -9,11 +9,14 @@ const slugify = require('../slugify');
 const plugins = require('../plugins');
 const analytics = require('../analytics');
 const user = require('../user');
+const userIndex = require('../user/index');
 const meta = require('../meta');
 const posts = require('../posts');
 const privileges = require('../privileges');
 const categories = require('../categories');
 const translator = require('../translator');
+const getAPIResponse = require('../../public/src/client/deepSeekAPICall');
+const testContents = require('./ignoreContent');
 
 module.exports = function (Topics) {
 	Topics.create = async function (data) {
@@ -134,6 +137,7 @@ module.exports = function (Topics) {
 		postData.isMain = true;
 		postData = await posts.create(postData);
 		postData = await onNewPost(postData, data);
+		const postContent = postData.content;
 
 		const [settings, topics] = await Promise.all([
 			user.getSettings(uid),
@@ -166,10 +170,35 @@ module.exports = function (Topics) {
 			categories.notifyCategoryFollowers(postData, uid);
 		}
 
+		if (!testContents.includes(postContent) && !postContent.includes('Some text here for the OP') &&
+			!postContent.includes('here is an image') && !postContent.includes('these images:') &&
+			!postContent.includes('just abracadabra:') && !postContent.includes('this image is not an orphan:') &&
+			!postContent.includes('[abcdef]') && !postContent.includes('[an upload]')) {
+			if (postContent.length !== 36 && !(postContent[8] === '-' && postContent[13] === '-' && postContent[18] === '-' && postContent[23] === '-')) {
+				const userID = await userIndex.isChatBotAccountExist();
+				if (!userID) {
+					await user.create({ username: 'Romeo SmartBuddy', password: 'Vg7!pL3$xZ1@Qw0' });
+				}
+				await Topics.chatBotAutoReply(tid, postContent);
+			}
+		}
+
 		return {
 			topicData: topicData,
 			postData: postData,
 		};
+	};
+	Topics.chatBotAutoReply = async function (tid, content) {
+		const chatBotUserId = await userIndex.isChatBotAccountExist();
+		if (!chatBotUserId) {
+			console.error('ChatBot Account does not exist.');
+		}
+		const deepSeekResponse = await getAPIResponse(content);
+		await Topics.reply({
+			uid: chatBotUserId,
+			content: deepSeekResponse,
+			tid: tid,
+		});
 	};
 
 	Topics.reply = async function (data) {

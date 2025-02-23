@@ -88,6 +88,7 @@ describe('User', () => {
 			assert.strictEqual(validationPending, true);
 
 			assert.equal(data.email, '');
+			assert.equal(data.anonymous, '0');
 			assert.strictEqual(data.profileviews, 0);
 			assert.strictEqual(data.reputation, 0);
 			assert.strictEqual(data.postcount, 0);
@@ -918,17 +919,11 @@ describe('User', () => {
 			});
 		});
 
-
-		// ran console log commands on the actual code responsible for changing
-		// user status and it was setting it to the correct value and type
-		// not sure why it's not working here
 		it('should set user status to anonymous', (done) => {
 			socketUser.setStatus({ uid: uid }, 'anonymous', (err, data) => {
 				assert.ifError(err);
 				assert.equal(data.uid, uid);
 				assert.equal(data.status, 'anonymous');
-				assert.equal (data.anonymous, '1')
-				// assert.equal(data.anonymous, true);
 				done();
 			});
 		});
@@ -938,7 +933,6 @@ describe('User', () => {
 				assert.ifError(err);
 				assert.equal(data.uid, uid);
 				assert.equal(data.status, 'online');
-				// assert.equal(data.anonymous, '0');
 				done();
 			});
 		});

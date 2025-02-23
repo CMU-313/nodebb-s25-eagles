@@ -938,7 +938,7 @@ describe('User', () => {
 		});
 
 		it('should return invalid status error', (done) => {
-			var anonStatus = meta.config.enableAnonymousPosting;
+			let anonStatus = meta.config.enableAnonymousPosting;
 			meta.config.enableAnonymousPosting = false;
 			socketUser.setStatus({ uid: uid }, 'anonymous', (err) => {
 				assert.equal(err.message, '[[error:invalid-user-status]]');

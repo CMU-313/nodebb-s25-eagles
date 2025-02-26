@@ -88,6 +88,7 @@ describe('User', () => {
 			assert.strictEqual(validationPending, true);
 
 			assert.equal(data.email, '');
+			assert.equal(data.anonymous, '0');
 			assert.strictEqual(data.profileviews, 0);
 			assert.strictEqual(data.reputation, 0);
 			assert.strictEqual(data.postcount, 0);
@@ -917,6 +918,34 @@ describe('User', () => {
 			});
 		});
 
+		it('should set user status to anonymous', (done) => {
+			socketUser.setStatus({ uid: uid }, 'anonymous', (err, data) => {
+				assert.ifError(err);
+				assert.equal(data.uid, uid);
+				assert.equal(data.status, 'anonymous');
+				done();
+			});
+		});
+
+		it('should turn anonymous status off', (done) => {
+			socketUser.setStatus({ uid: uid }, 'online', (err, data) => {
+				assert.ifError(err);
+				assert.equal(data.uid, uid);
+				assert.equal(data.status, 'online');
+				done();
+			});
+		});
+
+		it('should return invalid status error', (done) => {
+			const anonStatus = meta.config.enableAnonymousPosting;
+			meta.config.enableAnonymousPosting = false;
+			socketUser.setStatus({ uid: uid }, 'anonymous', (err) => {
+				assert.equal(err.message, '[[error:invalid-user-status]]');
+				meta.config.enableAnonymousPosting = anonStatus;
+				done();
+			});
+		});
+
 		it('should fail for invalid status', (done) => {
 			socketUser.setStatus({ uid: uid }, '12345', (err) => {
 				assert.equal(err.message, '[[error:invalid-user-status]]');
@@ -927,7 +956,7 @@ describe('User', () => {
 		it('should get user status', (done) => {
 			socketUser.checkStatus({ uid: uid }, uid, (err, status) => {
 				assert.ifError(err);
-				assert.equal(status, 'away');
+				assert.equal(status, 'online');
 				done();
 			});
 		});

@@ -7,11 +7,12 @@ Anonymous Posting:
 - Given that the admins have enable anonymous posting, users can see there is a fifth status, anonymous, for users to choose from.  When users are on anonymous status, anything they post will not reveal their user information.  The post will have no avator picture by the user and user's username will not be shown.  Also, when the users are on anonymous status, their status bubble is going to be the color black.  One thing to note for this feature is for any reply to be shown correct, users need to refresh the page for actual reply information.
 
 Testing for Anonymous Posting:
-Tests were implemented for the anonymous posting functionality. 
+Tests were implemented for the anonymous posting functionality. They can be found in `test/user.js`.
 The tests specifically ensure 
 - account status will properly change when switching a user to anonymous mode and vice versa
 - ensuring that anonymous mode is not accessible when the admin settings have it disabled
 These tests were implemented in the test files designated for status related tests. They can be run utilizing the `npm run test` command.
+
 
 Autonomous Reply:
 

@@ -6,6 +6,13 @@ Anonymous Posting:
 - For admin to enable the anonymous posting, admin can go to the post setting in the admin portal and toggle on the enable anonymous post setting.  One thing to note, admin need to make sure the any changes is saved for the changes be applied to the server and make sure when click save, the save button turn green or else it means the changes are not saved.
 - Given that the admins have enable anonymous posting, users can see there is a fifth status, anonymous, for users to choose from.  When users are on anonymous status, anything they post will not reveal their user information.  The post will have no avator picture by the user and user's username will not be shown.  Also, when the users are on anonymous status, their status bubble is going to be the color black.  One thing to note for this feature is for any reply to be shown correct, users need to refresh the page for actual reply information.
 
+Testing for Anonymous Posting:
+Tests were implemented for the anonymous posting functionality. 
+The tests specifically ensure 
+- account status will properly change when switching a user to anonymous mode and vice versa
+- ensuring that anonymous mode is not accessible when the admin settings have it disabled
+These tests were implemented in the test files designated for status related tests. They can be run utilizing the `npm run test` command.
+
 Autonomous Reply:
 
 - This new added feature is straightforward to use and do not need extra effort from the user because a chatbot named "Romeo SmartBuddy" will automatically post a reply to a new topic that the user creates across any channel in the NodeBB instance.

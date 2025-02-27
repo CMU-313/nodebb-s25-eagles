@@ -1,5 +1,9 @@
-const { JSDOM } = require('jsdom');
 
+'use strict';
+
+const { JSDOM } = require('jsdom');
+// const { expect } = require('@jest/globals');
+/* eslint-disable no-undef */
 
 
 
@@ -42,7 +46,6 @@ describe('onPinClicked', () => {
 		}
 
 		return Promise.resolve(); // Ensures async behavior
-
 	}
 
 	test('pins the selected post to the top', async () => {

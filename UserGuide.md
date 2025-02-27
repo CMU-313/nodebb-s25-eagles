@@ -33,4 +33,14 @@ Important Note:
 1. Your free Hugging Face account gives a limited number of API calls that you can make, therefore, the API Access Token will NOT work for infinite number of new topics. Therefore, you need to create a new account every time you run out of quota if you do not want to pay for it.
 2. This is the reason that we could not write automated test cases for this new feature because it will need an infinite number of Hugging Face accounts.
 
-Pin Reply
+Pin Reply 
+
+ - This new added feature allows users to pin a preexisting reply to any NodeBB post. If you
+   no longer want that reply to be pinned, you must click the "pin icon" on a different reply, 
+   or make a new reply and pin that one. 
+
+ - onPinClicked is the specific function that was tested.
+
+ 1. First test: What ever post is selected is pinned to the top of the list of replies 
+ 2. Second test: If you clicked on a pinned post again, it is not unpinned 
+ 3. Third test: The function gracefully handles invalid Post IDs.

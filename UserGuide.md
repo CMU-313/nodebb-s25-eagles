@@ -13,7 +13,7 @@ The tests specifically ensure
 - ensuring that anonymous mode is not accessible when the admin settings have it disabled
 These tests were implemented in the test files designated for status related tests. They can be run utilizing the `npm run test` command.
 
-Autonomous Reply:
+Autonomous Reply (Currently Disabled):
 
 - This new added feature is straightforward to use and do not need extra effort from the user because a chatbot named "Romeo SmartBuddy" will automatically post a reply to a new topic that the user creates across any channel in the NodeBB instance.
 - However, in order for this feature to work correctly, the codebase need to have a valid API Access Token. The reason for this is because Romeo SmartBuddy was implemented to make API call to a DeepSeek LLM endpoint to get a response to the content that the user input.
@@ -41,3 +41,11 @@ Important Note:
 2. This is the reason that we could not write automated test cases for this new feature because it will need an infinite number of Hugging Face accounts.
 
 Pin Reply
+
+- This new added feature allows users to pin a preexisting reply to any NodeBB post. If you no longer want that reply to be pinned, you must click the "pin icon" on a different reply, or make a new reply and pin that one.
+
+- onPinClicked is the specific function that was tested.
+
+1. First test: What ever post is selected is pinned to the top of the list of replies
+2. Second test: If you clicked on a pinned post again, it is not unpinned
+3. Third test: The function gracefully handles invalid Post IDs.

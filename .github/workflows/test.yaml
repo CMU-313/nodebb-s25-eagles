@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - newMain
   pull_request:
     branches:
       - main
+      - newMain
   workflow_call: # Usually called from deploy
 
 defaults:

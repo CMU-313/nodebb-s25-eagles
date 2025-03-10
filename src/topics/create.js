@@ -15,7 +15,8 @@ const posts = require('../posts');
 const privileges = require('../privileges');
 const categories = require('../categories');
 const translator = require('../translator');
-const getAPIResponse = require('../../public/src/client/deepSeekAPICall');
+// Disable for right now
+// const getAPIResponse = require('../../public/src/client/deepSeekAPICall');
 const testContents = require('./ignoreContent');
 
 module.exports = function (Topics) {
@@ -179,7 +180,6 @@ module.exports = function (Topics) {
 				if (!userID) {
 					await user.create({ username: 'Romeo SmartBuddy', password: 'Vg7!pL3$xZ1@Qw0' });
 				}
-				await Topics.chatBotAutoReply(tid, postContent);
 			}
 		}
 
@@ -187,18 +187,6 @@ module.exports = function (Topics) {
 			topicData: topicData,
 			postData: postData,
 		};
-	};
-	Topics.chatBotAutoReply = async function (tid, content) {
-		const chatBotUserId = await userIndex.isChatBotAccountExist();
-		if (!chatBotUserId) {
-			console.error('ChatBot Account does not exist.');
-		}
-		const deepSeekResponse = await getAPIResponse(content);
-		await Topics.reply({
-			uid: chatBotUserId,
-			content: deepSeekResponse,
-			tid: tid,
-		});
 	};
 
 	Topics.reply = async function (data) {

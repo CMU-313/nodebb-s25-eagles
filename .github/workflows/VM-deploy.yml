@@ -32,5 +32,5 @@ jobs:
           script: |
             cd ${{ secrets.REPO_NAME }}
             git pull origin newMain
-            docker-compose down
-            docker-compose --profile redis up --build -d
+            docker compose down
+            docker compose --profile redis up --build -d

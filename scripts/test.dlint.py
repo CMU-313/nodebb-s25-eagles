@@ -6,6 +6,7 @@ def run_dlint():
     directory_to_lint = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
     # Run dlint
+    
     result = subprocess.run(['dlint', 'run', directory_to_lint], capture_output=True, text=True)
 
     # Print the output

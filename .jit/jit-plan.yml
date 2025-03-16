@@ -11,6 +11,9 @@ items:
   - name: Scan your code for vulnerabilities (SAST)
     uses: >-
       jitsecurity-controls/jit-plans/items/code/item-code-vulnerability.yml@latest
+  - name: Scan your Dockerfiles for vulnerabilities
+    uses: >-
+      jitsecurity-controls/jit-plans/items/infrastructure/item-container-scan.yml@latest
   - name: Scan your code dependencies for vulnerabilities (SCA)
     uses: jitsecurity-controls/jit-plans/items/code/item-dependency-check.yml@latest
   - name: Analyze for Jit Context
@@ -18,7 +21,7 @@ items:
       jitsecurity-controls/jit-plans/items/jit-context/item-jit-context-analysis.yml@latest
   - name: Scan code for hard-coded secrets
     uses: jitsecurity-controls/jit-plans/items/code/item-secret-detection.yml@latest
-  - name: Scan your Dockerfiles for vulnerabilities
+  - name: Generate a Software Bill of Materials (SBOM)
     uses: >-
-      jitsecurity-controls/jit-plans/items/infrastructure/item-container-scan.yml@latest
+      jitsecurity-controls/jit-plans/items/code/item-software-bill-of-materials.yml@latest
 

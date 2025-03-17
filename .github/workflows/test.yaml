@@ -91,3 +91,16 @@ jobs:
 
       - name: Test coverage
         uses: coverallsapp/github-action@v2
+      
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.8.0
+        with:
+          target: 'http://17313-team01.s3d.cmu.edu:4567/' 
+          fail_action: false 
+          cmd_options: '-t 50' 
+
+      - name: Upload ZAP Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: report_html/

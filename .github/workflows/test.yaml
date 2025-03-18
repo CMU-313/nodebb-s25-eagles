@@ -80,15 +80,11 @@ jobs:
         run: |
           node app --setup="${SETUP}" --ci="${CI}"
 
-      - name: Check DNS Resolution
-        run: nslookup 17313-team01.s3d.cmu.edu
-
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.14.0
         with:
           target: "http://17313-team01.s3d.cmu.edu:4567/"
-          fail_action: false 
-          cmd_options: '-t 50' 
+          fail_action: true 
 
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v4

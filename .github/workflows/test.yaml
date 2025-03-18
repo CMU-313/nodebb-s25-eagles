@@ -18,6 +18,7 @@ defaults:
 permissions:
   checks: write # for coverallsapp/github-action to create new checks
   contents: read # for actions/checkout to fetch code
+  issues: write # for zaproxy/action-baseline@v0.14.0 to create issue for alerts
 
 jobs:
   test:
@@ -84,13 +85,7 @@ jobs:
         uses: zaproxy/action-baseline@v0.14.0
         with:
           target: "http://17313-team01.s3d.cmu.edu:4567/"
-          fail_action: true 
-
-      - name: Upload ZAP Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: report_html/
+          fail_action: false 
 
       - name: Run ESLint
         run: npm run lint

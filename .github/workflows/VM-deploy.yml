@@ -1,4 +1,4 @@
-name: VM Deploy NodeBB
+name: VM-Deploy-NodeBB
 
 on:
   push:

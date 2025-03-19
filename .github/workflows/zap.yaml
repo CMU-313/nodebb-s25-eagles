@@ -1,15 +1,10 @@
 name: OWASP ZAP Baseline Scan
 
 on:
-  push:
-    branches:
-      - main
-      - newMain
-  pull_request:
-    branches:
-      - main
-      - newMain
-  workflow_call: # Usually called from deploy
+  workflow_run:
+    workflows: ["VM Deploy NodeBB"]
+    types:
+      - completed
 
 defaults:
   run:
@@ -21,6 +16,7 @@ permissions:
 
 jobs:
   test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Ensures it runs only if the VM deploy is successful
     runs-on: ubuntu-latest
     env:
       TEST_ENV: "production"

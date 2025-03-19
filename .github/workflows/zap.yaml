@@ -31,6 +31,13 @@ jobs:
     env:
       TEST_ENV: "production"
       DEEPSEEK_API_ACCESS_TOKEN: ${{ secrets.DEEPSEEK_API_ACCESS_TOKEN }}
+      
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
 
     steps:
       - uses: actions/checkout@v4

@@ -1,0 +1,31 @@
+name: OWASP ZAP Baseline Scan
+
+on:
+  workflow_run:
+    workflows: ["VM Deploy NodeBB"]
+    types:
+      - completed
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read # for actions/checkout to fetch code
+  issues: write # for zaproxy/action-baseline@v0.14.0 to create issue for alerts
+
+jobs:
+  test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Ensures it runs only if the VM deploy is successful
+    runs-on: ubuntu-latest
+    env:
+      TEST_ENV: "production"
+      DEEPSEEK_API_ACCESS_TOKEN: ${{ secrets.DEEPSEEK_API_ACCESS_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: ${{ secrets.ZAP_TARGET }}

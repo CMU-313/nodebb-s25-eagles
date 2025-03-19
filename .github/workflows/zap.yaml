@@ -1,6 +1,9 @@
 name: OWASP ZAP Baseline Scan
 
 on:
+  push:
+    branches:
+      - newMain
   workflow_run:
     workflows: ["VM Deploy NodeBB"]
     types:

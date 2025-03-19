@@ -5,9 +5,8 @@ on:
     branches:
       - newMain
   workflow_run:
-    workflows: ["VM Deploy NodeBB"]
-    types:
-      - completed
+    workflows: ["VM-Deploy-NodeBB"]
+    types: [completed]
 
 defaults:
   run:

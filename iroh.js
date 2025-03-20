@@ -1,7 +1,6 @@
 console.log('a');
-const Iroh = require("../iroh");
+const Iroh = require("iroh");
 const fs = require('fs');
-console.log('what');
 // Turning test script into string for Iroh stage
 const path = '/workspaces/nodebb-s25-eagles/test/posts.js';
 const code = "" + fs.readFileSync(path, 'utf8');

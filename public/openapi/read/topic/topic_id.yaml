@@ -63,7 +63,11 @@ get:
                           description: A topic identifier
                         content:
                           type: string
-                        anonymous: 
+                        translatedContent:
+                          type: string
+                        isEnglish:
+                          type: boolean
+                        anonymous:
                           type: number
                         timestamp:
                           type: number
@@ -102,7 +106,8 @@ get:
                               description: This is either username or fullname depending on forum and user settings
                             userslug:
                               type: string
-                              description: An URL-safe variant of the username (i.e. lower-cased, spaces
+                              description:
+                                An URL-safe variant of the username (i.e. lower-cased, spaces
                                 removed, etc.)
                             reputation:
                               type: number
@@ -139,12 +144,14 @@ get:
                               nullable: true
                             icon:text:
                               type: string
-                              description: A single-letter representation of a username. This is used in the
+                              description:
+                                A single-letter representation of a username. This is used in the
                                 auto-generated icon given to users without
                                 an avatar
                             icon:bgColor:
                               type: string
-                              description: A six-character hexadecimal colour code assigned to the user. This
+                              description:
+                                A six-character hexadecimal colour code assigned to the user. This
                                 value is used in conjunction with
                                 `icon:text` for the user's auto-generated
                                 icon
@@ -203,7 +210,8 @@ get:
                                     description: A friendly name for a given user account
                                   userslug:
                                     type: string
-                                    description: An URL-safe variant of the username (i.e. lower-cased, spaces
+                                    description:
+                                      An URL-safe variant of the username (i.e. lower-cased, spaces
                                       removed, etc.)
                                   picture:
                                     type: string
@@ -212,12 +220,14 @@ get:
                                     description: A user identifier
                                   icon:text:
                                     type: string
-                                    description: A single-letter representation of a username. This is used in the
+                                    description:
+                                      A single-letter representation of a username. This is used in the
                                       auto-generated icon given to users without
                                       an avatar
                                   icon:bgColor:
                                     type: string
-                                    description: A six-character hexadecimal colour code assigned to the user. This
+                                    description:
+                                      A six-character hexadecimal colour code assigned to the user. This
                                       value is used in conjunction with
                                       `icon:text` for the user's auto-generated
                                       icon

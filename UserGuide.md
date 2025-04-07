@@ -1,6 +1,7 @@
 New Features:
 
 Anonymous Posting:
+-
 
 - This new added feature allows user to make post and replies anonymously given that admin has enable anonymously posting.
 - For admin to enable the anonymous posting, admin can go to the post setting in the admin portal and toggle on the enable anonymous post setting.  One thing to note, admin need to make sure the any changes is saved for the changes be applied to the server and make sure when click save, the save button turn green or else it means the changes are not saved.
@@ -14,6 +15,7 @@ The tests specifically ensure
 These tests were implemented in the test files designated for status related tests. They can be run utilizing the `npm run test` command.
 
 Autonomous Reply (Currently Disabled):
+-
 
 - This new added feature is straightforward to use and do not need extra effort from the user because a chatbot named "Romeo SmartBuddy" will automatically post a reply to a new topic that the user creates across any channel in the NodeBB instance.
 - However, in order for this feature to work correctly, the codebase need to have a valid API Access Token. The reason for this is because Romeo SmartBuddy was implemented to make API call to a DeepSeek LLM endpoint to get a response to the content that the user input.
@@ -40,7 +42,8 @@ Important Note:
 1. Your free Hugging Face account gives a limited number of API calls that you can make, therefore, the API Access Token will NOT work for infinite number of new topics. Therefore, you need to create a new account every time you run out of quota if you do not want to pay for it.
 2. This is the reason that we could not write automated test cases for this new feature because it will need an infinite number of Hugging Face accounts.
 
-Pin Reply (Not fully working)
+Pin Reply (Not fully working):
+-
 
 - This new added feature allows users to pin a preexisting reply to any NodeBB post. If you no longer want that reply to be pinned, you must click the "pin icon" on a different reply, or make a new reply and pin that one.
 
@@ -49,3 +52,15 @@ Pin Reply (Not fully working)
 1. First test: What ever post is selected is pinned to the top of the list of replies
 2. Second test: If you clicked on a pinned post again, it is not unpinned
 3. Third test: The function gracefully handles invalid Post IDs.
+
+Translation:
+-
+-This new added feature allows users to translate a non-English post into English. The user can click on the button appears under the post to see the translated content and click on the button again to hide the translation.
+<img width="1012" alt="image" src="https://github.com/user-attachments/assets/55aed666-3bd8-4769-bfc5-ec231a98b8f7" />
+
+
+Testing for Translation
+- The first test checks if the LLM returns the expected output for a specific sentence in a specific language.
+- The second test checks that no translation will be made to gibberish inputs.
+- There is also some unit and mock tests.  The mock tests test whether the translation API call can handle unexpected behaviors and responses from the LLM.
+- The tests are located here https://github.com/ChristinaTrinh/translator-service-eagles/blob/f24/test/unit/test_translator.py

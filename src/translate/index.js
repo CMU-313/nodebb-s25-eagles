@@ -13,7 +13,7 @@ translatorApi.translate = async function (postData) {
 		}
 		return [data.is_english, data.translated_content];
 	} catch (someError) {
-		console.log(someError);
+		console.error(someError);
 		return [true, postData.content];
 	}
 };

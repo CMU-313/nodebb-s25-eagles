@@ -56,7 +56,7 @@ Pin Reply (Not fully working):
 Translation:
 -
 -This new added feature allows users to translate a non-English post into English. The user can click on the button appears under the post to see the translated content and click on the button again to hide the translation.
-<img width="1012" alt="image" src="https://github.com/user-attachments/assets/55aed666-3bd8-4769-bfc5-ec231a98b8f7" />
+<img width="1440" alt="image" src="https://github.com/user-attachments/assets/0b773de0-308c-4f3c-bed2-db744804fc76" />
 
 
 Testing for Translation
